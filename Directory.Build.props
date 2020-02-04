@@ -3,7 +3,7 @@
 
   <PropertyGroup Label="Version">
     <DoVersion>0.1.7</DoVersion>
-    <DoVersionSuffix>beta-2-microsoft-sqlclient</DoVersionSuffix>
+    <DoVersionSuffix>beta2-microsoft-sqlclient11</DoVersionSuffix>
   </PropertyGroup>
 
   <!--
