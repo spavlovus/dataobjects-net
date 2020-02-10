@@ -477,7 +477,9 @@ namespace Xtensive.Orm
 
     internal void SystemBeforeRemove()
     {
-      OrmLog.Debug(Strings.LogSessionXRemovingKeyY, Session, Key);
+      if (Session.IsDebugEventLoggingEnabled) {
+        OrmLog.Debug(Strings.LogSessionXRemovingKeyY, Session, Key);
+      }
 
       Session.SystemEvents.NotifyEntityRemoving(this);
       using (Session.Operations.EnableSystemOperationRegistration()) {
@@ -522,7 +524,9 @@ namespace Xtensive.Orm
     internal override sealed void SystemBeforeInitialize(bool materialize)
     {
       State.Entity = this;
-      OrmLog.Debug(Strings.LogSessionXMaterializingYKeyZ, Session, GetType().GetShortName(), State.Key);
+      if (Session.IsDebugEventLoggingEnabled) {
+        OrmLog.Debug(Strings.LogSessionXMaterializingYKeyZ, Session, GetType().GetShortName(), State.Key);
+      }
 
       if (Session.IsSystemLogicOnly || materialize) 
         return;
@@ -608,7 +612,10 @@ namespace Xtensive.Orm
     {
       if (!Session.Configuration.Supports(SessionOptions.ReadRemovedObjects))
         EnsureNotRemoved();
-      OrmLog.Debug(Strings.LogSessionXGettingValueKeyYFieldZ, Session, Key, field);
+      if (Session.IsDebugEventLoggingEnabled) {
+        OrmLog.Debug(Strings.LogSessionXGettingValueKeyYFieldZ, Session, Key, field);
+      }
+
       EnsureIsFetched(field);
 
       Session.SystemEvents.NotifyFieldValueGetting(this, field);
@@ -655,7 +662,9 @@ namespace Xtensive.Orm
     {
       EnsureNotRemoved();
 
-      OrmLog.Debug(Strings.LogSessionXSettingValueKeyYFieldZ, Session, Key, field);
+      if (Session.IsDebugEventLoggingEnabled) {
+        OrmLog.Debug(Strings.LogSessionXSettingValueKeyYFieldZ, Session, Key, field);
+      }
 
       if (field.IsPrimaryKey)
         throw new NotSupportedException(string.Format(Strings.ExUnableToSetKeyFieldXExplicitly, field.Name));
