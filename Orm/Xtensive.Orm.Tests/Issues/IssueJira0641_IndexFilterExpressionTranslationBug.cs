@@ -86,7 +86,9 @@ namespace Xtensive.Orm.Tests.Issues
       using (var domain = Domain.Build(configuration))
       using (var session = domain.OpenSession())
       using (var transaction = session.OpenTransaction()) {
-        Assert.DoesNotThrow(session.Query.All<IndexlessBandwidthCall>().Where(e => e.Direction.In(DirectionEnum.FirstIn, DirectionEnum.FirstOut)).Run);
+        var query = session.Query.All<IndexlessBandwidthCall>().Where(e => e.Direction.In(DirectionEnum.FirstIn, DirectionEnum.FirstOut));
+
+        Assert.DoesNotThrow(() => query.Run());
       }
     }
   }
