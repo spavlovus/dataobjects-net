@@ -144,7 +144,7 @@ namespace Xtensive.Tuples
     /// <inheritdoc/>
     public void CopyTo(Type[] array, int arrayIndex)
     {
-      FieldTypes.Copy(array, arrayIndex);
+      FieldTypes.CopyTo(array, arrayIndex);
     }
 
     /// <inheritdoc/>
