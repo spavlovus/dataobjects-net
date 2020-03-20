@@ -22,11 +22,11 @@ namespace Xtensive.Core
     /// </summary>
     /// <param name="value">The original string value.</param>
     /// <param name="suffix">The suffix to cut.</param>
-    /// <returns>String without <paramref name="suffix"/> if it was found; 
+    /// <returns>String without <paramref name="suffix"/> if it was found;
     /// otherwise, original <paramref name="value"/>.</returns>
     public static string TryCutSuffix(this string value, string suffix)
     {
-      if (!value.EndsWith(suffix))
+      if (!value.EndsWith(suffix, StringComparison.Ordinal))
         return value;
       return value.Substring(0, value.Length - suffix.Length);
     }
@@ -36,11 +36,11 @@ namespace Xtensive.Core
     /// </summary>
     /// <param name="value">The original string value.</param>
     /// <param name="prefix">The prefix to cut.</param>
-    /// <returns>String without <paramref name="prefix"/> if it was found; 
+    /// <returns>String without <paramref name="prefix"/> if it was found;
     /// otherwise, original <paramref name="value"/>.</returns>
     public static string TryCutPrefix(this string value, string prefix)
     {
-      if (!value.StartsWith(prefix))
+      if (!value.StartsWith(prefix, StringComparison.Ordinal))
         return value;
       return value.Substring(prefix.Length);
     }
@@ -412,12 +412,21 @@ namespace Xtensive.Core
           if (match.Value=="_") {
             return ".";
           }
-          if(match.Value.StartsWith(escapeCharacter.ToString())) {
+          if(match.Value.StartsWith(escapeCharacter.ToString(), StringComparison.Ordinal)) {
             return match.Value[1].ToString();
           }
           return Regex.Escape(match.Value);
         });
       return Regex.IsMatch(value, regexPattern);
     }
+
+    internal static bool Contains(this string str, string value, StringComparison comparison)
+    {
+      ArgumentValidator.EnsureArgumentNotNull(str, nameof(str));
+      ArgumentValidator.EnsureArgumentNotNull(value, nameof(value));
+
+      return str.IndexOf(value, comparison) >= 0;
+    }
+
   }
 }
