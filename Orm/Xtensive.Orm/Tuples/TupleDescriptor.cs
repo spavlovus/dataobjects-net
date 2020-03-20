@@ -43,9 +43,6 @@ namespace Xtensive.Tuples
     private static readonly ConcurrentDictionary<(Type, Type, Type, Type), TupleDescriptor> CachedDescriptors4 = 
       new ConcurrentDictionary<(Type, Type, Type, Type), TupleDescriptor>();
 
-    [NonSerialized]
-    private Type[] _fieldTypes;
-
     internal readonly int FieldCount;
     internal readonly int ValuesLength;
     internal readonly int ObjectsLength;
@@ -53,7 +50,8 @@ namespace Xtensive.Tuples
     [NonSerialized]
     internal readonly PackedFieldDescriptor[] FieldDescriptors;
     
-    internal Type[] FieldTypes => _fieldTypes;
+    [field: NonSerialized]
+    internal Type[] FieldTypes { get; }
 
     /// <summary>
     /// Gets the empty tuple descriptor.
@@ -410,62 +408,11 @@ namespace Xtensive.Tuples
     {
       ArgumentValidator.EnsureArgumentNotNull(fieldTypes, nameof(fieldTypes));
 
-      _fieldTypes = fieldTypes;
+      FieldTypes = fieldTypes;
       FieldCount = fieldTypes.Length;
       FieldDescriptors = new PackedFieldDescriptor[FieldCount];
 
-      const int longBitCount = 64;
-      const int stateBitCount = 2;
-      const int statesPerLong = longBitCount / stateBitCount;
-
-      var objectIndex = 0;
-      var valueIndex = (FieldCount + statesPerLong - 1) / statesPerLong;
-      var valueBitOffset = 0;
-
-      for (var i = 0; i < fieldTypes.Length; i++) {
-        var fieldType = fieldTypes[i].StripNullable();
-        var descriptor = new PackedFieldDescriptor { FieldIndex = i };
-        PackedFieldAccessorFactory.ConfigureDescriptor(descriptor, fieldType);
-        _fieldTypes[i] = fieldType;
-        FieldDescriptors[i] = descriptor;
-      }
-
-      var orderedDescriptors = (PackedFieldDescriptor[]) FieldDescriptors.Clone();
-      Array.Sort(orderedDescriptors, PackedFieldDescriptorComparer.Instance);
-
-      foreach (var d in orderedDescriptors) {
-        var fieldIndex = d.FieldIndex;
-        d.StateIndex = fieldIndex >> 5; // d.FieldIndex / 32
-        d.StateBitOffset = (fieldIndex & 31) << 1;
-
-        if (d.PackingType == FieldPackingType.Object) {
-          d.ValueIndex = objectIndex++;
-          continue;
-        }
-        
-        // d.PackingType == FieldPackingType.Value
-        if (d.ValueBitCount >= longBitCount) {
-          if (valueBitOffset != 0) {
-            valueIndex++;
-            valueBitOffset = 0;
-          }
-          d.ValueIndex = valueIndex;
-          valueIndex += (d.ValueBitCount + longBitCount - 1) / longBitCount;
-        }
-        else {
-          d.ValueIndex = valueIndex;
-          d.ValueBitOffset = valueBitOffset;
-          valueBitOffset += d.ValueBitCount;
-          if (valueBitOffset > longBitCount) {
-            d.ValueIndex = ++valueIndex;
-            d.ValueBitOffset = 0;
-            valueBitOffset = d.ValueBitCount;
-          }
-        }
-      }
-
-      ValuesLength = valueIndex + Math.Min(1, valueBitOffset);
-      ObjectsLength = objectIndex;
+      TupleLayout.Configure(fieldTypes, FieldDescriptors, out ValuesLength, out ObjectsLength);
     }
 
     public TupleDescriptor(SerializationInfo info, StreamingContext context)
@@ -478,20 +425,16 @@ namespace Xtensive.Tuples
       FieldDescriptors = (PackedFieldDescriptor[])info.GetValue(
         "FieldDescriptors", typeof(PackedFieldDescriptor[]));
 
-      _fieldTypes = new Type[typeNames.Length];
-      for (var i = 0; i < typeNames.Length; i++)
-        _fieldTypes[i] = typeNames[i].GetTypeFromSerializableForm();
-      for (var i = 0; i < _fieldTypes.Length; i++)
-        PackedFieldAccessorFactory.ConfigureDescriptor(FieldDescriptors[i], _fieldTypes[i]);
+      FieldTypes = new Type[typeNames.Length];
+      for (var i = 0; i < typeNames.Length; i++) {
+        FieldTypes[i] = typeNames[i].GetTypeFromSerializableForm();
+        TupleLayout.ConfigureFieldAccessor(ref FieldDescriptors[i], FieldTypes[i]);
+      }
     }
-
 
     static TupleDescriptor()
     {
-      var types = PackedFieldAccessorFactory.KnownTypes.Concat(new [] {
-        typeof(string),
-        typeof(byte[]),
-      });
+      var types = TupleLayout.KnownTypes;
       foreach (var type1 in types) {
         CachedDescriptors1.Add(type1, new TupleDescriptor(new[] {type1}));
         foreach (var type2 in types) {
