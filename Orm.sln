@@ -65,7 +65,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xtensive.Orm.Security.Tests
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xtensive.Orm.Tracking.Tests", "Extensions\Xtensive.Orm.Tracking.Tests\Xtensive.Orm.Tracking.Tests.csproj", "{15CC7358-3A5B-4146-A5CB-78DAE75E88E6}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cfg", "Cfg", "{C02BF3D5-F591-454D-81D4-A3135A24FB81}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Cfg", ".Cfg", "{C02BF3D5-F591-454D-81D4-A3135A24FB81}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
 		.gitignore = .gitignore
@@ -75,9 +75,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Cfg", "Cfg", "{C02BF3D5-F59
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xtensive.Orm.Weaver", "Weaver\Xtensive.Orm.Weaver\Xtensive.Orm.Weaver.csproj", "{75B3DB45-3055-4A22-854A-BD271D5E4218}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "_publish", "_publish", "{5726BBD8-14F9-4909-B765-3E7709223B61}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".Publish", ".Publish", "{5726BBD8-14F9-4909-B765-3E7709223B61}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "nuget-publish", "Publish\nuget-publish.csproj", "{2CC55F3E-8EA5-4305-8716-D5B944120F82}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NuGetPublish", "Publish\NuGetPublish.csproj", "{2CC55F3E-8EA5-4305-8716-D5B944120F82}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
