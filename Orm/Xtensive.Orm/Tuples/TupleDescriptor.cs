@@ -4,18 +4,16 @@
 // Created by: Nick Svetlov
 // Created:    2007.05.30
 
+
 using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 using Xtensive.Core;
 using Xtensive.Linq.SerializableExpressions.Internals;
 using Xtensive.Reflection;
-
 using Xtensive.Tuples.Packed;
 
 namespace Xtensive.Tuples
@@ -25,25 +23,11 @@ namespace Xtensive.Tuples
   /// Provides information about <see cref="Tuple"/> structure.
   /// </summary>
   [Serializable]
-  public sealed class TupleDescriptor : IEquatable<TupleDescriptor>, IList<Type>, ISerializable
+  public sealed class TupleDescriptor : IEquatable<TupleDescriptor>, IReadOnlyList<Type>, ISerializable
   {
-    [NonSerialized]
-    private static readonly TupleDescriptor EmptyDescriptor =
-        new TupleDescriptor(new Type[0]);
-    [NonSerialized]
-    private static readonly Dictionary<Type, TupleDescriptor> CachedDescriptors1 = 
-        new Dictionary<Type, TupleDescriptor>();
-    [NonSerialized]
-    private static readonly Dictionary<(Type, Type), TupleDescriptor> CachedDescriptors2 = 
-      new Dictionary<(Type, Type), TupleDescriptor>();
-    [NonSerialized]
-    private static readonly Dictionary<(Type, Type, Type), TupleDescriptor> CachedDescriptors3 = 
-      new Dictionary<(Type, Type, Type), TupleDescriptor>();
-    [NonSerialized]
-    private static readonly ConcurrentDictionary<(Type, Type, Type, Type), TupleDescriptor> CachedDescriptors4 = 
-      new ConcurrentDictionary<(Type, Type, Type, Type), TupleDescriptor>();
+    private static readonly TupleDescriptor EmptyDescriptor = new TupleDescriptor(Array.Empty<Type>());
 
-    internal readonly int FieldCount;
+    private readonly int FieldCount;
     internal readonly int ValuesLength;
     internal readonly int ObjectsLength;
 
@@ -51,7 +35,7 @@ namespace Xtensive.Tuples
     internal readonly PackedFieldDescriptor[] FieldDescriptors;
     
     [field: NonSerialized]
-    internal Type[] FieldTypes { get; }
+    private Type[] FieldTypes { get; }
 
     /// <summary>
     /// Gets the empty tuple descriptor.
@@ -62,32 +46,6 @@ namespace Xtensive.Tuples
       [DebuggerStepThrough]
       get => EmptyDescriptor;
     }
-
-    /// <summary>
-    /// Gets the length of the common part.
-    /// </summary>
-    /// <param name="other">The other descriptor.</param>
-    public int GetCommonPartLength(TupleDescriptor other)
-    {
-      ArgumentValidator.EnsureArgumentNotNull(other, "other");
-      var minCount = FieldCount < other.FieldCount ? FieldCount : other.FieldCount;
-      for (int i = 0; i < minCount; i++) {
-        if (FieldTypes[i] != other.FieldTypes[i])
-          return i;
-      }
-      return minCount;
-    }
-
-    /// <summary>
-    /// Determines whether the specified field is a value type field.
-    /// </summary>
-    /// <param name="fieldIndex">Index of the field to check.</param>
-    /// <returns>
-    /// <see langword="true"/> if specified field is a value type field; 
-    /// otherwise, <see langword="false"/>.
-    /// </returns>
-    public bool IsValueType(int fieldIndex) 
-      => FieldTypes[fieldIndex].IsValueType;
 
     #region IList members
 
@@ -106,62 +64,11 @@ namespace Xtensive.Tuples
     }
 
     /// <inheritdoc/>
-    public int IndexOf(Type item) 
-      => FieldTypes.IndexOf(item, true);
-
-    /// <inheritdoc/>
-    public void Insert(int index, Type item)
-    {
-      throw Exceptions.CollectionIsReadOnly(null);
-    }
-
-    /// <inheritdoc/>
-    public void RemoveAt(int index)
-    {
-      throw Exceptions.CollectionIsReadOnly(null);
-    }
-
-    /// <inheritdoc/>
-    public void Add(Type item)
-    {
-      throw Exceptions.CollectionIsReadOnly(null);
-    }
-
-    /// <inheritdoc/>
-    public void Clear()
-    {
-      throw Exceptions.CollectionIsReadOnly(null);
-    }
-
-    /// <inheritdoc/>
-    public bool Contains(Type item)
-    {
-      return FieldTypes.IndexOf(item, true) >= 0;
-    }
-
-    /// <inheritdoc/>
-    public void CopyTo(Type[] array, int arrayIndex)
-    {
-      FieldTypes.CopyTo(array, arrayIndex);
-    }
-
-    /// <inheritdoc/>
-    public bool Remove(Type item)
-    {
-      throw Exceptions.CollectionIsReadOnly(null);
-    }
-
-    /// <inheritdoc/>
-    public bool IsReadOnly
-    {
-      get { return true; }
-    }
-
-    /// <inheritdoc/>
     public IEnumerator<Type> GetEnumerator()
     {
-      for (int i = 0; i < FieldCount; i++)
-        yield return FieldTypes[i];
+      for (var index = 0; index < FieldCount; index++) {
+        yield return FieldTypes[index];
+      }
     }
 
     /// <inheritdoc/>
@@ -205,7 +112,7 @@ namespace Xtensive.Tuples
       return result;
     }
 
-    public static bool operator==(TupleDescriptor left, TupleDescriptor right)
+    public static bool operator ==(TupleDescriptor left, TupleDescriptor right)
     {
       if (ReferenceEquals(left, right))
         return true;
@@ -247,54 +154,26 @@ namespace Xtensive.Tuples
       return string.Format(Strings.TupleDescriptorFormat, sb);
     }
 
-    //[OnSerializing]
-    //private void OnSerializing(StreamingContext context)
-    //{
-    //  fieldTypeNames = new string[FieldTypes.Length];
-    //  for (var i = 0; i < fieldTypeNames.Length; i++)
-    //    fieldTypeNames[i] = FieldTypes[i].ToSerializableForm();
-    //}
-
-    //[OnDeserialized]
-    //private void OnDeserialized(StreamingContext context)
-    //{
-    //  fieldTypes = new Type[fieldTypeNames.Length];
-    //  for (int i = 0; i < fieldTypeNames.Length; i++)
-    //    FieldTypes[i] = fieldTypeNames[i].GetTypeFromSerializableForm();
-    //  for (int i = 0; i < FieldCount; i++)
-    //    PackedFieldAccessorFactory.ProvideAccessor(FieldTypes[i], FieldDescriptors[i]);
-    //}
-
     #region Create methods (base)
 
     public static TupleDescriptor Create(Type t1)
     {
-      if (CachedDescriptors1.TryGetValue(t1, out var cachedDescriptor))
-        return cachedDescriptor;
       return new TupleDescriptor(new [] {t1});
     }
 
     public static TupleDescriptor Create(Type t1, Type t2)
     {
-      var key = (t1, t2);
-      if (CachedDescriptors2.TryGetValue(key, out var cachedDescriptor))
-        return cachedDescriptor;
       return new TupleDescriptor(new [] {t1, t2});
     }
 
     public static TupleDescriptor Create(Type t1, Type t2, Type t3)
     {
-      var key = (t1, t2, t3);
-      if (CachedDescriptors3.TryGetValue(key, out var cachedDescriptor))
-        return cachedDescriptor;
       return new TupleDescriptor(new [] {t1, t2, t3});
     }
 
     public static TupleDescriptor Create(Type t1, Type t2, Type t3, Type t4)
     {
-      var key = (t1, t2, t3, t4);
-      return CachedDescriptors4.GetOrAdd(key, k => 
-        new TupleDescriptor(new [] {k.Item1, k.Item2, k.Item3, k.Item4}));
+      return  new TupleDescriptor(new [] {t1, t2, t3, t4});
     }
 
     /// <summary>
@@ -307,27 +186,8 @@ namespace Xtensive.Tuples
     public static TupleDescriptor Create(Type[] fieldTypes)
     {
       ArgumentValidator.EnsureArgumentNotNull(fieldTypes, nameof(fieldTypes));
-      switch (fieldTypes.Length) {
-      case 0:
+      if (fieldTypes.Length == 0) {
         return EmptyDescriptor;
-      case 1: 
-        if (CachedDescriptors1.TryGetValue(fieldTypes[0], out var cachedDescriptor))
-          return cachedDescriptor;
-        break;
-      case 2:
-        var key2 = (fieldTypes[0], fieldTypes[1]);
-        if (CachedDescriptors2.TryGetValue(key2, out cachedDescriptor))
-          return cachedDescriptor;
-        break;
-      case 3:
-        var key3 = (fieldTypes[0], fieldTypes[1], fieldTypes[2]);
-        if (CachedDescriptors3.TryGetValue(key3, out cachedDescriptor))
-          return cachedDescriptor;
-        break;
-      case 4:
-        var key4 = (fieldTypes[0], fieldTypes[1], fieldTypes[2], fieldTypes[3]);
-        return CachedDescriptors4.GetOrAdd(key4, k => 
-          new TupleDescriptor(new [] {k.Item1, k.Item2, k.Item3, k.Item4}));
       }
       return new TupleDescriptor(fieldTypes);
     }
@@ -340,9 +200,10 @@ namespace Xtensive.Tuples
     /// describing the specified set of fields.</returns>
     public TupleDescriptor Head(int fieldCount)
     {
-      ArgumentValidator.EnsureArgumentIsInRange(fieldCount, 1, Count, "fieldCount");
-      var fieldTypes = FieldTypes.ToArray(fieldCount);
-      return Create(fieldTypes);
+      ArgumentValidator.EnsureArgumentIsInRange(fieldCount, 1, Count, nameof(fieldCount));
+      var fieldTypes = new Type[fieldCount];
+      Array.Copy(FieldTypes, 0, fieldTypes, 0, fieldCount);
+      return new TupleDescriptor(fieldTypes);
     }
 
     /// <summary>
@@ -353,9 +214,10 @@ namespace Xtensive.Tuples
     /// describing the specified set of fields.</returns>
     public TupleDescriptor Tail(int tailFieldCount)
     {
-      ArgumentValidator.EnsureArgumentIsInRange(tailFieldCount, 1, Count, "tailFieldCount");
-      var fieldTypes = FieldTypes.Skip(Count - tailFieldCount).ToArray(tailFieldCount);
-      return Create(fieldTypes);
+      ArgumentValidator.EnsureArgumentIsInRange(tailFieldCount, 1, Count, nameof(tailFieldCount));
+      var fieldTypes = new Type[tailFieldCount];
+      Array.Copy(FieldTypes, Count - tailFieldCount, fieldTypes, 0, tailFieldCount);
+      return new TupleDescriptor(fieldTypes);
     }
 
     #endregion
@@ -406,13 +268,28 @@ namespace Xtensive.Tuples
 
     private TupleDescriptor(Type[] fieldTypes)
     {
-      ArgumentValidator.EnsureArgumentNotNull(fieldTypes, nameof(fieldTypes));
-
       FieldTypes = fieldTypes;
       FieldCount = fieldTypes.Length;
       FieldDescriptors = new PackedFieldDescriptor[FieldCount];
 
-      TupleLayout.Configure(fieldTypes, FieldDescriptors, out ValuesLength, out ObjectsLength);
+      switch (FieldCount) {
+        case 0:
+          return;
+        case 1:
+          TupleLayout.ConfigureLen1(FieldTypes,
+            ref FieldDescriptors[0],
+            out ValuesLength, out ObjectsLength);
+          break;
+        case 2:
+          TupleLayout.ConfigureLen2(FieldTypes,
+            ref FieldDescriptors[0], ref FieldDescriptors[1],
+            out ValuesLength, out ObjectsLength);
+          break;
+        default:
+          TupleLayout.Configure(FieldTypes, FieldDescriptors, out ValuesLength, out ObjectsLength);
+          break;
+      }
+
     }
 
     public TupleDescriptor(SerializationInfo info, StreamingContext context)
@@ -429,20 +306,6 @@ namespace Xtensive.Tuples
       for (var i = 0; i < typeNames.Length; i++) {
         FieldTypes[i] = typeNames[i].GetTypeFromSerializableForm();
         TupleLayout.ConfigureFieldAccessor(ref FieldDescriptors[i], FieldTypes[i]);
-      }
-    }
-
-    static TupleDescriptor()
-    {
-      var types = TupleLayout.KnownTypes;
-      foreach (var type1 in types) {
-        CachedDescriptors1.Add(type1, new TupleDescriptor(new[] {type1}));
-        foreach (var type2 in types) {
-          CachedDescriptors2.Add((type1, type2), new TupleDescriptor(new[] {type1, type2}));
-          foreach (var type3 in types) {
-            CachedDescriptors3.Add((type1, type2, type3), new TupleDescriptor(new[] {type1, type2, type3}));
-          }
-        }
       }
     }
   }
