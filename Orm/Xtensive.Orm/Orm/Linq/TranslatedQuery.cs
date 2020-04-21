@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-
+using Xtensive.Core;
 using Xtensive.Tuples;
 using Xtensive.Orm.Rse.Providers;
 using Tuple = Xtensive.Tuples.Tuple;
@@ -24,11 +24,28 @@ namespace Xtensive.Orm.Linq
     /// </summary>
     public readonly ExecutableProvider DataSource;
 
+    private object cacheKey;
+
     /// <summary>
     /// Gets the untyped materializer.
     /// </summary>
     public abstract Delegate UntypedMaterializer { get; }
 
+    /// <summary>
+    /// Gets or tests cache key for this query.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">Cache key is already set</exception>
+    public object CacheKey
+    {
+      get => cacheKey;
+      set {
+        if (cacheKey != null) {
+          throw new InvalidOperationException("Internal error: CacheKey is already set.");
+        }
+
+        cacheKey = value;
+      }
+    }
 
     // Constructors
 

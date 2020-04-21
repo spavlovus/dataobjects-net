@@ -158,7 +158,7 @@ namespace Xtensive.Orm.Tests.Issues
       using (var transaction = session.OpenTransaction()) {
         var upperLimit = 80;
         List<IEnumerable<Location>> queries = new List<IEnumerable<Location>>();
-        var cachedQueriesCountBefore = Domain.QueryCache.Count;
+        var cachedQueriesCountBefore = GetCachedQueryCount();
         for (int i = 0; i < upperLimit; i++) {
           var locations = session.Query.ExecuteDelayed(endpoint => from location in session.Query.All<Location>()
             where location.Active && location.Id.In((
@@ -169,7 +169,7 @@ namespace Xtensive.Orm.Tests.Issues
             select location);
           queries.Add(locations);
         }
-        var cachedQueriesCountAfter = Domain.QueryCache.Count;
+        var cachedQueriesCountAfter = GetCachedQueryCount();
         Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
         Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
         var result = session.Query.All<TestEntity>().ToList();
@@ -187,7 +187,7 @@ namespace Xtensive.Orm.Tests.Issues
       using (var transaction = session.OpenTransaction()) {
         var upperLimit = 80;
         List<IEnumerable<Location>> queries = new List<IEnumerable<Location>>();
-        var cachedQueriesCountBefore = Domain.QueryCache.Count;
+        var cachedQueriesCountBefore = GetCachedQueryCount();
         for (int i = 0; i < upperLimit; i++) {
           var locations = Query.ExecuteFuture(() => from location in Query.All<Location>()
             where location.Active && location.Id.In((
@@ -198,7 +198,7 @@ namespace Xtensive.Orm.Tests.Issues
             select location);
           queries.Add(locations);
         }
-        var cachedQueriesCountAfter = Domain.QueryCache.Count;
+        var cachedQueriesCountAfter = GetCachedQueryCount();
         Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
         Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
         var result = session.Query.All<TestEntity>().ToList();
@@ -214,7 +214,7 @@ namespace Xtensive.Orm.Tests.Issues
       using (var session = Domain.OpenSession())
       using (session.Activate())
       using (var transaction = session.OpenTransaction()) {
-        var cachedQueriesCountBefore = Domain.QueryCache.Count;
+        var cachedQueriesCountBefore = GetCachedQueryCount();
         var currentValue = 1;
         var iterationsCount = 0;
         var oldValue = currentValue;
@@ -224,11 +224,11 @@ namespace Xtensive.Orm.Tests.Issues
           oldValue = currentValue;
           iterationsCount++;
         }
-        var cachedQueriesCountAfter = Domain.QueryCache.Count;
+        var cachedQueriesCountAfter = GetCachedQueryCount();
         Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
         Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
 
-        cachedQueriesCountBefore = Domain.QueryCache.Count;
+        cachedQueriesCountBefore = GetCachedQueryCount();
         currentValue = oldValue = 1;
         iterationsCount = 0;
         while (currentValue < 80) {
@@ -237,7 +237,7 @@ namespace Xtensive.Orm.Tests.Issues
           oldValue = currentValue;
           iterationsCount++;
         }
-        cachedQueriesCountAfter = Domain.QueryCache.Count;
+        cachedQueriesCountAfter = GetCachedQueryCount();
         Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
         Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
       }
@@ -249,19 +249,19 @@ namespace Xtensive.Orm.Tests.Issues
       using (session.Activate())
       using (var transaction = session.OpenTransaction()) {
         //ExecuteDelayed API
-        var cachedQueriesCountBefore = Domain.QueryCache.Count;
+        var cachedQueriesCountBefore = GetCachedQueryCount();
         var zone = session.Query.All<Zone>().First();
         for (int i = 0; i < 80; i++)
           GetMinimalIdWithZone(session, zone);
-        var cachedQueriesCountAfter = Domain.QueryCache.Count;
+        var cachedQueriesCountAfter = GetCachedQueryCount();
         Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
         Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
 
         //ExecuteFuture API
-        cachedQueriesCountBefore = Domain.QueryCache.Count;
+        cachedQueriesCountBefore = GetCachedQueryCount();
         for (int i = 0; i < 80; i++)
           GetMinimalIdWithZone(zone);
-        cachedQueriesCountAfter = Domain.QueryCache.Count;
+        cachedQueriesCountAfter = GetCachedQueryCount();
         Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
         Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
       }
@@ -280,7 +280,7 @@ namespace Xtensive.Orm.Tests.Issues
     private void TaskSequencesGenerator(Session session)
     {
       //ExecuteDelayed API
-      var cachedQueriesCountBefore = Domain.QueryCache.Count;
+      var cachedQueriesCountBefore = GetCachedQueryCount();
       var currentId = 1;
       var iterationsCount = 0;
       while (currentId<80) {
@@ -290,12 +290,12 @@ namespace Xtensive.Orm.Tests.Issues
         Assert.AreEqual(previousId+1, currentId);
         iterationsCount++;
       }
-      var cachedQueriesCountAfter = Domain.QueryCache.Count;
+      var cachedQueriesCountAfter = GetCachedQueryCount();
       Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
       Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
 
       //ExecuteFuture API
-      cachedQueriesCountBefore = Domain.QueryCache.Count;
+      cachedQueriesCountBefore = GetCachedQueryCount();
       currentId = 1;
       iterationsCount = 0;
       while (currentId < 80) {
@@ -305,7 +305,7 @@ namespace Xtensive.Orm.Tests.Issues
         Assert.AreEqual(previousId + 1, currentId);
         iterationsCount++;
       }
-      cachedQueriesCountAfter = Domain.QueryCache.Count;
+      cachedQueriesCountAfter = GetCachedQueryCount();
       Assert.Greater(cachedQueriesCountAfter, cachedQueriesCountBefore);
       Assert.AreEqual(1, cachedQueriesCountAfter - cachedQueriesCountBefore);
     }
@@ -361,5 +361,8 @@ namespace Xtensive.Orm.Tests.Issues
       Query.All<Location>();
       return locations.Min(field => field.Id);
     }
+
+    private int GetCachedQueryCount() =>
+      Domain.StorageNodeManager.GetNode(WellKnown.DefaultNodeId)?.LinqQueryCache.Count ?? 0;
   }
 }

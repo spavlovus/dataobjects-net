@@ -328,7 +328,8 @@ namespace Xtensive.Orm.Upgrade
       var modelMapping = ModelMappingBuilder.Build(
         domain.Handlers, schemaExtractionResult,
         context.Services.MappingResolver, context.NodeConfiguration, context.UpgradeMode.IsLegacy());
-      var result = new StorageNode(context.NodeConfiguration, modelMapping, new TypeIdRegistry());
+      var result = new StorageNode(context.Configuration, context.NodeConfiguration, modelMapping,
+        new TypeIdRegistry());
 
       // Register default storage node immediately,
       // non-default nodes are registered in NodeManager after everything completes successfully.

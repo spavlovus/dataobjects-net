@@ -6,8 +6,10 @@
 
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using Xtensive.Caching;
 using Xtensive.Core;
 using Xtensive.Orm.Configuration;
+using Xtensive.Orm.Linq;
 using Xtensive.Orm.Model;
 using Xtensive.Orm.Providers;
 
@@ -44,11 +46,14 @@ namespace Xtensive.Orm
 
     internal ConcurrentDictionary<PersistRequestBuilderTask, ICollection<PersistRequest>> PersistRequestCache { get; private set; }
 
+    internal ICache<object, TranslatedQuery> LinqQueryCache { get; }
 
     // Constructors
 
-    internal StorageNode(NodeConfiguration configuration, ModelMapping mapping, TypeIdRegistry typeIdRegistry)
+    internal StorageNode(DomainConfiguration domainConfiguration, NodeConfiguration configuration, ModelMapping mapping,
+      TypeIdRegistry typeIdRegistry)
     {
+      ArgumentValidator.EnsureArgumentNotNull(domainConfiguration, nameof(domainConfiguration));
       ArgumentValidator.EnsureArgumentNotNull(configuration, "configuration");
       ArgumentValidator.EnsureArgumentNotNull(mapping, "mapping");
       ArgumentValidator.EnsureArgumentNotNull(typeIdRegistry, "typeIdRegistry");
@@ -60,6 +65,7 @@ namespace Xtensive.Orm
       KeySequencesCache = new ConcurrentDictionary<SequenceInfo, object>();
       PersistRequestCache = new ConcurrentDictionary<PersistRequestBuilderTask, ICollection<PersistRequest>>();
       InternalQueryCache = new ConcurrentDictionary<object, object>();
+      LinqQueryCache = new LruCache<object, TranslatedQuery>(domainConfiguration.QueryCacheSize, k => k.CacheKey);
     }
   }
 }

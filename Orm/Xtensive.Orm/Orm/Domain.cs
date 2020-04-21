@@ -121,8 +121,6 @@ namespace Xtensive.Orm
     internal KeyGeneratorRegistry KeyGenerators { get; private set; }
 
     internal ConcurrentDictionary<TypeInfo, ReadOnlyList<PrefetchFieldDescriptor>> PrefetchFieldDescriptorCache { get; private set; }
-    
-    internal ICache<object, Pair<object, TranslatedQuery>> QueryCache { get; private set; }
 
     internal ICache<Key, Key> KeyCache { get; private set; }
 
@@ -295,7 +293,6 @@ namespace Xtensive.Orm
       KeyGenerators = new KeyGeneratorRegistry();
       PrefetchFieldDescriptorCache = new ConcurrentDictionary<TypeInfo, ReadOnlyList<PrefetchFieldDescriptor>>();
       KeyCache = new LruCache<Key, Key>(Configuration.KeyCacheSize, k => k);
-      QueryCache = new LruCache<object, Pair<object, TranslatedQuery>>(Configuration.QueryCacheSize, k => k.First);
       PrefetchActionMap = new Dictionary<TypeInfo, Action<SessionHandler, IEnumerable<Key>>>();
       Extensions = new ExtensionCollection();
       UpgradeContextCookie = upgradeContextCookie;

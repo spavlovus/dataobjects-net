@@ -17,7 +17,6 @@ namespace Xtensive.Orm.Internals
 {
   internal class CompiledQueryRunner
   {
-    private readonly Domain domain;
     private readonly Session session;
     private readonly QueryEndpoint endpoint;
     private readonly object queryKey;
@@ -165,22 +164,21 @@ namespace Xtensive.Orm.Internals
 
     private ParameterizedQuery<TResult> GetCachedQuery<TResult>()
     {
-      var cache = domain.QueryCache;
+      var cache = session.StorageNode.LinqQueryCache;
       lock (cache) {
-        Pair<object, TranslatedQuery> item;
-        return cache.TryGetItem(queryKey, true, out item)
-          ? (ParameterizedQuery<TResult>) item.Second
+        return cache.TryGetItem(queryKey, true, out var query)
+          ? (ParameterizedQuery<TResult>) query
           : null;
       }
     }
 
     private void PutCachedQuery<TResult>(ParameterizedQuery<TResult> parameterizedQuery)
     {
-      var cache = domain.QueryCache;
+      parameterizedQuery.CacheKey = queryKey;
+      var cache = session.StorageNode.LinqQueryCache;
       lock (cache) {
-        Pair<object, TranslatedQuery> item;
-        if (!cache.TryGetItem(queryKey, false, out item))
-          cache.Add(new Pair<object, TranslatedQuery>(queryKey, parameterizedQuery));
+        if (!cache.TryGetItem(queryKey, false, out _))
+          cache.Add(parameterizedQuery);
       }
     }
 
@@ -196,10 +194,9 @@ namespace Xtensive.Orm.Internals
     public CompiledQueryRunner(QueryEndpoint endpoint, object queryKey, object queryTarget)
     {
       session = endpoint.Provider.Session;
-      domain = session.Domain;
 
       this.endpoint = endpoint;
-      this.queryKey = new Pair<object, string>(queryKey, session.StorageNodeId);
+      this.queryKey = queryKey;
       this.queryTarget = queryTarget;
     }
   }

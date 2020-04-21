@@ -217,7 +217,7 @@ namespace Xtensive.Orm.Tests.Storage.Multinode
         }
       }
 
-      initialQueriesCached = Domain.QueryCache.Count;
+      initialQueriesCached = GetCachedQueryCount();
     }
 
     [Test]
@@ -226,7 +226,7 @@ namespace Xtensive.Orm.Tests.Storage.Multinode
       RunTestSimpleQueryTest(WellKnown.DefaultNodeId);
       RunFilterByTypeIdQueryTest(WellKnown.DefaultNodeId);
       RunFilterBySeveralTypeIdsTest(WellKnown.DefaultNodeId);
-      Assert.That(Domain.QueryCache.Count, Is.EqualTo(initialQueriesCached));
+      Assert.That(GetCachedQueryCount(), Is.EqualTo(initialQueriesCached));
     }
 
     [Test]
@@ -235,7 +235,7 @@ namespace Xtensive.Orm.Tests.Storage.Multinode
       RunTestSimpleQueryTest(TestNodeId2);
       RunFilterByTypeIdQueryTest(TestNodeId2);
       RunFilterBySeveralTypeIdsTest(TestNodeId2);
-      Assert.That(Domain.QueryCache.Count, Is.EqualTo(initialQueriesCached));
+      Assert.That(GetCachedQueryCount(), Is.EqualTo(initialQueriesCached));
     }
 
     [Test]
@@ -244,7 +244,7 @@ namespace Xtensive.Orm.Tests.Storage.Multinode
       RunTestSimpleQueryTest(TestNodeId3);
       RunFilterByTypeIdQueryTest(TestNodeId3);
       RunFilterBySeveralTypeIdsTest(TestNodeId3);
-      Assert.That(Domain.QueryCache.Count, Is.EqualTo(initialQueriesCached));
+      Assert.That(GetCachedQueryCount(), Is.EqualTo(initialQueriesCached));
     }
 
     private void RunTestSimpleQueryTest(string nodeId)
@@ -456,6 +456,12 @@ namespace Xtensive.Orm.Tests.Storage.Multinode
     private List<BaseTestEntity> ExecuteFilterBySeveralTypeIdsNoCache(Session session, int[] typeIds)
     {
       return session.Query.All<BaseTestEntity>().Where(e => e.TypeId.In(typeIds)).ToList();
+    }
+
+    private int GetCachedQueryCount()
+    {
+      return new[] {WellKnown.DefaultNodeId, TestNodeId2, TestNodeId3}
+        .Sum(n => Domain.StorageNodeManager.GetNode(n)?.LinqQueryCache.Count ?? 0);
     }
   }
 }
