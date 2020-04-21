@@ -32,7 +32,7 @@ namespace Xtensive.Orm.Linq
     public abstract Delegate UntypedMaterializer { get; }
 
     /// <summary>
-    /// Gets or tests cache key for this query.
+    /// Gets or sets cache key for this query.
     /// </summary>
     /// <exception cref="InvalidOperationException">Cache key is already set</exception>
     public object CacheKey
