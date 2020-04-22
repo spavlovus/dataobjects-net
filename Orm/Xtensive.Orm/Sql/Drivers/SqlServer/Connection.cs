@@ -7,7 +7,6 @@
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-using Xtensive.Orm;
 using SqlServerConnection = System.Data.SqlClient.SqlConnection;
 
 namespace Xtensive.Sql.Drivers.SqlServer
@@ -32,20 +31,23 @@ namespace Xtensive.Sql.Drivers.SqlServer
     /// <inheritdoc/>
     public override void BeginTransaction()
     {
-      EnsureTrasactionIsNotActive();
+      EnsureIsNotDisposed();
+      EnsureTransactionIsNotActive();
       activeTransaction = underlyingConnection.BeginTransaction();
     }
 
     /// <inheritdoc/>
     public override void BeginTransaction(IsolationLevel isolationLevel)
     {
-      EnsureTrasactionIsNotActive();
+      EnsureIsNotDisposed();
+      EnsureTransactionIsNotActive();
       activeTransaction = underlyingConnection.BeginTransaction(isolationLevel);
     }
     
     /// <inheritdoc/>
     public override void MakeSavepoint(string name)
     {
+      EnsureIsNotDisposed();
       EnsureTransactionIsActive();
       activeTransaction.Save(name);
     }
@@ -53,6 +55,7 @@ namespace Xtensive.Sql.Drivers.SqlServer
     /// <inheritdoc/>
     public override void RollbackToSavepoint(string name)
     {
+      EnsureIsNotDisposed();
       EnsureTransactionIsActive();
       activeTransaction.Rollback(name);
     }
@@ -60,6 +63,7 @@ namespace Xtensive.Sql.Drivers.SqlServer
     /// <inheritdoc/>
     public override void ReleaseSavepoint(string name)
     {
+      EnsureIsNotDisposed();
       EnsureTransactionIsActive();
       // nothing
     }
@@ -70,6 +74,11 @@ namespace Xtensive.Sql.Drivers.SqlServer
       activeTransaction = null;
     }
 
+    /// <inheritdoc/>
+    protected override void ClearUnderlyingConnection()
+    {
+      underlyingConnection = null;
+    }
 
     // Constructors
 
