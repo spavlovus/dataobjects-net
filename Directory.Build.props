@@ -2,7 +2,7 @@
 <Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 
   <PropertyGroup Label="Version">
-    <DoVersion>0.1.14</DoVersion>
+    <DoVersion>0.1.15</DoVersion>
     <DoVersionSuffix>beta2-sqlclient48</DoVersionSuffix>
   </PropertyGroup>
 
