@@ -1579,11 +1579,11 @@ namespace Xtensive.Orm.Linq
     {
       var source = expression.Arguments[0];
 
-      var traceInfo = new TraceInfo(
+      var traceInfo = new TraceInfo(new Caller(
         GetConstantArgumentValue<string>(expression, 1),
         GetConstantArgumentValue<string>(expression, 2),
         GetConstantArgumentValue<int>(expression, 3)
-      );
+      ));
 
       var visitedSource = (ProjectionExpression) Visit(source);
 

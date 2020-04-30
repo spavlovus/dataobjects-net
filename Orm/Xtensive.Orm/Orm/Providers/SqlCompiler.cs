@@ -538,8 +538,8 @@ namespace Xtensive.Orm.Providers
       var source = Compile(provider.Source);
 
       // Set trace information to the root provider (topmost Select)
-      if (RootProvider is SelectProvider rootSelectProvider && rootSelectProvider.TraceInfo == null) {
-        rootSelectProvider.TraceInfo = provider.TraceInfo;
+      if (RootProvider.TraceInfo == null) {
+        RootProvider.TraceInfo = provider.TraceInfo;
       }
 
       return source;

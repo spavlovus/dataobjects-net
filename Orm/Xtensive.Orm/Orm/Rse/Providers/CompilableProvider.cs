@@ -5,6 +5,7 @@
 // Created:    2008.07.03
 
 using System;
+using Xtensive.Orm.Tracing;
 
 namespace Xtensive.Orm.Rse.Providers
 {
@@ -15,6 +16,11 @@ namespace Xtensive.Orm.Rse.Providers
   [Serializable]
   public abstract class CompilableProvider : Provider
   {
+    /// <summary>
+    /// Tracing information. It's supposed to be set only for root node in the providers tree.
+    /// </summary>
+    public TraceInfo TraceInfo { get; set; }
+
     // Constructors
 
     /// <inheritdoc/>

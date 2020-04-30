@@ -10,7 +10,6 @@ using System.Diagnostics;
 using System.Linq;
 using Xtensive.Collections;
 using Xtensive.Core;
-using Xtensive.Orm.Tracing;
 
 namespace Xtensive.Orm.Rse.Providers
 {
@@ -29,11 +28,6 @@ namespace Xtensive.Orm.Rse.Providers
       [DebuggerStepThrough]
       get { return columnIndexes.Copy(); }
     }
-
-    /// <summary>
-    /// Tracing information. It's supposed to be set only for root node in the providers tree.
-    /// </summary>
-    public TraceInfo TraceInfo { get; set; }
 
     /// <inheritdoc/>
     protected override RecordSetHeader BuildHeader()

@@ -6,31 +6,17 @@ namespace Xtensive.Orm.Tracing
   public class TraceInfo
   {
     /// <summary>
-    /// Gets the member name of a class where Trace() method was called.
+    /// Gets the caller information.
     /// </summary>
-    public string CallerMemberName { get; }
-
-    /// <summary>
-    /// Gets the path to the file where Trace() method was called.
-    /// </summary>
-    public string CallerFilePath { get; }
-
-    /// <summary>
-    /// Gets the line number in the file where Trace() method was called.
-    /// </summary>
-    public int CallerLineNumber { get; }
+    public Caller Caller { get; }
 
     /// <summary>
     ///   Initializes a new instance of this class.
     /// </summary>
-    /// <param name="callerMemberName">Member name.</param>
-    /// <param name="callerFilePath">File path.</param>
-    /// <param name="callerLineNumber">Line number.</param>
-    public TraceInfo(string callerMemberName, string callerFilePath, int callerLineNumber)
+    /// <param name="caller">Caller information.</param>
+    public TraceInfo(Caller caller)
     {
-      CallerMemberName = callerMemberName;
-      CallerFilePath = callerFilePath;
-      CallerLineNumber = callerLineNumber;
+      Caller = caller;
     }
   }
 }

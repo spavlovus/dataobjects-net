@@ -43,7 +43,10 @@ namespace Xtensive.Orm.Providers
         sqlSelect.Columns.Add(expression, column.Name);
       }
 
-      return CreateProvider(sqlSelect, provider, source);
+      var sqlProvider = CreateProvider(sqlSelect, provider, source);
+      sqlProvider.Request.TraceInfo = provider.TraceInfo;
+
+      return sqlProvider;
     }
 
     /// <summary>

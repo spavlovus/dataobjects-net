@@ -7,7 +7,6 @@
 using Xtensive.Collections;
 using Xtensive.Core;
 
-
 namespace Xtensive.Orm.Rse.Providers
 {
   /// <summary>
