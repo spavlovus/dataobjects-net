@@ -5,7 +5,6 @@
 // Created:    2009.02.27
 
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -948,7 +947,7 @@ namespace Xtensive.Orm.Linq
         var sortParameter = sortExpression.Parameters[0];
         using (context.Bindings.Add(sortParameter, projection))
         using (state.CreateScope()) {
-          state.ShouldOmmitConvertToObject = true;
+          state.ShouldOmitConvertToObject = true;
           state.CalculateExpressions = true;
           var orderByProjector = (ItemProjectorExpression) VisitLambda(sortExpression);
           var columns = orderByProjector
@@ -1307,7 +1306,7 @@ namespace Xtensive.Orm.Linq
           predicateLambda.Body, predicateLambda.Parameters[0], filteredTuple, filterColumnCount);
 
         // Mapping from filter data column to filtered column
-        var filteredColumns = Enumerable.Repeat(-1, filterColumnCount).ToArray();
+        var filteredColumns = new int[filterColumnCount];
         for (int i = 0; i < filterColumnCount; i++) {
           var mapping = filteredColumnMappings[i];
           if (mapping.ColumnIndex >= 0)

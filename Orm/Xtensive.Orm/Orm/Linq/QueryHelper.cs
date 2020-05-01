@@ -31,7 +31,7 @@ namespace Xtensive.Orm.Linq
       }
     }
 
-    public static Expression<Func<Tuple, bool>> BuildFilterLambda(int startIndex, IList<Type> keyColumnTypes, Parameter<Tuple> keyParameter)
+    public static Expression<Func<Tuple, bool>> BuildFilterLambda(int startIndex, IReadOnlyList<Type> keyColumnTypes, Parameter<Tuple> keyParameter)
     {
       Expression filterExpression = null;
       var tupleParameter = Expression.Parameter(typeof (Tuple), "tuple");
@@ -184,8 +184,7 @@ namespace Xtensive.Orm.Linq
 
     public static Type GetSequenceElementType(Type type)
     {
-      var sequenceType = type.GetGenericType(typeof (IEnumerable<>))
-        ?? type.GetInterfaces().Select(i => i.GetGenericType(typeof (IEnumerable<>))).FirstOrDefault(i => i!=null);
+      var sequenceType = type.GetGenericInterface(typeof (IEnumerable<>));
       return sequenceType!=null ? sequenceType.GetGenericArguments()[0] : null;
     }
 
