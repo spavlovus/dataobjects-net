@@ -117,6 +117,13 @@ namespace Xtensive.Orm.Providers
         if (context.ActiveCommand.Count==0)
           return null;
         var hasQueryTasks = context.ActiveTasks.Count > 0;
+
+        context.TraceInfos = hasQueryTasks
+          ? context.ActiveTasks.Select(t => t.Request.TraceInfo).ToArray()
+          : lastRequest?.TraceInfo != null
+            ? new[] { lastRequest.TraceInfo }
+            : null;
+
         if (!hasQueryTasks && !shouldReturnReader) {
           context.ActiveCommand.ExecuteNonQuery();
           return null;

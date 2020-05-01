@@ -19,9 +19,7 @@ namespace Xtensive.Orm.Providers
     IEnumerator<Tuple> IProviderExecutor.ExecuteTupleReader(QueryRequest request)
     {
       Prepare();
-      var context = new CommandProcessorContext {
-        TraceInfo = request.TraceInfo
-      };
+      var context = new CommandProcessorContext();
       var enumerator = commandProcessor.ExecuteTasksWithReader(request, context);
       context.Dispose();
       using (enumerator) {

@@ -285,7 +285,7 @@ namespace Xtensive.Orm.Providers
       if (isLoggingEnabled)
         SqlLog.Info(Strings.LogSessionXQueryY, session.ToStringSafely(), command.ToHumanReadableString());
 
-      session?.Events.NotifyDbCommandExecuting(command, context?.TraceInfo);
+      session?.Events.NotifyDbCommandExecuting(command, context?.TraceInfos);
 
       TResult result;
       try {
