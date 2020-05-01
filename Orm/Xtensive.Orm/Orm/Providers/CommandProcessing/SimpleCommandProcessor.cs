@@ -66,7 +66,7 @@ namespace Xtensive.Orm.Providers
           var loadTask = context.ActiveTasks.FirstOrDefault();
           if (loadTask!=null) {
             var traceInfo = loadTask.Request?.TraceInfo;
-            context.TraceInfos = traceInfo != null ? new[] { traceInfo } : null;
+            context.Traces = traceInfo != null ? new[] { traceInfo } : null;
             context.ActiveCommand.ExecuteReader(context);
             var enumerator = context.ActiveCommand.AsReaderOf(loadTask.Request);
             using (enumerator)

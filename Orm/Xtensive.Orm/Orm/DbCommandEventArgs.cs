@@ -26,7 +26,7 @@ namespace Xtensive.Orm
     /// <summary>
     /// Gets LINQ query tracing information.
     /// </summary>
-    public TraceInfo[] TraceInfos { get; private set; }
+    public TraceInfo[] Traces { get; private set; }
 
     /// <summary>
     /// Initializes a new instance of this class.
@@ -34,11 +34,11 @@ namespace Xtensive.Orm
     /// <param name="exception" >Exception, appeared during <paramref name="command"/> execution or <see langword="null" />.</param>
     /// <param name="traceInfo">Tracing information.</param>
     /// </summary>
-    public DbCommandEventArgs(DbCommand command, Exception exception = null, TraceInfo[] traceInfos = null)
+    public DbCommandEventArgs(DbCommand command, Exception exception = null, TraceInfo[] traces = null)
     {
       Command = command;
       Exception = exception;
-      TraceInfos = traceInfos;
+      Traces = traces;
     }
   }
 }

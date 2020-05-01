@@ -118,7 +118,7 @@ namespace Xtensive.Orm.Providers
           return null;
         var hasQueryTasks = context.ActiveTasks.Count > 0;
 
-        context.TraceInfos = hasQueryTasks
+        context.Traces = hasQueryTasks
           ? context.ActiveTasks.Select(t => t.Request.TraceInfo).ToArray()
           : lastRequest?.TraceInfo != null
             ? new[] { lastRequest.TraceInfo }

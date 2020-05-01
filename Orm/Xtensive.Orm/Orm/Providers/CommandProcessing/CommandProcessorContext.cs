@@ -43,7 +43,7 @@ namespace Xtensive.Orm.Providers
     /// <summary>
     /// LINQ query tracing information.
     /// </summary>
-    public TraceInfo[] TraceInfos { get; internal set; }
+    public TraceInfo[] Traces { get; internal set; }
 
     internal event EventHandler Disposed;
 

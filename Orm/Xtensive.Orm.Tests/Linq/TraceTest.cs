@@ -20,9 +20,9 @@ namespace Xtensive.Orm.Tests.Linq
     [Test]
     public void EnumerationProvidesTraceInfo()
     {
-      var traceInfos = new List<TraceInfo>();
+      var traces = new List<TraceInfo>();
       Session.Events.DbCommandExecuting += (sender, args) => {
-        traceInfos.AddRange(args.TraceInfos);
+        traces.AddRange(args.Traces);
       };
 
       var subQuery = CreateQuery1();
@@ -31,7 +31,7 @@ namespace Xtensive.Orm.Tests.Linq
 
       Assert.IsNotEmpty(query.ToArray());
 
-      var caller = traceInfos.Single().Caller;
+      var caller = traces.Single().Caller;
       Assert.AreEqual(nameof(CreateQuery2), caller.MemberName);
       Assert.IsNotEmpty(caller.FilePath);
       Assert.True(caller.LineNumber > 0);
@@ -40,23 +40,23 @@ namespace Xtensive.Orm.Tests.Linq
     [Test]
     public void CountProvidesTraceInfo()
     {
-      var traceInfos = new List<TraceInfo>();
+      var traces = new List<TraceInfo>();
       Session.Events.DbCommandExecuting += (sender, args) => {
-        traceInfos.AddRange(args.TraceInfos);
+        traces.AddRange(args.Traces);
       };
 
       var count = CreateQuery2().Count();
 
-      var caller = traceInfos.Single().Caller;
+      var caller = traces.Single().Caller;
       Assert.AreEqual(nameof(CreateQuery2), caller.MemberName);
     }
 
     [Test]
     public void DelayedQueryProvidesTraceInfo()
     {
-      var traceInfos = new List<TraceInfo>();
+      var traces = new List<TraceInfo>();
       Session.Events.DbCommandExecuting += (sender, args) => {
-        traceInfos.AddRange(args.TraceInfos);
+        traces.AddRange(args.Traces);
       };
 
       var query1 = Session.Query.ExecuteDelayed("a", q => CreateQuery3(q).Count());
@@ -65,7 +65,7 @@ namespace Xtensive.Orm.Tests.Linq
       var result = query1.Value + query2.Value;
 
       CollectionAssert.AreEqual(new[] { nameof(CreateQuery3), nameof(CreateQuery4) },
-        traceInfos.Select(i => i.Caller.MemberName));
+        traces.Select(i => i.Caller.MemberName));
     }
   }
 }

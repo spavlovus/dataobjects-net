@@ -240,10 +240,10 @@ namespace Xtensive.Orm
 
     #region NotifyXxx methods
 
-    internal void NotifyDbCommandExecuting(DbCommand command, TraceInfo[] traceInfos = null)
+    internal void NotifyDbCommandExecuting(DbCommand command, TraceInfo[] traces = null)
     {
       if (DbCommandExecuting!=null)
-        DbCommandExecuting(this, new DbCommandEventArgs(command, traceInfos: traceInfos));
+        DbCommandExecuting(this, new DbCommandEventArgs(command, traces: traces));
     }
 
     internal void NotifyDbCommandExecuted(DbCommand command, Exception exception = null)
