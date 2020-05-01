@@ -444,7 +444,7 @@ namespace Xtensive.Orm.Linq
         compiledParameter = elementAtIndex.CachingCompile();
         var skipComparison = Expression.LessThan(elementAtIndex.Body, Expression.Constant(0));
         var condition = Expression.Condition(skipComparison, Expression.Constant(0), Expression.Constant(1));
-        var takeParameter = Expression.Lambda<Func<int>>(condition);
+        var takeParameter = FastExpression.Lambda<Func<int>>(condition);
         rs = projection.ItemProjector.DataSource.Skip(compiledParameter).Take(takeParameter.CachingCompile());
       }
       else {
@@ -706,7 +706,7 @@ namespace Xtensive.Orm.Linq
           var lambdaType = sourceProjection.ItemProjector.Item.Type;
           EnsureAggregateIsPossible(lambdaType, aggregateType, visitedExpression);
           var paramExpression = Expression.Parameter(lambdaType, "arg");
-          aggregateParameter = Expression.Lambda(paramExpression, paramExpression);
+          aggregateParameter = FastExpression.Lambda(paramExpression, paramExpression);
         }
       }
 
@@ -1073,7 +1073,7 @@ namespace Xtensive.Orm.Linq
       var visitedSource = Visit(source);
       var sequence = VisitSequence(visitedSource);
 
-      IDisposable indexBinding = null;
+      var indexBinding = BindingCollection<ParameterExpression, ProjectionExpression>.BindingScope.Empty;
       if (collectionSelector.Parameters.Count==2) {
         var indexProjection = GetIndexBinding(collectionSelector, ref sequence);
         indexBinding = context.Bindings.Add(collectionSelector.Parameters[1], indexProjection);
@@ -1192,7 +1192,7 @@ namespace Xtensive.Orm.Linq
     {
       var parameter = le.Parameters[0];
       ProjectionExpression visitedSource = VisitSequence(expression);
-      IDisposable indexBinding = null;
+      var indexBinding = BindingCollection<ParameterExpression, ProjectionExpression>.BindingScope.Empty;
       if (le.Parameters.Count==2) {
         var indexProjection = GetIndexBinding(le, ref visitedSource);
         indexBinding = context.Bindings.Add(le.Parameters[1], indexProjection);
@@ -1535,11 +1535,11 @@ namespace Xtensive.Orm.Linq
       var containsMethod = WellKnownMembers.Enumerable.Contains.MakeGenericMethod(elementType);
 
       if (setAIsQuery) {
-        var lambda = Expression.Lambda(Expression.Call(containsMethod, setB, parameter), parameter);
+        var lambda = FastExpression.Lambda(Expression.Call(containsMethod, setB, parameter), parameter);
         return VisitAny(setA, lambda, isRoot);
       }
       else {
-        var lambda = Expression.Lambda(Expression.Call(containsMethod, setA, parameter), parameter);
+        var lambda = FastExpression.Lambda(Expression.Call(containsMethod, setA, parameter), parameter);
         return VisitAny(setB, lambda, isRoot);
       }
     }
@@ -1552,7 +1552,7 @@ namespace Xtensive.Orm.Linq
       var parameter = Expression.Parameter(elementType, "a");
       var containsMethod = WellKnownMembers.Enumerable.Contains.MakeGenericMethod(elementType);
 
-      var lambda = Expression.Lambda(Expression.Call(containsMethod, setA, parameter), parameter);
+      var lambda = FastExpression.Lambda(Expression.Call(containsMethod, setA, parameter), parameter);
       return VisitAll(setB, lambda, isRoot);
     }
 
@@ -1565,11 +1565,11 @@ namespace Xtensive.Orm.Linq
       var parameter = Expression.Parameter(elementType, "a");
       var containsMethod = WellKnownMembers.Enumerable.Contains.MakeGenericMethod(elementType);
       if (setAIsQuery) {
-        var lambda = Expression.Lambda(Expression.Not(Expression.Call(containsMethod, setB, parameter)), parameter);
+        var lambda = FastExpression.Lambda(Expression.Not(Expression.Call(containsMethod, setB, parameter)), parameter);
         return VisitAll(setA, lambda, isRoot);
       }
       else {
-        var lambda = Expression.Lambda(Expression.Not(Expression.Call(containsMethod, setA, parameter)), parameter);
+        var lambda = FastExpression.Lambda(Expression.Not(Expression.Call(containsMethod, setA, parameter)), parameter);
         return VisitAll(setB, lambda, isRoot);
       }
     }
