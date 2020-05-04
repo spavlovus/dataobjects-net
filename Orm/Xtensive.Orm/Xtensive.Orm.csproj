@@ -3,6 +3,7 @@
     <IsPackable>true</IsPackable>
     <DocumentationFile>$(SolutionDir)_Build\$(Configuration)\lib\$(TargetFramework)\Xtensive.Orm.xml</DocumentationFile>
     <OutputPath>$(SolutionDir)_Build\$(Configuration)\lib\</OutputPath>
+    <PackageVersion>6.0.5-traceability-2</PackageVersion>
 
   </PropertyGroup>
   <PropertyGroup>

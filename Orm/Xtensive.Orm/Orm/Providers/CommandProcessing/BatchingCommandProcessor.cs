@@ -10,6 +10,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xtensive.Core;
+using Xtensive.Orm.Tracing;
 using Tuple = Xtensive.Tuples.Tuple;
 
 namespace Xtensive.Orm.Providers
@@ -119,10 +120,10 @@ namespace Xtensive.Orm.Providers
         var hasQueryTasks = context.ActiveTasks.Count > 0;
 
         context.Traces = hasQueryTasks
-          ? context.ActiveTasks.Select(t => t.Request.TraceInfo).ToArray()
+          ? context.ActiveTasks.Select(t => t.Request.TraceInfo).Where(i => i != null).ToArray()
           : lastRequest?.TraceInfo != null
             ? new[] { lastRequest.TraceInfo }
-            : null;
+            : Array.Empty<TraceInfo>();
 
         if (!hasQueryTasks && !shouldReturnReader) {
           context.ActiveCommand.ExecuteNonQuery();

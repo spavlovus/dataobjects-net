@@ -4,11 +4,13 @@
 // Created by: Denis Krjuchkov
 // Created:    2009.08.20
 
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Xtensive.Core;
+using Xtensive.Orm.Tracing;
 using Tuple = Xtensive.Tuples.Tuple;
 
 namespace Xtensive.Orm.Providers
@@ -66,7 +68,7 @@ namespace Xtensive.Orm.Providers
           var loadTask = context.ActiveTasks.FirstOrDefault();
           if (loadTask!=null) {
             var traceInfo = loadTask.Request?.TraceInfo;
-            context.Traces = traceInfo != null ? new[] { traceInfo } : null;
+            context.Traces = traceInfo != null ? new[] { traceInfo } : Array.Empty<TraceInfo>();
             context.ActiveCommand.ExecuteReader(context);
             var enumerator = context.ActiveCommand.AsReaderOf(loadTask.Request);
             using (enumerator)
