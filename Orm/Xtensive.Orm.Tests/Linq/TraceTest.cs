@@ -18,6 +18,26 @@ namespace Xtensive.Orm.Tests.Linq
     private IQueryable<Customer> CreateQuery4(QueryEndpoint qe) => qe.All<Customer>().Trace();
 
     [Test]
+    public void TraceDoesNotAffectExpression()
+    {
+      string commandText = null;
+      Session.Events.DbCommandExecuting += (sender, args) => {
+        commandText = args.Command.CommandText;
+      };
+
+      var result =
+        Session.Query.All<Customer>()
+          .Trace()
+          .Where(c => c.FirstName == "fn")
+          .Select(c => c.FirstName)
+          .ToArray();
+
+      Assert.AreEqual(
+        "SELECT [a].[FirstName] FROM [dbo].[Customer] [a] WHERE ([a].[FirstName] = N'fn');\r\n",
+        commandText);
+    }
+
+    [Test]
     public void EnumerationProvidesTraceInfo()
     {
       var traces = new List<TraceInfo>();
