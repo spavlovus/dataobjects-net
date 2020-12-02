@@ -69,7 +69,7 @@ namespace Xtensive.Orm.Tests
       StackFrame[] stackFrames = new StackTrace().GetFrames();
       foreach (StackFrame frame in stackFrames) {
         MethodBase method = frame.GetMethod();
-        // Ïî÷åìó ñðàçó íå âçÿòü íóæíûå àòðèáóòû, íàïðèìåð, CategoryAttribute?
+        // Why not immediately take the necessary attributes, CategoryAttribute for example?
         Attribute[] methodAttributes = Attribute.GetCustomAttributes(method, typeof (TestAttribute), false);
         if (methodAttributes==null || methodAttributes.Length==0)
           continue;
