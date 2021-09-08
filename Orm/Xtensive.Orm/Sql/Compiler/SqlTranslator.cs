@@ -1552,6 +1552,12 @@ namespace Xtensive.Sql.Compiler
         && context.HasOptions(SqlCompilerNamingOptions.DatabaseQualifiedObjects);
       var actualizer = context.SqlNodeActualizer;
 
+      if (!dbQualified && context.ShareQueryCacheOverNodes) {
+        var id = "node_placeholder";
+        context.PlaceholderValues.TryAdd($"[{id}]", QuoteIdentifier(actualizer.Actualize(node.Schema)));
+        return QuoteIdentifier(id, node.DbName);
+      }
+
       return dbQualified
         ? QuoteIdentifier(actualizer.Actualize(node.Schema.Catalog), actualizer.Actualize(node.Schema), node.GetDbNameInternal())
         : QuoteIdentifier(actualizer.Actualize(node.Schema), node.DbName);

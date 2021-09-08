@@ -16,11 +16,15 @@ namespace Xtensive.Sql.Compiler
     private readonly Stack<SqlNode> traversalStack;
     private readonly HashSet<SqlNode> traversalTable;
 
+    public bool ShareQueryCacheOverNodes { get; set; }
+
     public SqlTableNameProvider TableNameProvider { get; private set; }
 
     public SqlParameterNameProvider ParameterNameProvider { get; private set; }
 
     public ContainerNode Output { get; private set; }
+
+    public Dictionary<object, string> PlaceholderValues { get; } = new Dictionary<object, string>();
 
     public SqlCompilerNamingOptions NamingOptions { get; private set; }
 
@@ -148,6 +152,7 @@ namespace Xtensive.Sql.Compiler
       traversalTable = new HashSet<SqlNode>();
       Output = new ContainerNode();
       SqlNodeActualizer = new SqlNodeActualizer(configuration.DatabaseMapping, configuration.SchemaMapping);
+      ShareQueryCacheOverNodes = configuration.ShareQueryCacheOverNodes;
     }
   }
 }

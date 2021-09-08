@@ -9,6 +9,7 @@ namespace Xtensive.Orm.Providers
   public sealed class CompilerConfiguration
   {
     public bool PrepareRequest { get; set; }
+    public bool ShareQueryCacheOverNodes { get; set; }
 
     internal StorageNode StorageNode { get; set; }
 

@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2012 Xtensive LLC.
+// Copyright (C) 2012 Xtensive LLC.
 // All rights reserved.
 // For conditions of distribution and use, see license.
 // Created by: Denis Krjuchkov
@@ -75,14 +75,17 @@ namespace Xtensive.Orm.Building.Builders
       var mainAssembly = typeof (ProviderDescriptor).Assembly;
       var mainAssemblyRef = mainAssembly.GetName();
       var extensionAssemblyFullName = mainAssemblyRef.FullName.Replace(mainAssemblyRef.Name, extensionAssemblyName);
-      var extensionAssembly = Assembly.Load(extensionAssemblyFullName);
+      //!!!P var extensionAssembly = Assembly.Load(extensionAssemblyFullName);
+      var extensionAssembly = Assembly.LoadFile(@"X:\OUT\do-test\bin\Xtensive.Orm.SqlServer.dll");
       var mainAssemblyVersion = GetInformationalVersion(mainAssembly);
       var extensionAssemblyVersion = GetInformationalVersion(extensionAssembly);
+      /*!!!P
       if (mainAssemblyVersion!=extensionAssemblyVersion)
         throw new InvalidOperationException(string.Format(
           Strings.ExAssemblyVersionMismatchMainAssemblyXYExtensionsAssemblyAB,
           mainAssemblyRef.Name, mainAssemblyVersion,
           extensionAssemblyName, extensionAssemblyVersion));
+      */
       return extensionAssembly;
     }
 

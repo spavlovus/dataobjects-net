@@ -178,7 +178,8 @@ namespace Xtensive.Orm.Internals.Prefetch
 
     private QueryTask CreateQueryTask()
     {
-      var parameterContext = new ParameterContext();
+      var session = manager.Owner.Session;
+      var parameterContext = new TypeIdParameterContext(session.StorageNode.TypeIdRegistry);
       parameterContext.SetValue(ownerParameter, ownerKey.Value);
       if (ItemCountLimit != null) {
         parameterContext.SetValue(itemCountLimitParameter, ItemCountLimit.Value);
@@ -186,7 +187,6 @@ namespace Xtensive.Orm.Internals.Prefetch
 
       object key = new Pair<object, CacheKey>(itemsQueryCachingRegion, cacheKey);
       Func<object, object> generator = CreateRecordSetLoadingItems;
-      var session = manager.Owner.Session;
       var scope = new CompiledQueryProcessingScope(null, null, parameterContext, false);
       QueryProvider = (CompilableProvider) session.StorageNode.InternalQueryCache.GetOrAdd(key, generator);
       ExecutableProvider executableProvider;

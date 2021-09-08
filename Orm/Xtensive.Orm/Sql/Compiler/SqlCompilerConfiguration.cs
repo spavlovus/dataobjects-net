@@ -29,6 +29,8 @@ namespace Xtensive.Sql.Compiler
     /// </summary>
     public bool DatabaseQualifiedObjects { get; set; }
 
+    public bool ShareQueryCacheOverNodes { get; set; }
+
     /// <summary>
     /// Gets database mapping.
     /// </summary>
@@ -48,6 +50,7 @@ namespace Xtensive.Sql.Compiler
       return new SqlCompilerConfiguration {
         ParameterNamePrefix = ParameterNamePrefix,
         DatabaseQualifiedObjects = DatabaseQualifiedObjects,
+        ShareQueryCacheOverNodes = ShareQueryCacheOverNodes
       };
     }
 

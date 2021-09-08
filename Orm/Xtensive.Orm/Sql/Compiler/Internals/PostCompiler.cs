@@ -21,9 +21,14 @@ namespace Xtensive.Sql.Compiler
 
     private string[] currentCycleItem;
 
-    public static string Process(Node root, SqlPostCompilerConfiguration configuration, int estimatedResultLength)
+    public static string Process(Node root, SqlPostCompilerConfiguration configuration, int estimatedResultLength, Dictionary<object, string> placeholders)
     {
       var compiler = new PostCompiler(configuration, estimatedResultLength);
+      if (placeholders != null) {
+        foreach (var kv in placeholders) {
+          compiler.configuration.PlaceholderValues.TryAdd(kv.Key, kv.Value);  // Don't override values added in CreateQueryPart()
+        }
+      }
       compiler.VisitNodeSequence(root);
       return compiler.result.ToString();
     }

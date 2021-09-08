@@ -6,6 +6,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Reflection;
 using Xtensive.Core;
 using Xtensive.Sql;
@@ -160,6 +161,8 @@ namespace Xtensive.Orm.Providers
         configuration.PlaceholderValues.Add(binding, Driver.BuildParameterReference(parameterName));
         AddParameter(result, binding, parameterName, parameterValue);
       }
+
+      configuration.PlaceholderValues.Add("[node_placeholder]", SqlHelper.QuoteIdentifierWithBrackets(new[] { Session.StorageNodeId }));
 
       result.Statement = compilationResult.GetCommandText(configuration);
       return result;

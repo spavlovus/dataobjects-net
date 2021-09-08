@@ -261,8 +261,9 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
     {
       SqlQueryStatement statement = null;
       for (int i = 0, count = context.GetTraversalPath().Length; i < count; i++) {
-        if (context.GetTraversalPath()[i] is SqlQueryStatement)
-          statement = context.GetTraversalPath()[i] as SqlQueryStatement;
+        if (context.GetTraversalPath()[i] is SqlQueryStatement sqlQueryStatement) {
+          statement = sqlQueryStatement;
+        }
       }
       if (statement==null || statement.Hints.Count==0)
         return null;
@@ -548,7 +549,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
     
     public override string Translate(SqlLockType lockType)
     {
-      var items = new List<string>();
+      var items = new List<string>(5);
       items.Add("ROWLOCK");
       if (lockType.Supports(SqlLockType.Update))
         items.Add("UPDLOCK");

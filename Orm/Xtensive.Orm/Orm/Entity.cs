@@ -263,7 +263,7 @@ namespace Xtensive.Orm
     /// <inheritdoc/>
     public void Lock(LockMode lockMode, LockBehavior lockBehavior)
     {
-      var parameterContext = new ParameterContext();
+      var parameterContext = new TypeIdParameterContext(Session.StorageNode.TypeIdRegistry);
       parameterContext.SetValue(keyParameter, Key.Value);
       object key = new Triplet<TypeInfo, LockMode, LockBehavior>(TypeInfo, lockMode, lockBehavior);
       Func<object, object> generator = tripletObj => {

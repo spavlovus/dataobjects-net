@@ -22,7 +22,10 @@ namespace Xtensive.Orm.Providers
 
     public CompilerConfiguration CreateConfiguration(Session session)
     {
-      return new CompilerConfiguration {StorageNode = session.StorageNode};
+      return new CompilerConfiguration {
+        StorageNode = session.StorageNode,
+        ShareQueryCacheOverNodes = session.Domain.Configuration.ShareQueryCacheOverNodes
+      };
     }
 
     public ExecutableProvider Compile(CompilableProvider provider, CompilerConfiguration configuration)

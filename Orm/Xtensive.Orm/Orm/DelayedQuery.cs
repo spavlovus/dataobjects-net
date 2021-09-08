@@ -97,7 +97,7 @@ namespace Xtensive.Orm.Internals
       LifetimeToken = session.GetLifetimeToken();
 
       materializer = translatedQuery.Materializer;
-      parameterContext = new ParameterContext(outerParameterContext);
+      parameterContext = new TypeIdParameterContext(session.StorageNode.TypeIdRegistry, outerParameterContext);
       foreach (var (parameter, tuple) in translatedQuery.TupleParameterBindings) {
         parameterContext.SetValue(parameter, tuple);
       }

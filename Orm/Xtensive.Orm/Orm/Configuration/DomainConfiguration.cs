@@ -72,6 +72,12 @@ namespace Xtensive.Orm.Configuration
     public const bool DefaultShareStorageSchemaOverNodes = false;
 
     /// <summary>
+    /// Default <see cref="ShareQueryCacheOverNodes"/> value:
+    /// <see langword="false"/>
+    /// </summary>
+    public const bool DefaultShareQueryCacheOverNodes = false;
+
+    /// <summary>
     /// Default <see cref="EntityVersioningPolicy"/> value;
     /// </summary>
     public const EntityVersioningPolicy DefaultVersioningPolicy = EntityVersioningPolicy.Default;
@@ -108,6 +114,7 @@ namespace Xtensive.Orm.Configuration
     private bool allowCyclicDatabaseDependencies;
     private bool multidatabaseKeys = DefaultMultidatabaseKeys;
     private bool shareStorageSchemaOverNodes = DefaultShareStorageSchemaOverNodes;
+    private bool shareQueryCacheOverNodes = DefaultShareQueryCacheOverNodes;
     private bool ensureConnectionIsAlive = DefaultEnsureConnectionIsAlive;
     private DomainOptions options = DomainOptions.Default;
     private SchemaSyncExceptionFormat schemaSyncExceptionFormat = SchemaSyncExceptionFormat.Default;
@@ -569,6 +576,15 @@ namespace Xtensive.Orm.Configuration
       }
     }
 
+    public bool ShareQueryCacheOverNodes {
+      get => shareQueryCacheOverNodes;
+      set {
+        this.EnsureNotLocked();
+        shareQueryCacheOverNodes = value;
+      }
+    }
+
+
     /// <summary>
     /// Gets or sets versioning convention.
     /// </summary>
@@ -603,8 +619,6 @@ namespace Xtensive.Orm.Configuration
     /// Gets a value indicating whether this configuration is multi-schema.
     /// </summary>
     public bool IsMultischema { get { return isMultischema ?? GetIsMultischema(); } }
-
-    
 
     private bool GetIsMultidatabase()
     {
@@ -718,6 +732,7 @@ namespace Xtensive.Orm.Configuration
       keyGenerators = (KeyGeneratorConfigurationCollection) configuration.KeyGenerators.Clone();
       ignoreRules = (IgnoreRuleCollection) configuration.IgnoreRules.Clone();
       shareStorageSchemaOverNodes = configuration.ShareStorageSchemaOverNodes;
+      ShareQueryCacheOverNodes = configuration.ShareQueryCacheOverNodes;
       versioningConvention = (VersioningConvention) configuration.VersioningConvention.Clone();
       
     }
