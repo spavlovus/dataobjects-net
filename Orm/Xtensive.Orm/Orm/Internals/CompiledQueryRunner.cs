@@ -212,15 +212,18 @@ namespace Xtensive.Orm.Internals
       return parameterContext;
     }
 
-    public CompiledQueryRunner(QueryEndpoint endpoint, object queryKey, object queryTarget, ParameterContext outerContext = null, bool sharedQueryCache = false)
+    public CompiledQueryRunner(QueryEndpoint endpoint, object queryKey, object queryTarget, ParameterContext outerContext = null)
     {
       session = endpoint.Provider.Session;
       domain = session.Domain;
 
       this.endpoint = endpoint;
-      this.queryKey = sharedQueryCache ? queryKey : new Pair<object, string>(queryKey, session.StorageNodeId);
       this.queryTarget = queryTarget;
       this.outerContext = outerContext;
+
+      this.queryKey = domain.Configuration.ShareQueryCacheOverNodes
+        ? queryKey
+        : new Pair<object, string>(queryKey, session.StorageNodeId);
     }
   }
 }

@@ -55,7 +55,7 @@ namespace Xtensive.Core
     }
   }
 
-  public class TypeIdParameterContext : ParameterContext
+  public sealed class TypeIdParameterContext : ParameterContext
   {
     private readonly TypeIdRegistry typeIdRegistry;
 

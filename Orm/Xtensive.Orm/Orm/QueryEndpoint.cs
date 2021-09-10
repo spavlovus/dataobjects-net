@@ -431,7 +431,7 @@ namespace Xtensive.Orm
     /// <returns>Query result.</returns>
     public QueryResult<TElement> Execute<TElement>(Func<QueryEndpoint, IQueryable<TElement>> query)
     {
-      return new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes)
+      return new CompiledQueryRunner(this, query.Method, query.Target)
         .ExecuteCompiled(query);
     }
 
@@ -447,7 +447,7 @@ namespace Xtensive.Orm
     /// <returns>Query result.</returns>
     public QueryResult<TElement> Execute<TElement>(object key, Func<QueryEndpoint, IQueryable<TElement>> query)
     {
-      return new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiled(query);
+      return new CompiledQueryRunner(this, key, query.Target).ExecuteCompiled(query);
     }
 
     /// <summary>
@@ -462,7 +462,7 @@ namespace Xtensive.Orm
     /// <returns>Query result.</returns>
     public QueryResult<TElement> Execute<TElement>(Func<QueryEndpoint, IOrderedQueryable<TElement>> query)
     {
-      return new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiled(query);
+      return new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiled(query);
     }
 
     /// <summary>
@@ -477,7 +477,7 @@ namespace Xtensive.Orm
     /// <returns>Query result.</returns>
     public QueryResult<TElement> Execute<TElement>(object key, Func<QueryEndpoint, IOrderedQueryable<TElement>> query)
     {
-      return new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiled(query);
+      return new CompiledQueryRunner(this, key, query.Target).ExecuteCompiled(query);
     }
 
     /// <summary>
@@ -492,7 +492,7 @@ namespace Xtensive.Orm
     /// <returns>Query result.</returns>
     public TResult Execute<TResult>(Func<QueryEndpoint,TResult> query)
     {
-      return new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiled(query);
+      return new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiled(query);
     }
 
     /// <summary>
@@ -507,7 +507,7 @@ namespace Xtensive.Orm
     /// <returns>Query result.</returns>
     public TResult Execute<TResult>(object key, Func<QueryEndpoint,TResult> query)
     {
-      return new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiled(query);
+      return new CompiledQueryRunner(this, key, query.Target).ExecuteCompiled(query);
     }
 
     /// <summary>
@@ -524,7 +524,7 @@ namespace Xtensive.Orm
     /// <returns>Query result.</returns>
     public TResult Execute<TResult>(object key, Func<QueryEndpoint,TResult> query, ParameterContext parameterContext)
     {
-      return new CompiledQueryRunner(this, key, query.Target, parameterContext, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiled(query);
+      return new CompiledQueryRunner(this, key, query.Target, parameterContext).ExecuteCompiled(query);
     }
 
     /// <summary>
@@ -541,7 +541,7 @@ namespace Xtensive.Orm
     /// <param name="query">A delegate performing the query to cache.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(Func<QueryEndpoint, IQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, CancellationToken.None);
+      new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiledAsync(query, CancellationToken.None);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="query"/> delegate
@@ -558,7 +558,7 @@ namespace Xtensive.Orm
     /// <param name="token">Token to cancel operation.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(Func<QueryEndpoint, IQueryable<TElement>> query, CancellationToken token) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, token);
+      new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiledAsync(query, token);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="key"/>
@@ -574,7 +574,7 @@ namespace Xtensive.Orm
     /// <param name="query">A delegate performing the query to cache.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(object key, Func<QueryEndpoint, IQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, CancellationToken.None);
+      new CompiledQueryRunner(this, key, query.Target).ExecuteCompiledAsync(query, CancellationToken.None);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="key"/>
@@ -591,7 +591,7 @@ namespace Xtensive.Orm
     /// <param name="token">Token to cancel operation.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(object key, Func<QueryEndpoint, IQueryable<TElement>> query, CancellationToken token) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, token);
+      new CompiledQueryRunner(this, key, query.Target).ExecuteCompiledAsync(query, token);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="query"/> delegate
@@ -607,7 +607,7 @@ namespace Xtensive.Orm
     /// <param name="query">A delegate performing the query to cache.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(Func<QueryEndpoint, IOrderedQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, CancellationToken.None);
+      new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiledAsync(query, CancellationToken.None);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="query"/> delegate
@@ -624,7 +624,7 @@ namespace Xtensive.Orm
     /// <param name="token">Token to cancel operation.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(Func<QueryEndpoint, IOrderedQueryable<TElement>> query, CancellationToken token) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, token);
+      new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiledAsync(query, token);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="key"/>
@@ -640,7 +640,7 @@ namespace Xtensive.Orm
     /// <param name="query">A delegate performing the query to cache.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(object key, Func<QueryEndpoint, IOrderedQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, CancellationToken.None);
+      new CompiledQueryRunner(this, key, query.Target).ExecuteCompiledAsync(query, CancellationToken.None);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="key"/>
@@ -657,7 +657,7 @@ namespace Xtensive.Orm
     /// <param name="token">Token to cancel operation.</param>
     /// <returns>Task performing operation.</returns>
     public Task<QueryResult<TElement>> ExecuteAsync<TElement>(object key, Func<QueryEndpoint, IOrderedQueryable<TElement>> query, CancellationToken token) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, token);
+      new CompiledQueryRunner(this, key, query.Target).ExecuteCompiledAsync(query, token);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="query"/> delegate
@@ -673,7 +673,7 @@ namespace Xtensive.Orm
     /// <param name="query">A delegate performing the query to cache.</param>
     /// <returns>Task performing operation.</returns>
     public Task<TResult> ExecuteAsync<TResult>(Func<QueryEndpoint, TResult> query) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, CancellationToken.None);
+      new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiledAsync(query, CancellationToken.None);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="query"/> delegate
@@ -690,7 +690,7 @@ namespace Xtensive.Orm
     /// <param name="token">Token to cancel operation.</param>
     /// <returns>Task performing operation.</returns>
     public Task<TResult> ExecuteAsync<TResult>(Func<QueryEndpoint, TResult> query, CancellationToken token) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, token);
+      new CompiledQueryRunner(this, query.Method, query.Target).ExecuteCompiledAsync(query, token);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="key"/>
@@ -706,7 +706,7 @@ namespace Xtensive.Orm
     /// <param name="query">A delegate performing the query to cache.</param>
     /// <returns>Task performing operation.</returns>
     public Task<TResult> ExecuteAsync<TResult>(object key, Func<QueryEndpoint, TResult> query) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, CancellationToken.None);
+      new CompiledQueryRunner(this, key, query.Target).ExecuteCompiledAsync(query, CancellationToken.None);
 
     /// <summary>
     /// Finds compiled query in cache by provided <paramref name="key"/>
@@ -723,7 +723,7 @@ namespace Xtensive.Orm
     /// <param name="token">Token to cancel operation.</param>
     /// <returns>Task performing operation.</returns>
     public Task<TResult> ExecuteAsync<TResult>(object key, Func<QueryEndpoint, TResult> query, CancellationToken token) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).ExecuteCompiledAsync(query, token);
+      new CompiledQueryRunner(this, key, query.Target).ExecuteCompiledAsync(query, token);
 
     #endregion
 
@@ -740,7 +740,7 @@ namespace Xtensive.Orm
     /// The future that will be executed when its result is requested.
     /// </returns>
     public DelayedScalarQuery<TResult> CreateDelayedQuery<TResult>(object key, Func<QueryEndpoint, TResult> query) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).CreateDelayedQuery(query);
+      new CompiledQueryRunner(this, key, query.Target).CreateDelayedQuery(query);
 
     /// <summary>
     /// Creates future scalar query and registers it for the later execution.
@@ -752,7 +752,7 @@ namespace Xtensive.Orm
     /// The future that will be executed when its result is requested.
     /// </returns>
     public DelayedScalarQuery<TResult> CreateDelayedQuery<TResult>(Func<QueryEndpoint, TResult> query) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).CreateDelayedQuery(query);
+      new CompiledQueryRunner(this, query.Method, query.Target).CreateDelayedQuery(query);
 
     /// <summary>
     /// Creates future query and registers it for the later execution.
@@ -765,7 +765,7 @@ namespace Xtensive.Orm
     /// The future that will be executed when its result is requested.
     /// </returns>
     public DelayedQuery<TElement> CreateDelayedQuery<TElement>(object key, Func<QueryEndpoint, IQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).CreateDelayedQuery(query);
+      new CompiledQueryRunner(this, key, query.Target).CreateDelayedQuery(query);
 
     /// <summary>
     /// Creates future query and registers it for the later execution.
@@ -777,7 +777,7 @@ namespace Xtensive.Orm
     /// The future that will be executed when its result is requested.
     /// </returns>
     public DelayedQuery<TElement> CreateDelayedQuery<TElement>(Func<QueryEndpoint, IQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).CreateDelayedQuery(query);
+      new CompiledQueryRunner(this, query.Method, query.Target).CreateDelayedQuery(query);
 
     /// <summary>
     /// Creates future query and registers it for the later execution.
@@ -790,7 +790,7 @@ namespace Xtensive.Orm
     /// The future that will be executed when its result is requested.
     /// </returns>
     public DelayedQuery<TElement> CreateDelayedQuery<TElement>(object key, Func<QueryEndpoint, IOrderedQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, key, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).CreateDelayedQuery(query);
+      new CompiledQueryRunner(this, key, query.Target).CreateDelayedQuery(query);
 
     /// <summary>
     /// Creates future query and registers it for the later execution.
@@ -802,7 +802,7 @@ namespace Xtensive.Orm
     /// The future that will be executed when its result is requested.
     /// </returns>
     public DelayedQuery<TElement> CreateDelayedQuery<TElement>(Func<QueryEndpoint, IOrderedQueryable<TElement>> query) =>
-      new CompiledQueryRunner(this, query.Method, query.Target, sharedQueryCache: session.Domain.Configuration.ShareQueryCacheOverNodes).CreateDelayedQuery(query);
+      new CompiledQueryRunner(this, query.Method, query.Target).CreateDelayedQuery(query);
 
     /// <summary>
     /// Creates future scalar query and registers it for the later execution.
