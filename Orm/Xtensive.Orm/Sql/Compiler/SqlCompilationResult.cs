@@ -17,7 +17,7 @@ namespace Xtensive.Sql.Compiler
     private readonly IDictionary<object, string> parameterNames;
     private volatile int lastResultLength;
 
-    public Dictionary<object, string> PlaceholderValues;
+    private readonly Dictionary<object, string> placeholderValues;
 
     /// <inheritdoc/>
     public override string ToString()
@@ -47,7 +47,7 @@ namespace Xtensive.Sql.Compiler
     {
       if (resultText!=null)
         return resultText;
-      string result = PostCompiler.Process(resultNode, new SqlPostCompilerConfiguration(), lastResultLength, PlaceholderValues);
+      string result = PostCompiler.Process(resultNode, new SqlPostCompilerConfiguration(), lastResultLength, placeholderValues);
       lastResultLength = result.Length;
       return result;
     }
@@ -62,7 +62,7 @@ namespace Xtensive.Sql.Compiler
     {
       if (resultText!=null)
         return resultText;
-      string result = PostCompiler.Process(resultNode, configuration, lastResultLength, PlaceholderValues);
+      string result = PostCompiler.Process(resultNode, configuration, lastResultLength, placeholderValues);
       lastResultLength = result.Length;
       return result;
     }
@@ -70,7 +70,7 @@ namespace Xtensive.Sql.Compiler
 
     // Constructors
 
-    internal SqlCompilationResult(Node result, IDictionary<object, string> parameterNames)
+    internal SqlCompilationResult(Node result, IDictionary<object, string> parameterNames, Dictionary<object, string> placeholderValues)
     {
       if (result==null) {
         resultText = string.Empty;
@@ -82,6 +82,7 @@ namespace Xtensive.Sql.Compiler
       else
         resultNode = result;
       this.parameterNames = parameterNames.Count > 0 ? parameterNames : null;
+      this.placeholderValues = placeholderValues;
     }
   }
 }
