@@ -75,17 +75,14 @@ namespace Xtensive.Orm.Building.Builders
       var mainAssembly = typeof (ProviderDescriptor).Assembly;
       var mainAssemblyRef = mainAssembly.GetName();
       var extensionAssemblyFullName = mainAssemblyRef.FullName.Replace(mainAssemblyRef.Name, extensionAssemblyName);
-      //!!!P var extensionAssembly = Assembly.Load(extensionAssemblyFullName);
-      var extensionAssembly = Assembly.LoadFile(@"X:\OUT\do-test\bin\Xtensive.Orm.SqlServer.dll");
+      var extensionAssembly = Assembly.Load(extensionAssemblyFullName);
       var mainAssemblyVersion = GetInformationalVersion(mainAssembly);
       var extensionAssemblyVersion = GetInformationalVersion(extensionAssembly);
-      /*!!!P
       if (mainAssemblyVersion!=extensionAssemblyVersion)
         throw new InvalidOperationException(string.Format(
           Strings.ExAssemblyVersionMismatchMainAssemblyXYExtensionsAssemblyAB,
           mainAssemblyRef.Name, mainAssemblyVersion,
           extensionAssemblyName, extensionAssemblyVersion));
-      */
       return extensionAssembly;
     }
 

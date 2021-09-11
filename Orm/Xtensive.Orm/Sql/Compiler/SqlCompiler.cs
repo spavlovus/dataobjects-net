@@ -195,27 +195,28 @@ namespace Xtensive.Sql.Compiler
     public virtual void Visit(SqlArray node)
     {
       var items = node.GetValues();
+      var output = context.Output;
       if (items.Length == 0) {
-        context.Output.AppendText(translator.Translate(context, node, ArraySection.EmptyArray));
+        output.AppendText(translator.Translate(context, node, ArraySection.EmptyArray));
         return;
       }
-      context.Output.AppendText(translator.Translate(context, node, ArraySection.Entry));
+      output.AppendText(translator.Translate(context, node, ArraySection.Entry));
+      var lengthMinusOne = items.Length - 1;
       if (node.ItemType == SqlPlaceholderType) {
-        for (var i = 0; i < items.Length - 1; i++) {
+        for (int i = 0; i < lengthMinusOne; i++) {
           Visit((SqlPlaceholder) items[i]);
-          context.Output.AppendDelimiter(translator.RowItemDelimiter);
+          output.AppendDelimiter(translator.RowItemDelimiter);
         }
-        Visit((SqlPlaceholder) items[items.Length - 1]);
-        context.Output.AppendText(translator.Translate(context, node, ArraySection.Exit));
+        Visit((SqlPlaceholder) items[lengthMinusOne]);
       }
       else {
-        for (var i = 0; i < items.Length - 1; i++) {
-          context.Output.AppendText(translator.Translate(context, items[i]));
-          context.Output.AppendDelimiter(translator.RowItemDelimiter);
+        for (int i = 0; i < lengthMinusOne; i++) {
+          output.AppendText(translator.Translate(context, items[i]));
+          output.AppendDelimiter(translator.RowItemDelimiter);
         }
-        context.Output.AppendText(translator.Translate(context, items[items.Length - 1]));
-        context.Output.AppendText(translator.Translate(context, node, ArraySection.Exit));
+        output.AppendText(translator.Translate(context, items[lengthMinusOne]));
       }
+      output.AppendText(translator.Translate(context, node, ArraySection.Exit));
     }
 
     public virtual void Visit(SqlAssignment node)
@@ -1370,7 +1371,7 @@ namespace Xtensive.Sql.Compiler
       var text = translator.Translate(context, node, TableSection.Entry) +
         translator.Translate(context, node, TableSection.AliasDeclaration);
       const string placeholder = "[node_placeholder]";
-      if (text.IndexOf(placeholder) is var idx && idx < 0) {
+      if (text.IndexOf(placeholder, StringComparison.Ordinal) is var idx && idx < 0) {
         context.Output.AppendText(text);
       }
       else {

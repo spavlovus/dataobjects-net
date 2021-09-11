@@ -21,12 +21,14 @@ namespace Xtensive.Sql.Compiler
 
     private string[] currentCycleItem;
 
-    public static string Process(Node root, SqlPostCompilerConfiguration configuration, int estimatedResultLength, Dictionary<object, string> placeholders)
+    public static string Process(Node root, SqlPostCompilerConfiguration configuration, int estimatedResultLength, IReadOnlyDictionary<object, string> placeholders)
     {
       var compiler = new PostCompiler(configuration, estimatedResultLength);
       if (placeholders != null) {
         foreach (var kv in placeholders) {
+#pragma warning disable IDE0058 // Expression value is never used
           compiler.configuration.PlaceholderValues.TryAdd(kv.Key, kv.Value);  // Don't override values added in CreateQueryPart()
+#pragma warning restore IDE0058 // Expression value is never used
         }
       }
       compiler.VisitNodeSequence(root);

@@ -21,6 +21,8 @@ namespace Xtensive.Core
     private Dictionary<Parameter, object> values;
     private Dictionary<Parameter, object> Values => values ??= new Dictionary<Parameter, object>();
 
+    private readonly TypeIdRegistry typeIdRegistry;
+
     [DebuggerStepThrough]
     internal bool TryGetValue(Parameter parameter, out object value)
     {
@@ -41,30 +43,20 @@ namespace Xtensive.Core
     [DebuggerStepThrough]
     internal void SetValue(Parameter parameter, object value) => Values[parameter] = value;
 
-    public virtual int GetTypeId(TypeInfo type) =>
-      outerContext?.GetTypeId(type) ?? throw new InvalidOperationException(string.Format(Strings.ExTypeIdForTypeXIsNotFound, type));
+    public int GetTypeId(TypeInfo type) =>
+        typeIdRegistry?[type]
+        ?? outerContext?.GetTypeId(type)
+        ?? throw new InvalidOperationException(string.Format(Strings.ExTypeIdForTypeXIsNotFound, type));
 
     // Constructors
 
     /// <summary>
     /// Initializes new instance of this type.
     /// </summary>
-    public ParameterContext(ParameterContext outerContext = null)
-    {
-      this.outerContext = outerContext;
-    }
-  }
-
-  public sealed class TypeIdParameterContext : ParameterContext
-  {
-    private readonly TypeIdRegistry typeIdRegistry;
-
-    public override int GetTypeId(TypeInfo type) => typeIdRegistry[type];
-
-    public TypeIdParameterContext(TypeIdRegistry typeIdRegistry, ParameterContext outerContext = null)
-      : base(outerContext)
+    public ParameterContext(TypeIdRegistry typeIdRegistry = null, ParameterContext outerContext = null)
     {
       this.typeIdRegistry = typeIdRegistry;
+      this.outerContext = outerContext;
     }
   }
 }

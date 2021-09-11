@@ -162,7 +162,7 @@ namespace Xtensive.Orm.Internals.Prefetch
       object key = new Pair<object, CacheKey>(recordSetCachingRegion, cacheKey);
       Func<object, object> generator = CreateRecordSet;
       var session = manager.Owner.Session;
-      var parameterContext = new TypeIdParameterContext(session.StorageNode.TypeIdRegistry);
+      var parameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry);
       parameterContext.SetValue(includeParameter, currentKeySet);
       Provider = (CompilableProvider) session.StorageNode.InternalQueryCache.GetOrAdd(key, generator);
       var executableProvider = session.Compile(Provider);

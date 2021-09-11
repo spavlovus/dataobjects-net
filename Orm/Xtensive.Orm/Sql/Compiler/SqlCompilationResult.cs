@@ -14,10 +14,10 @@ namespace Xtensive.Sql.Compiler
   {
     private readonly Node resultNode;
     private readonly string resultText;
-    private readonly IDictionary<object, string> parameterNames;
+    private readonly IReadOnlyDictionary<object, string> parameterNames;
     private volatile int lastResultLength;
 
-    private readonly Dictionary<object, string> placeholderValues;
+    private readonly IReadOnlyDictionary<object, string> placeholderValues;
 
     /// <inheritdoc/>
     public override string ToString()
@@ -70,7 +70,7 @@ namespace Xtensive.Sql.Compiler
 
     // Constructors
 
-    internal SqlCompilationResult(Node result, IDictionary<object, string> parameterNames, Dictionary<object, string> placeholderValues)
+    internal SqlCompilationResult(Node result, IReadOnlyDictionary<object, string> parameterNames, IReadOnlyDictionary<object, string> placeholderValues)
     {
       if (result==null) {
         resultText = string.Empty;

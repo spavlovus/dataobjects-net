@@ -76,12 +76,13 @@ namespace Xtensive.Orm.Linq
     public SubQuery(ProjectionExpression projectionExpression, TranslatedQuery query, Parameter<Tuple> parameter, Tuple tuple, ItemMaterializationContext context)
 // ReSharper restore MemberCanBeProtected.Global
     {
-      this.provider = context.Session.Query.Provider;
+      var session = context.Session;
+      this.provider = session.Query.Provider;
       var tupleParameterBindings = new Dictionary<Parameter<Tuple>, Tuple>(projectionExpression.TupleParameterBindings);
       var currentTranslatedQuery = query;
 
       var outerParameterContext = context.ParameterContext;
-      var parameterContext = new ParameterContext(outerParameterContext);
+      var parameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry, outerParameterContext);
       // Gather Parameter<Tuple> values from current ParameterScope for future use.
       outerParameterContext.SetValue(parameter, tuple);
       foreach (var tupleParameter in currentTranslatedQuery.TupleParameters) {
@@ -101,8 +102,8 @@ namespace Xtensive.Orm.Linq
         query.ResultAccessMethod,
         tupleParameterBindings,
         EnumerableUtils<Parameter<Tuple>>.Empty);
-      delayedQuery = new DelayedQuery<TElement>(context.Session, translatedQuery, parameterContext);
-      context.Session.RegisterUserDefinedDelayedQuery(delayedQuery.Task);
+      delayedQuery = new DelayedQuery<TElement>(session, translatedQuery, parameterContext);
+      session.RegisterUserDefinedDelayedQuery(delayedQuery.Task);
       context.MaterializationContext.MaterializationQueue.Enqueue(MaterializeSelf);
     }
   }
