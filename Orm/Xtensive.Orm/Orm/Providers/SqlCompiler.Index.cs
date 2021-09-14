@@ -152,31 +152,27 @@ namespace Xtensive.Orm.Providers
       SqlTable rootTable = null;
 
       var keyColumnCount = index.KeyColumns.Count;
-      var underlyingQueries = index.UnderlyingIndexes.Select(BuildProviderQuery);
-
-      var sourceTables = new List<SqlTable>();
-      List<QueryParameterBinding> resultBindings = null;
-      if(index.UnderlyingIndexes.Any(i => i.IsVirtual)) {
-        foreach(var item in underlyingQueries) {
-          sourceTables.Add(SqlDml.QueryRef(item.Query));
-          if (resultBindings == null) {
-            resultBindings = item.Bindings;
-          }
-          else {
-            resultBindings.AddRange(item.Bindings);
-          }
-        }
+      var underlyingQueries = new QueryAndBindings[index.UnderlyingIndexes.Count];
+      var haveVirtualUnderlyingIndexes = false;
+      for (var i = 0; i < index.UnderlyingIndexes.Count; i++) {
+        var underlyingIndex = index.UnderlyingIndexes[i];
+        underlyingQueries[i] = BuildProviderQuery(underlyingIndex);
+        haveVirtualUnderlyingIndexes = haveVirtualUnderlyingIndexes || underlyingIndex.IsVirtual;
       }
-      else {
-        foreach (var item in underlyingQueries) {
-          var tableRef = (SqlTableRef) item.Query.From;
-          sourceTables.Add(SqlDml.TableRef(tableRef.DataTable, tableRef.Name, item.Query.Columns.Select(c => c.Name)));
-          if (resultBindings == null) {
-            resultBindings = item.Bindings;
-          }
-          else {
-            resultBindings.AddRange(item.Bindings);
-          }
+
+      var sourceTables = new SqlTable[underlyingQueries.Length];
+      List<QueryParameterBinding> resultBindings = null;
+
+      for (var i = 0; i < underlyingQueries.Length; i++) {
+        var item = underlyingQueries[i];
+
+        sourceTables[i] = haveVirtualUnderlyingIndexes ? SqlDml.QueryRef(item.Query) : CreateSourceTable(item);
+
+        if (resultBindings == null) {
+          resultBindings = item.Bindings;
+        }
+        else {
+          resultBindings.AddRange(item.Bindings);
         }
       }
 
@@ -216,6 +212,18 @@ namespace Xtensive.Orm.Providers
       query.Columns.AddRange(columns);
 
       return new QueryAndBindings(query, resultBindings);
+    }
+
+    private static SqlTable CreateSourceTable(QueryAndBindings item)
+    {
+      var columns = item.Query.Columns;
+      var columnNames = new string[columns.Count];
+      for (var i = 0; i < columns.Count; i++) {
+        columnNames[i] = columns[i].Name;
+      }
+
+      return SqlDml.TableRef(((SqlTableRef) item.Query.From).DataTable,
+        ((SqlTableRef) item.Query.From).Name, columnNames);
     }
 
     private QueryAndBindings BuildFilteredQuery(IndexInfo index)
