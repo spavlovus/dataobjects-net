@@ -162,7 +162,7 @@ namespace Xtensive.Orm.Providers
         AddParameter(result, binding, parameterName, parameterValue);
       }
 
-      configuration.PlaceholderValues.Add("[node_placeholder]", SqlHelper.QuoteIdentifierWithBrackets(new[] { Session.StorageNodeId }));
+      configuration.PlaceholderValues.Add(SqlTranslator.BracketedNodePlaceholder, SqlHelper.QuoteIdentifierWithBrackets(new[] { Session.StorageNodeId }));
 
       result.Statement = compilationResult.GetCommandText(configuration);
       return result;

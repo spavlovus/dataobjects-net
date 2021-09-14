@@ -21,6 +21,9 @@ namespace Xtensive.Sql.Compiler
   /// </summary>
   public abstract class SqlTranslator : SqlDriverBound
   {
+    private const string NodePlaceholder = "node_placeholder";
+    public const string BracketedNodePlaceholder = "[node_placeholder]";
+
     public DateTimeFormatInfo DateTimeFormat { get; private set; }
     public NumberFormatInfo IntegerNumberFormat { get; private set; }
     public NumberFormatInfo FloatNumberFormat { get; private set; }
@@ -1553,9 +1556,8 @@ namespace Xtensive.Sql.Compiler
       var actualizer = context.SqlNodeActualizer;
 
       if (!dbQualified && context.ShareQueryCacheOverNodes) {
-        const string id = "node_placeholder";
-        _ = context.PlaceholderValues.TryAdd($"[{id}]", QuoteIdentifier(actualizer.Actualize(node.Schema)));
-        return QuoteIdentifier(id, node.DbName);
+        _ = context.PlaceholderValues.TryAdd(BracketedNodePlaceholder, QuoteIdentifier(actualizer.Actualize(node.Schema)));
+        return QuoteIdentifier(NodePlaceholder, node.DbName);
       }
 
       return dbQualified

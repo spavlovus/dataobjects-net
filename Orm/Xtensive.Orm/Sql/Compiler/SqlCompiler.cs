@@ -1370,14 +1370,13 @@ namespace Xtensive.Sql.Compiler
     {
       var text = translator.Translate(context, node, TableSection.Entry) +
         translator.Translate(context, node, TableSection.AliasDeclaration);
-      const string placeholder = "[node_placeholder]";
-      if (text.IndexOf(placeholder, StringComparison.Ordinal) is var idx && idx < 0) {
+      if (text.IndexOf(SqlTranslator.BracketedNodePlaceholder, StringComparison.Ordinal) is var idx && idx < 0) {
         context.Output.AppendText(text);
       }
       else {
         context.Output.AppendText(text.Substring(0, idx));
-        context.Output.AppendPlaceholder(placeholder);
-        context.Output.AppendText(text.Substring(idx + placeholder.Length));
+        context.Output.AppendPlaceholder(SqlTranslator.BracketedNodePlaceholder);
+        context.Output.AppendText(text.Substring(idx + SqlTranslator.BracketedNodePlaceholder.Length));
       }
     }
 
