@@ -153,9 +153,10 @@ namespace Xtensive.Orm.Providers
 
       var keyColumnCount = index.KeyColumns.Count;
       var underlyingQueries = new QueryAndBindings[index.UnderlyingIndexes.Count];
+      var underlyingIndexes = index.UnderlyingIndexes;
       var haveVirtualUnderlyingIndexes = false;
-      for (var i = 0; i < index.UnderlyingIndexes.Count; i++) {
-        var underlyingIndex = index.UnderlyingIndexes[i];
+      for (int i = 0, count = underlyingIndexes.Count; i < count; i++) {
+        var underlyingIndex = underlyingIndexes[i];
         underlyingQueries[i] = BuildProviderQuery(underlyingIndex);
         haveVirtualUnderlyingIndexes = haveVirtualUnderlyingIndexes || underlyingIndex.IsVirtual;
       }
