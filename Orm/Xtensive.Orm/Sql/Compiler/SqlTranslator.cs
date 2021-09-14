@@ -1553,8 +1553,8 @@ namespace Xtensive.Sql.Compiler
       var actualizer = context.SqlNodeActualizer;
 
       if (!dbQualified && context.ShareQueryCacheOverNodes) {
-        const string id = "";
-        _ = context.PlaceholderValues.TryAdd($"[node_placeholder]", QuoteIdentifier(actualizer.Actualize(node.Schema)));
+        const string id = "node_placeholder";
+        _ = context.PlaceholderValues.TryAdd($"[{id}]", QuoteIdentifier(actualizer.Actualize(node.Schema)));
         return QuoteIdentifier(id, node.DbName);
       }
 
