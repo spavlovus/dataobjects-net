@@ -26,9 +26,7 @@ namespace Xtensive.Sql.Compiler
       var compiler = new PostCompiler(configuration, estimatedResultLength);
       if (placeholders != null) {
         foreach (var kv in placeholders) {
-#pragma warning disable IDE0058 // Expression value is never used
-          compiler.configuration.PlaceholderValues.TryAdd(kv.Key, kv.Value);  // Don't override values added in CreateQueryPart()
-#pragma warning restore IDE0058 // Expression value is never used
+          _ = compiler.configuration.PlaceholderValues.TryAdd(kv.Key, kv.Value);  // Don't override values added in CreateQueryPart()
         }
       }
       compiler.VisitNodeSequence(root);

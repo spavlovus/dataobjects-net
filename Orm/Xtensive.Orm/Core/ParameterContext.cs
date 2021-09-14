@@ -14,7 +14,7 @@ namespace Xtensive.Core
   /// <summary>
   /// Provides storing context-specific <see cref="Parameter{TValue}"/>'s values.
   /// </summary>
-  public class ParameterContext
+  public sealed class ParameterContext
   {
     private readonly ParameterContext outerContext;
 
