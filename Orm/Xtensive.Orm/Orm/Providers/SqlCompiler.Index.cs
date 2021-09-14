@@ -237,6 +237,7 @@ namespace Xtensive.Orm.Providers
       var type = index.ReflectedType;
       var discriminatorMap = type.Hierarchy.TypeDiscriminatorMap;
       var filterByTypes = index.FilterByTypes.ToList();
+      var filterByTypesCount = filterByTypes.Count;
       if (underlyingIndex.IsTyped && discriminatorMap != null) {
         var columnType = discriminatorMap.Column.ValueType;
         var discriminatorColumnIndex = underlyingIndex.Columns
@@ -248,7 +249,7 @@ namespace Xtensive.Orm.Providers
         var containsDefault = filterByTypes.Contains(discriminatorMap.Default);
         var values = filterByTypes
           .Select(t => GetDiscriminatorValue(discriminatorMap, t.TypeDiscriminatorValue));
-        if (filterByTypes.Count == 1) {
+        if (filterByTypesCount == 1) {
           var discriminatorValue = GetDiscriminatorValue(discriminatorMap, filterByTypes.First().TypeDiscriminatorValue);
           filter = discriminatorColumn == SqlDml.Literal(discriminatorValue);
         }
@@ -265,25 +266,30 @@ namespace Xtensive.Orm.Providers
         var typeIdColumn = baseQuery.Columns[Handlers.Domain.Handlers.NameBuilder.TypeIdColumnName];
 
         if (!useParameterForTypeId) {
-          filter = filterByTypes.Count == 1
-            ? typeIdColumn == TypeIdRegistry[filterByTypes.First()]
-            : SqlDml.In(typeIdColumn,
-                SqlDml.Array(filterByTypes.Select(t => TypeIdRegistry[t]).ToArray(filterByTypes.Count)));
+          if (filterByTypesCount == 1) {
+            filter = typeIdColumn == TypeIdRegistry[filterByTypes[0]];
+          }
+          else {
+            var arr = new int[filterByTypesCount];
+            for (var i = 0; i < filterByTypesCount; i++) {
+              arr[i] = TypeIdRegistry[filterByTypes[i]];
+            }
+            filter = SqlDml.In(typeIdColumn, SqlDml.Array(arr));
+          }
         }
         else {
-          if (filterByTypes.Count == 1) {
+          if (filterByTypesCount == 1) {
             var binding = CreateQueryParameterBinding(type);
             bindings.Add(binding);
             filter = typeIdColumn == binding.ParameterReference;
           }
           else {
-            var typeIdParameters = filterByTypes
-              .Select(t => {
-                var binding = CreateQueryParameterBinding(type);
-                bindings.Add(binding);
-                return binding.ParameterReference;
-              })
-              .ToArray(filterByTypes.Count);
+            var typeIdParameters = new SqlExpression[filterByTypesCount];
+            for (var i = 0; i < filterByTypesCount; i++) {
+              var binding = CreateQueryParameterBinding(type);
+              bindings.Add(binding);
+              typeIdParameters[i] = binding.ParameterReference;
+            }
             filter = SqlDml.In(typeIdColumn, SqlDml.Array(typeIdParameters));
           }
         }
