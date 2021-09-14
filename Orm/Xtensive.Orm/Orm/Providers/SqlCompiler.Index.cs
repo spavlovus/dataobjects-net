@@ -163,7 +163,7 @@ namespace Xtensive.Orm.Providers
       var sourceTables = new SqlTable[underlyingQueries.Length];
       List<QueryParameterBinding> resultBindings = null;
 
-      for (var i = 0; i < underlyingQueries.Length; i++) {
+      for (int i = 0, length = underlyingQueries.Length; i < length; i++) {
         var item = underlyingQueries[i];
 
         sourceTables[i] = haveVirtualUnderlyingIndexes ? SqlDml.QueryRef(item.Query) : CreateSourceTable(item);
@@ -218,7 +218,7 @@ namespace Xtensive.Orm.Providers
     {
       var columns = item.Query.Columns;
       var columnNames = new string[columns.Count];
-      for (var i = 0; i < columns.Count; i++) {
+      for (int i = 0, count = columns.Count; i < count; i++) {
         columnNames[i] = columns[i].Name;
       }
 

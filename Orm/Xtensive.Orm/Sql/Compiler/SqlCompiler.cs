@@ -1368,16 +1368,19 @@ namespace Xtensive.Sql.Compiler
 
     public virtual void Visit(SqlTableRef node)
     {
-      var text = translator.Translate(context, node, TableSection.Entry) +
-        translator.Translate(context, node, TableSection.AliasDeclaration);
+      var output = context.Output;
+
+      var text = translator.Translate(context, node, TableSection.Entry);
       if (text.IndexOf(SqlTranslator.BracketedNodePlaceholder, StringComparison.Ordinal) is var idx && idx < 0) {
-        context.Output.AppendText(text);
+        output.AppendText(text);
       }
       else {
-        context.Output.AppendText(text.Substring(0, idx));
-        context.Output.AppendPlaceholder(SqlTranslator.BracketedNodePlaceholder);
-        context.Output.AppendText(text.Substring(idx + SqlTranslator.BracketedNodePlaceholder.Length));
+        output.AppendText(text.Substring(0, idx));
+        output.AppendPlaceholder(SqlTranslator.BracketedNodePlaceholder);
+        output.AppendText(text.Substring(idx + SqlTranslator.BracketedNodePlaceholder.Length));
       }
+
+      output.AppendText(translator.Translate(context, node, TableSection.AliasDeclaration));
     }
 
     public virtual void Visit(SqlTrim node)
