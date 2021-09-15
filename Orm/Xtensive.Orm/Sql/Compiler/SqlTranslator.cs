@@ -125,12 +125,12 @@ namespace Xtensive.Sql.Compiler
     public virtual string Translate(SqlCompilerContext context, SqlAlterPartitionFunction node)
     {
       var builder = new StringBuilder();
-      builder.Append("ALTER PARTITION FUNCTION " + QuoteIdentifier(node.PartitionFunction.DbName) + "()");
+      _ = builder.Append("ALTER PARTITION FUNCTION " + QuoteIdentifier(node.PartitionFunction.DbName) + "()");
       if (node.Option == SqlAlterPartitionFunctionOption.Split)
-        builder.Append(" SPLIT RANGE (");
+        _ = builder.Append(" SPLIT RANGE (");
       else
-        builder.Append(" MERGE RANGE (");
-      builder.Append(node.Boundary + ")");
+        _ = builder.Append(" MERGE RANGE (");
+      _ = builder.Append(node.Boundary + ")");
       return builder.ToString();
     }
 

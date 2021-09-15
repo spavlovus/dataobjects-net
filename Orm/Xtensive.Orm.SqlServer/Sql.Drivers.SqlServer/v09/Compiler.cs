@@ -28,7 +28,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
     public override void Visit(SqlSelect node)
     {
       using (context.EnterScope(node)) {
-        context.Output.AppendText(translator.Translate(context, node, SelectSection.Entry));
+        AppendTranslated(node, SelectSection.Entry);
         VisitSelectLimitOffset(node);
         VisitSelectHints(node);
         VisitSelectColumns(node);
@@ -37,7 +37,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
         VisitSelectGroupBy(node);
         VisitSelectOrderBy(node);
         VisitSelectLock(node);
-        context.Output.AppendText(translator.Translate(context, node, SelectSection.Exit));
+        AppendTranslated(node, SelectSection.Exit);
       }
     }
 
@@ -59,7 +59,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
       if (!node.Limit.IsNullReference()) {
         if (!Driver.ServerInfo.Query.Features.Supports(QueryFeatures.UpdateLimit))
           throw new NotSupportedException(Strings.ExStorageDoesNotSupportLimitationOfRowCountToUpdate);
-        context.Output.AppendText(translator.Translate(context, node, UpdateSection.Limit));
+        AppendTranslated(node, UpdateSection.Limit);
         context.Output.AppendText("(");
         node.Limit.AcceptVisitor(this);
         context.Output.AppendText(")");
@@ -71,7 +71,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
       using (context.EnterScope(node)) {
         VisitDeleteEntry(node);
         VisitDeleteLimit(node);
-        context.Output.AppendText(translator.Translate(context, node, DeleteSection.From));
+        AppendTranslated(node, DeleteSection.From);
         VisitDeleteDelete(node);
         VisitDeleteFrom(node);
         VisitDeleteWhere(node);
@@ -84,7 +84,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
       if (!node.Limit.IsNullReference()) {
         if (!Driver.ServerInfo.Query.Features.Supports(QueryFeatures.DeleteLimit))
           throw new NotSupportedException(Strings.ExStorageDoesNotSupportLimitationOfRowCountToDelete);
-        context.Output.AppendText(translator.Translate(context, node, DeleteSection.Limit));
+        AppendTranslated(node, DeleteSection.Limit);
         context.Output.AppendText("(");
         node.Limit.AcceptVisitor(this);
         context.Output.AppendText(")");
@@ -198,9 +198,9 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
         throw new NotSupportedException(Strings.ExSqlServerSupportsTrimmingOfSpaceCharactersOnly);
       
       using (context.EnterScope(node)) {
-        context.Output.AppendText(translator.Translate(context, node, TrimSection.Entry));
+        AppendTranslated(node, TrimSection.Entry);
         node.Expression.AcceptVisitor(this);
-        context.Output.AppendText(translator.Translate(context, node, TrimSection.Exit));
+        AppendTranslated(node, TrimSection.Exit);
       }
     }
     
