@@ -28,7 +28,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v11
       if (node.HasOffset)
         node.Offset.AcceptVisitor(this);
       else
-        context.Output.AppendText("0");
+        context.Output.Append("0 ");
       AppendTranslated(node, SelectSection.OffsetEnd);
 
       if (node.HasLimit) {

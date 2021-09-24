@@ -43,7 +43,7 @@ namespace Xtensive.Sql.Drivers.MySql.v5_0
     {
       var renameColumnAction = node.Action as SqlRenameColumn;
       if (renameColumnAction!=null)
-        context.Output.AppendText(((Translator) translator).Translate(context, renameColumnAction));
+        ((Translator) translator).Translate(context, renameColumnAction);
       else if (node.Action is SqlDropConstraint) {
         using (context.EnterScope(node)) {
           AppendTranslated(node, AlterTableSection.Entry);
@@ -51,10 +51,12 @@ namespace Xtensive.Sql.Drivers.MySql.v5_0
           var action = node.Action as SqlDropConstraint;
           var constraint = action.Constraint as TableConstraint;
           AppendTranslated(node, AlterTableSection.DropConstraint);
-          if (constraint is ForeignKey)
-            context.Output.AppendText("FOREIGN KEY " + translator.QuoteIdentifier(constraint.DbName));
+          if (constraint is ForeignKey) {
+            context.Output.Append("FOREIGN KEY ");
+            translator.TranslateIdentifier(context.Output, constraint.DbName);
+          }
           else if (constraint is PrimaryKey)
-            context.Output.AppendText("PRIMARY KEY ");
+            context.Output.Append("PRIMARY KEY ");
           else
             AppendTranslated(constraint, ConstraintSection.Entry);
           AppendTranslated(node, AlterTableSection.DropBehavior);
@@ -124,17 +126,17 @@ namespace Xtensive.Sql.Drivers.MySql.v5_0
         bool needClosingParenthesis = false;
         AppendTranslated(node, QueryExpressionSection.Entry);
         if (needOpeningParenthesis)
-          context.Output.AppendText("(");
+          context.Output.Append("(");
         node.Left.AcceptVisitor(this);
         if (needClosingParenthesis)
-          context.Output.AppendText(")");
-        context.Output.AppendText(translator.Translate(node.NodeType));
+          context.Output.Append(")");
+        AppendTranslated(node.NodeType);
         AppendTranslated(node, QueryExpressionSection.All);
         if (needOpeningParenthesis)
-          context.Output.AppendText("(");
+          context.Output.Append("(");
         node.Right.AcceptVisitor(this);
         if (needClosingParenthesis)
-          context.Output.AppendText(")");
+          context.Output.Append(")");
         AppendTranslated(node, QueryExpressionSection.Exit);
       }
     }
@@ -202,7 +204,7 @@ namespace Xtensive.Sql.Drivers.MySql.v5_0
       if (!node.Offset.IsNullReference()) {
         if (node.Limit.IsNullReference()) {
           AppendTranslated(node, SelectSection.Limit);
-          context.Output.AppendText(" 18446744073709551615 "); // magic number from http://dev.mysql.com/doc/refman/5.0/en/select.html
+          context.Output.Append(" 18446744073709551615 "); // magic number from http://dev.mysql.com/doc/refman/5.0/en/select.html
         }
         AppendTranslated(node, SelectSection.Offset);
         node.Offset.AcceptVisitor(this);
@@ -265,7 +267,7 @@ namespace Xtensive.Sql.Drivers.MySql.v5_0
     {
       return SqlDml.FunctionCall("DATE_FORMAT", dateTime, "%Y-%m-%dT%T");
     }
-    
+
     protected static SqlUserFunctionCall BitNot(SqlExpression operand)
     {
       return SqlDml.FunctionCall(

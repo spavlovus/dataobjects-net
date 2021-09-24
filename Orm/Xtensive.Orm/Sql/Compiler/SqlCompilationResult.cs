@@ -12,7 +12,7 @@ namespace Xtensive.Sql.Compiler
   /// </summary>
   public sealed class SqlCompilationResult
   {
-    private readonly Node resultNode;
+    private readonly IReadOnlyList<Node> resultNodes;
     private readonly string resultText;
     private readonly IReadOnlyDictionary<object, string> parameterNames;
     private volatile int lastResultLength;
@@ -45,9 +45,9 @@ namespace Xtensive.Sql.Compiler
     /// <value>The SQL text command.</value>
     public string GetCommandText()
     {
-      if (resultText!=null)
+      if (resultText != null)
         return resultText;
-      string result = PostCompiler.Process(resultNode, new SqlPostCompilerConfiguration(), lastResultLength, placeholderValues);
+      string result = PostCompiler.Process(resultNodes, new SqlPostCompilerConfiguration(), lastResultLength, placeholderValues);
       lastResultLength = result.Length;
       return result;
     }
@@ -62,7 +62,7 @@ namespace Xtensive.Sql.Compiler
     {
       if (resultText!=null)
         return resultText;
-      string result = PostCompiler.Process(resultNode, configuration, lastResultLength, placeholderValues);
+      string result = PostCompiler.Process(resultNodes, configuration, lastResultLength, placeholderValues);
       lastResultLength = result.Length;
       return result;
     }
@@ -70,17 +70,19 @@ namespace Xtensive.Sql.Compiler
 
     // Constructors
 
-    internal SqlCompilationResult(Node result, IReadOnlyDictionary<object, string> parameterNames, IReadOnlyDictionary<object, string> placeholderValues)
+    internal SqlCompilationResult(IReadOnlyList<Node> result, IReadOnlyDictionary<object, string> parameterNames, IReadOnlyDictionary<object, string> placeholderValues)
     {
-      if (result==null) {
-        resultText = string.Empty;
-        return;
+      switch (result.Count) {
+        case 0:
+          resultText = string.Empty;
+          break;
+        case 1 when result[0] is TextNode textNode:
+          resultText = textNode.Text;
+          break;
+        default:
+          resultNodes = result;
+          break;
       }
-      var textNode = result as TextNode;
-      if (textNode!=null && textNode.Next==null)
-        resultText = textNode.Text;
-      else
-        resultNode = result;
       this.parameterNames = parameterNames.Count > 0 ? parameterNames : null;
       this.placeholderValues = placeholderValues;
     }

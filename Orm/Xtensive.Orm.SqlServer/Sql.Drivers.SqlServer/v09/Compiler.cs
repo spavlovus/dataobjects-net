@@ -24,7 +24,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
     protected static readonly long MillisecondsPerDay = (long) TimeSpan.FromDays(1).TotalMilliseconds;
     protected static readonly long MillisecondsPerSecond = 1000L;
     protected static readonly SqlExpression DateFirst = SqlDml.Native("@@DATEFIRST");
-    
+
     public override void Visit(SqlSelect node)
     {
       using (context.EnterScope(node)) {
@@ -60,9 +60,9 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
         if (!Driver.ServerInfo.Query.Features.Supports(QueryFeatures.UpdateLimit))
           throw new NotSupportedException(Strings.ExStorageDoesNotSupportLimitationOfRowCountToUpdate);
         AppendTranslated(node, UpdateSection.Limit);
-        context.Output.AppendText("(");
+        context.Output.Append("(");
         node.Limit.AcceptVisitor(this);
-        context.Output.AppendText(")");
+        context.Output.Append(")");
       }
     }
 
@@ -85,9 +85,9 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
         if (!Driver.ServerInfo.Query.Features.Supports(QueryFeatures.DeleteLimit))
           throw new NotSupportedException(Strings.ExStorageDoesNotSupportLimitationOfRowCountToDelete);
         AppendTranslated(node, DeleteSection.Limit);
-        context.Output.AppendText("(");
+        context.Output.Append("(");
         node.Limit.AcceptVisitor(this);
-        context.Output.AppendText(")");
+        context.Output.Append(")");
       }
     }
 
@@ -101,7 +101,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
     {
       var renameColumnAction = node.Action as SqlRenameColumn;
       if (renameColumnAction!=null) {
-        context.Output.AppendText(((Translator) translator).Translate(context, renameColumnAction));
+        ((Translator) translator).Translate(context, renameColumnAction);
         return;
       }
       var dropConstrainAction = node.Action as SqlDropConstraint;
@@ -115,7 +115,7 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
             //we doesn't know real name of default constraint.
             //Because of this we should find name of constraint in system views.
             //And we able to drop default constraint after that.
-            context.Output.AppendText(((Translator)translator).Translate(context, node, constraint));
+            ((Translator)translator).Translate(context, node, constraint);
             return;
           }
         }
@@ -196,14 +196,14 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
     {
       if (node.TrimCharacters!=null && !node.TrimCharacters.All(_char => _char==' '))
         throw new NotSupportedException(Strings.ExSqlServerSupportsTrimmingOfSpaceCharactersOnly);
-      
+
       using (context.EnterScope(node)) {
         AppendTranslated(node, TrimSection.Entry);
         node.Expression.AcceptVisitor(this);
         AppendTranslated(node, TrimSection.Exit);
       }
     }
-    
+
     public override void Visit(SqlExtract node)
     {
       if (node.DateTimePart==SqlDateTimePart.DayOfWeek) {
@@ -280,10 +280,10 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
         -SqlDml.Extract(SqlDateTimePart.Second, date)),
         -SqlDml.Extract(SqlDateTimePart.Millisecond, date));
     }
-    
+
     protected virtual SqlExpression DateTimeSubtractDateTime(SqlExpression date1, SqlExpression date2)
     {
-      
+
       return CastToDecimal(DateDiffDay(date2, date1), 18, 0) * NanosecondsPerDay
           + CastToDecimal(DateDiffMillisecond(DateAddDay(date2, DateDiffDay(date2, date1)), date1),18 , 0) * NanosecondsPerMillisecond;
     }
@@ -320,43 +320,83 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
       return result;
     }
 
+    private void TranslateSingleColumnName(SqlTableColumn column, SqlTableColumn asterisk)
+    {
+      var output = context.Output;
+      if (column == asterisk) {
+        output.Append(column.Name);
+      }
+      else {
+        translator.TranslateIdentifier(output, column.Name);
+      }
+    }
+
+    private void TranslateJoinedColumnNames(SqlTableColumnCollection targetColumns)
+    {
+      var output = context.Output;
+      bool first = true;
+      foreach (var column in targetColumns) {
+        if (first) {
+          first = false;
+        }
+        else {
+          output.Append(", ");
+        }
+        translator.TranslateIdentifier(output, column.Name);
+      }
+    }
+
     public override void Visit(SqlContainsTable node)
     {
-      string columns;
-      if (node.TargetColumns.Count==1) {
-        columns = node.TargetColumns[0]==node.Asterisk 
-          ? node.TargetColumns[0].Name 
-          : translator.QuoteIdentifier(node.TargetColumns[0].Name);
+      var output = context.Output;
+
+      output.Append("CONTAINSTABLE(");
+      AppendTranslated(node.TargetTable.DataTable);
+      output.Append(", ");
+
+      var targetColumns = node.TargetColumns;
+      if (targetColumns.Count == 1) {
+        TranslateSingleColumnName(targetColumns[0], node.Asterisk);
       }
-      else
-        columns = "(" + string.Join(", ", node.TargetColumns.Select(c => translator.QuoteIdentifier(c.Name)).ToArray()) + ")";
-      context.Output.AppendText(string.Format(
-        "CONTAINSTABLE({0}, {1}, ", translator.Translate(context, node.TargetTable.DataTable), columns));
+      else {
+        output.Append('(');
+        TranslateJoinedColumnNames(targetColumns);
+        output.Append(')');
+      }
+
+
+      output.Append(", ");
       node.SearchCondition.AcceptVisitor(this);
       if (node.TopNByRank!=null) {
-        context.Output.AppendText(", ");
+        output.Append(", ");
         node.TopNByRank.AcceptVisitor(this);
       }
-      context.Output.AppendText(") ");
+      output.Append(") ");
     }
 
     public override void Visit(SqlFreeTextTable node)
     {
-      string columns;
-      if (node.TargetColumns.Count==1)
-        columns = node.TargetColumns[0]==node.Asterisk
-          ? node.TargetColumns[0].Name
-          : translator.QuoteIdentifier(node.TargetColumns[0].Name);
-      else
-        columns = string.Join(", ", node.TargetColumns.Select(c => translator.QuoteIdentifier(c.Name)).ToArray());
-      context.Output.AppendText(string.Format(
-        "FREETEXTTABLE({0}, {1}, ", translator.Translate(context, node.TargetTable.DataTable), columns));
+      var output = context.Output;
+
+      output.Append("FREETEXTTABLE(");
+      AppendTranslated(node.TargetTable.DataTable);
+      output.Append(", ");
+
+      var targetColumns = node.TargetColumns;
+      if (targetColumns.Count == 1) {
+        TranslateSingleColumnName(targetColumns[0], node.Asterisk);
+      }
+      else {
+        TranslateJoinedColumnNames(targetColumns);
+      }
+
+      output.Append(", ");
       node.FreeText.AcceptVisitor(this);
-      if (node.TopNByRank!=null) {
-        context.Output.AppendText(", ");
+      if (node.TopNByRank != null) {
+        context.Output.Append(", ");
         node.TopNByRank.AcceptVisitor(this);
       }
-      context.Output.AppendText(") ");
+      output.Append(") ");
     }
 
     public override void Visit(SqlCreateIndex node, IndexColumn item)
@@ -364,13 +404,13 @@ namespace Xtensive.Sql.Drivers.SqlServer.v09
       base.Visit(node, item);
 
       if (item.TypeColumn!=null)
-        context.Output.AppendText(string.Format("TYPE COLUMN {0} ", translator.QuoteIdentifier(item.TypeColumn.Name)));
+        context.Output.Append(string.Format("TYPE COLUMN {0} ", translator.QuoteIdentifier(item.TypeColumn.Name)));
       switch (item.Languages.Count) {
         case 0:
           break;
         case 1:
           if (!string.IsNullOrEmpty(item.Languages[0].Name))
-            context.Output.AppendText(string.Format("LANGUAGE '{0}'", item.Languages[0].Name));
+            context.Output.Append(string.Format("LANGUAGE '{0}'", item.Languages[0].Name));
           break;
         default:
           throw new InvalidOperationException(string.Format(

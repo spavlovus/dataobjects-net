@@ -45,7 +45,7 @@ namespace Xtensive.Sql.Drivers.Firebird.v2_5
       if (node.From!=null)
         base.VisitSelectFrom(node);
       else
-        context.Output.AppendText("FROM RDB$DATABASE");
+        context.Output.Append("FROM RDB$DATABASE ");
     }
 
     /// <inheritdoc/>
@@ -56,17 +56,17 @@ namespace Xtensive.Sql.Drivers.Firebird.v2_5
         bool needClosingParenthesis = false;
         AppendTranslated(node, QueryExpressionSection.Entry);
         if (needOpeningParenthesis)
-          context.Output.AppendText("(");
+          context.Output.Append("(");
         node.Left.AcceptVisitor(this);
         if (needClosingParenthesis)
-          context.Output.AppendText(")");
-        context.Output.AppendText(translator.Translate(node.NodeType));
+          context.Output.Append(")");
+        AppendTranslated(node.NodeType);
         AppendTranslated(node, QueryExpressionSection.All);
         if (needOpeningParenthesis)
-          context.Output.AppendText("(");
+          context.Output.Append("(");
         node.Right.AcceptVisitor(this);
         if (needClosingParenthesis)
-          context.Output.AppendText(")");
+          context.Output.Append(")");
         AppendTranslated(node, QueryExpressionSection.Exit);
       }
     }
@@ -302,7 +302,7 @@ namespace Xtensive.Sql.Drivers.Firebird.v2_5
 
       return SqlDml.Concat(date, SqlDml.Literal("T"), time);
     }
-    
+
     #endregion
 
     protected internal Compiler(SqlDriver driver)
