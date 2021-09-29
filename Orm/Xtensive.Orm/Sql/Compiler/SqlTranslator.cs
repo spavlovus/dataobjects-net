@@ -1648,7 +1648,9 @@ namespace Xtensive.Sql.Compiler
       }
 
       if (context.ParametrizeSchemaNames) {
+        output.AppendLiteral(setup.Opener);
         output.AppendPlaceholderWithId(node.Schema);
+        output.AppendLiteral(setup.Closer);
       }
       else {
         TranslateIdentifier(output, actualizer.Actualize(node.Schema));        
