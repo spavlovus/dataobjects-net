@@ -466,6 +466,7 @@ namespace Xtensive.Orm.Upgrade
         domain.Handlers, schemaExtractionResult,
         context.Services.MappingResolver, context.NodeConfiguration, context.UpgradeMode.IsLegacy());
       var result = new StorageNode(domain, context.NodeConfiguration, modelMapping, new TypeIdRegistry());
+      context.NodeConfiguration.TypeIdRegistry = result.TypeIdRegistry;
 
       // Register default storage node immediately,
       // non-default nodes are registered in NodeManager after everything completes successfully.

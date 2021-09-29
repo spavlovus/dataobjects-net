@@ -1643,7 +1643,7 @@ namespace Xtensive.Sql.Compiler
         && context.HasOptions(SqlCompilerNamingOptions.DatabaseQualifiedObjects);
       var actualizer = context.SqlNodeActualizer;
 
-      if (!dbQualified && context.ShareQueryCacheOverNodes) {
+      if (!dbQualified && context.ParametrizeSchemaNames) {
         context.PlaceholderValues.TryAdd(BracketedNodePlaceholder, QuoteIdentifier(actualizer.Actualize(node.Schema)));
         output.AppendPlaceholderWithId(BracketedNodePlaceholder);
         output.Append(".");

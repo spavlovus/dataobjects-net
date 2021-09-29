@@ -5,7 +5,6 @@
 // Created:    2009.11.13
 
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
@@ -40,16 +39,6 @@ namespace Xtensive.Orm.Providers
         Bindings = bindings;
       }
     }
-
-    private static readonly ConcurrentDictionary<TypeInfo, Func<ParameterContext, object>> typeIdParameterAccessorCache =
-      new ConcurrentDictionary<TypeInfo, Func<ParameterContext, object>>();
-
-    private static readonly Func<TypeInfo, Func<ParameterContext, object>> ContextBasedAccessorFactory = type => ctx => ctx.GetTypeId(type);
-
-    private static readonly ConcurrentDictionary<int, Func<ParameterContext, object>> typeIdParameterAccessorCache2 =
-      new ConcurrentDictionary<int, Func<ParameterContext, object>>();
-
-    private static readonly Func<int, Func<ParameterContext, object>> ConstantValueAccessorFactory = typeId => _ => typeId;
 
     private TypeMapping int32typeMapping;
 
@@ -266,34 +255,9 @@ namespace Xtensive.Orm.Providers
       else {
         var typeIdColumn = baseQuery.Columns[Handlers.Domain.Handlers.NameBuilder.TypeIdColumnName];
 
-        if (!useParameterForTypeId) {
-          if (filterByTypesCount == 1) {
-            filter = typeIdColumn == TypeIdRegistry[filterByTypes[0]];
-          }
-          else {
-            var arr = new int[filterByTypesCount];
-            for (var i = 0; i < filterByTypesCount; i++) {
-              arr[i] = TypeIdRegistry[filterByTypes[i]];
-            }
-            filter = SqlDml.In(typeIdColumn, SqlDml.Array(arr));
-          }
-        }
-        else {
-          if (filterByTypesCount == 1) {
-            var binding = CreateQueryParameterBinding(type);
-            bindings.Add(binding);
-            filter = typeIdColumn == binding.ParameterReference;
-          }
-          else {
-            var typeIdParameters = new SqlExpression[filterByTypesCount];
-            for (var i = 0; i < filterByTypesCount; i++) {
-              var binding = CreateQueryParameterBinding(type);
-              bindings.Add(binding);
-              typeIdParameters[i] = binding.ParameterReference;
-            }
-            filter = SqlDml.In(typeIdColumn, SqlDml.Array(typeIdParameters));
-          }
-        }
+        filter = filterByTypesCount == 1
+          ? typeIdColumn == SqlDml.Placeholder(filterByTypes[0])
+          : SqlDml.In(typeIdColumn, SqlDml.Array(filterByTypes.Select(SqlDml.Placeholder)));
       }
       var query = SqlDml.Select(baseQuery.From);
       query.Columns.AddRange(baseQuery.Columns);
@@ -329,17 +293,7 @@ namespace Xtensive.Orm.Providers
         .Select((c, i) => new {c.Field, i})
         .Single(p => p.Field.IsTypeId && p.Field.IsSystem).i;
       var type = index.ReflectedType;
-
-      SqlUserColumn typeIdColumn;
-      if (useParameterForTypeId) {
-        var binding = CreateQueryParameterBinding(type);
-
-        typeIdColumn = SqlDml.Column(binding.ParameterReference);
-        bindings.Add(binding);
-      }
-      else {
-        typeIdColumn = SqlDml.Column(SqlDml.Literal(TypeIdRegistry[type]));
-      }
+      var typeIdColumn = SqlDml.Column(SqlDml.Placeholder(type));
 
       var discriminatorMap = type.Hierarchy.TypeDiscriminatorMap;
       if (discriminatorMap != null) {
@@ -374,14 +328,5 @@ namespace Xtensive.Orm.Providers
         ? Convert.ChangeType(fieldValue, column.ValueType)
         : fieldValue;
     }
-
-    private QueryParameterBinding CreateQueryParameterBinding(TypeInfo type) =>
-      new QueryParameterBinding(
-        int32typeMapping ??= Driver.GetTypeMapping(WellKnownTypes.Int32),
-        ShareQueryCacheOverNodes
-          ? typeIdParameterAccessorCache.GetOrAdd(type, ContextBasedAccessorFactory)
-          : typeIdParameterAccessorCache2.GetOrAdd(TypeIdRegistry[type], ConstantValueAccessorFactory),
-        QueryParameterBindingType.Regular
-      );
   }
 }

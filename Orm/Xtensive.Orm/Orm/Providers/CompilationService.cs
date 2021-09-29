@@ -24,7 +24,6 @@ namespace Xtensive.Orm.Providers
     {
       return new CompilerConfiguration {
         StorageNode = session.StorageNode,
-        ShareQueryCacheOverNodes = session.Domain.Configuration.ShareQueryCacheOverNodes
       };
     }
 

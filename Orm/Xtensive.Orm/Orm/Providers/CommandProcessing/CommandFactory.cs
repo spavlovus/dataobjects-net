@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2020 Xtensive LLC.
+// Copyright (C) 2009-2021 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Denis Krjuchkov
@@ -53,7 +53,7 @@ namespace Xtensive.Orm.Providers
       foreach (var request in task.RequestSequence) {
         var tuple = task.Tuple;
         var compilationResult = request.GetCompiledStatement();
-        var configuration = new SqlPostCompilerConfiguration();
+        var configuration = new SqlPostCompilerConfiguration { TypeIdRegistry = Session.StorageNode.TypeIdRegistry };
         var part = new CommandPart();
         
         foreach (var binding in request.ParameterBindings) {
@@ -96,7 +96,7 @@ namespace Xtensive.Orm.Providers
 
       int parameterIndex = 0;
       var compilationResult = request.GetCompiledStatement();
-      var configuration = new SqlPostCompilerConfiguration();
+      var configuration = new SqlPostCompilerConfiguration { TypeIdRegistry = Session.StorageNode.TypeIdRegistry };
       var result = new CommandPart();
 
       foreach (var binding in request.ParameterBindings) {

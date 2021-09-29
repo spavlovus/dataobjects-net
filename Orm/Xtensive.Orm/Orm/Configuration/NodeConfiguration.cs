@@ -6,6 +6,7 @@
 
 using System;
 using Xtensive.Core;
+using Xtensive.Orm.Model;
 
 namespace Xtensive.Orm.Configuration
 {
@@ -21,6 +22,7 @@ namespace Xtensive.Orm.Configuration
     private NameMappingCollection schemaMapping = new NameMappingCollection();
     private NameMappingCollection databaseMapping = new NameMappingCollection();
     private DomainUpgradeMode upgradeMode = DomainUpgradeMode.Default;
+    public TypeIdRegistry TypeIdRegistry { get; set; }
 
     /// <summary>
     /// Gets or sets node identifier.
@@ -110,6 +112,7 @@ namespace Xtensive.Orm.Configuration
         connectionInitializationSql = connectionInitializationSql,
         databaseMapping = (NameMappingCollection) databaseMapping.Clone(),
         schemaMapping = (NameMappingCollection) schemaMapping.Clone(),
+        TypeIdRegistry = TypeIdRegistry,
       };
       return clone;
     }

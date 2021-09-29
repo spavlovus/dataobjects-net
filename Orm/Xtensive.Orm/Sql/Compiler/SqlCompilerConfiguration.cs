@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using JetBrains.Annotations;
 using Xtensive.Collections;
 using Xtensive.Core;
+using Xtensive.Orm.Model;
 using Xtensive.Sql.Info;
 
 namespace Xtensive.Sql.Compiler
@@ -36,6 +37,11 @@ namespace Xtensive.Sql.Compiler
     public bool ParametrizeSchemaNames { get; set; }
 
     /// <summary>
+    /// Maps TypeInfo -> int TypeId
+    /// </summary>
+    public TypeIdRegistry TypeIdRegistry { get; set; }
+
+    /// <summary>
     /// Gets database mapping.
     /// </summary>
     public IDictionary<string, string> SchemaMapping { get; private set; }
@@ -54,7 +60,8 @@ namespace Xtensive.Sql.Compiler
       return new SqlCompilerConfiguration {
         ParameterNamePrefix = ParameterNamePrefix,
         DatabaseQualifiedObjects = DatabaseQualifiedObjects,
-        ParametrizeSchemaNames = ParametrizeSchemaNames
+        ParametrizeSchemaNames = ParametrizeSchemaNames,
+        TypeIdRegistry = TypeIdRegistry
       };
     }
 

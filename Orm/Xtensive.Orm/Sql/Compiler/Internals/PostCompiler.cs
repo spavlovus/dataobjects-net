@@ -52,10 +52,7 @@ namespace Xtensive.Sql.Compiler
 
     public override void Visit(PlaceholderNode node)
     {
-      string value;
-      if (!configuration.PlaceholderValues.TryGetValue(node.Id, out value))
-        throw new InvalidOperationException(string.Format(Strings.ExValueForPlaceholderXIsNotSet, node.Id));
-      result.Append(value);
+      result.Append(configuration.GetPlaceholderValue(node));
     }
 
     public override void Visit(CycleItemNode node)

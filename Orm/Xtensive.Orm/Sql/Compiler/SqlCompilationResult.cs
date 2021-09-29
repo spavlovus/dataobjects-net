@@ -1,9 +1,10 @@
-// Copyright (C) 2003-2010 Xtensive LLC.
-// All rights reserved.
-// For conditions of distribution and use, see license.
+// Copyright (C) 2008-2021 Xtensive LLC.
+// This code is distributed under MIT license terms.
+// See the License.txt file in the project root for more information.
 
 using System;
 using System.Collections.Generic;
+using Xtensive.Orm.Model;
 
 namespace Xtensive.Sql.Compiler
 {
@@ -18,6 +19,7 @@ namespace Xtensive.Sql.Compiler
     private volatile int lastResultLength;
 
     private readonly IReadOnlyDictionary<object, string> placeholderValues;
+    private readonly TypeIdRegistry typeIdRegistry;
 
     /// <inheritdoc/>
     public override string ToString()
@@ -43,14 +45,8 @@ namespace Xtensive.Sql.Compiler
     /// Gets the textual representation of SQL DOM statement compilation.
     /// </summary>
     /// <value>The SQL text command.</value>
-    public string GetCommandText()
-    {
-      if (resultText != null)
-        return resultText;
-      string result = PostCompiler.Process(resultNodes, new SqlPostCompilerConfiguration(), lastResultLength, placeholderValues);
-      lastResultLength = result.Length;
-      return result;
-    }
+    public string GetCommandText() =>
+      GetCommandText(new SqlPostCompilerConfiguration { TypeIdRegistry = typeIdRegistry });
 
     /// <summary>
     /// Gets the textual representation of SQL DOM statement compilation.
@@ -70,7 +66,10 @@ namespace Xtensive.Sql.Compiler
 
     // Constructors
 
-    internal SqlCompilationResult(IReadOnlyList<Node> result, IReadOnlyDictionary<object, string> parameterNames, IReadOnlyDictionary<object, string> placeholderValues)
+    internal SqlCompilationResult(IReadOnlyList<Node> result,
+      IReadOnlyDictionary<object, string> parameterNames,
+      IReadOnlyDictionary<object, string> placeholderValues,
+      TypeIdRegistry typeIdRegistry)
     {
       switch (result.Count) {
         case 0:
@@ -85,6 +84,7 @@ namespace Xtensive.Sql.Compiler
       }
       this.parameterNames = parameterNames.Count > 0 ? parameterNames : null;
       this.placeholderValues = placeholderValues;
+      this.typeIdRegistry = typeIdRegistry;
     }
   }
 }

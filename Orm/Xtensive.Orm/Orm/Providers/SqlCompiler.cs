@@ -29,7 +29,6 @@ namespace Xtensive.Orm.Providers
     private readonly HashSet<Column> rootColumns;
     private readonly bool temporaryTablesSupported;
     private readonly bool forceApplyViaReference;
-    private readonly bool useParameterForTypeId;
 
     private bool anyTemporaryTablesRequired;
 
@@ -67,8 +66,6 @@ namespace Xtensive.Orm.Providers
     /// Gets node configuration on which query is compilling.
     /// </summary>
     protected NodeConfiguration NodeConfiguration { get; private set; }
-
-    protected bool ShareQueryCacheOverNodes { get; private set; }
 
     /// <inheritdoc/>
     protected override SqlProvider VisitAlias(AliasProvider provider)
@@ -564,16 +561,10 @@ namespace Xtensive.Orm.Providers
       Mapping = storageNode.Mapping;
       TypeIdRegistry = storageNode.TypeIdRegistry;
       NodeConfiguration = storageNode.Configuration;
-      ShareQueryCacheOverNodes = configuration.ShareQueryCacheOverNodes;
 
       providerInfo = Handlers.ProviderInfo;
       temporaryTablesSupported = DomainHandler.TemporaryTableManager.Supported;
       forceApplyViaReference = handlers.ProviderInfo.ProviderName.Equals(WellKnown.Provider.PostgreSql);
-      useParameterForTypeId = Driver.ServerInfo.Query.Features.HasFlag(Sql.Info.QueryFeatures.ParameterAsColumn);
-
-      if (!useParameterForTypeId && ShareQueryCacheOverNodes) {
-        throw new NotImplementedException("ShareQueryCacheOverNodes option is not supported with this SQL driver");
-      }
 
       if (!providerInfo.Supports(ProviderFeatures.FullFeaturedBooleanExpressions)) {
         booleanExpressionConverter = new BooleanExpressionConverter(Driver);

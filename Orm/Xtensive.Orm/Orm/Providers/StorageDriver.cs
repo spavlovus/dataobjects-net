@@ -96,6 +96,7 @@ namespace Xtensive.Orm.Providers
         options = new SqlCompilerConfiguration();
       options.DatabaseQualifiedObjects = configuration.IsMultidatabase;
       options.ParametrizeSchemaNames = configuration.ShareQueryCacheOverNodes;
+      options.TypeIdRegistry = nodeConfiguration.TypeIdRegistry;
       return underlyingDriver.Compile(statement, options);
     }
 
