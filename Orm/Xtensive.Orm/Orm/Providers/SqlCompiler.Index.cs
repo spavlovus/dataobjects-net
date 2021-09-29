@@ -40,8 +40,6 @@ namespace Xtensive.Orm.Providers
       }
     }
 
-    private TypeMapping int32typeMapping;
-
     protected override SqlProvider VisitFreeText(FreeTextProvider provider)
     {
       throw new NotSupportedException();

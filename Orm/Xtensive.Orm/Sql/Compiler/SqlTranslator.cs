@@ -21,9 +21,6 @@ namespace Xtensive.Sql.Compiler
   /// </summary>
   public abstract class SqlTranslator : SqlDriverBound
   {
-    private const string NodePlaceholder = "node_placeholder";
-    public const string BracketedNodePlaceholder = "[node_placeholder]";
-
     public DateTimeFormatInfo DateTimeFormat { get; private set; }
     public NumberFormatInfo IntegerNumberFormat { get; private set; }
     public NumberFormatInfo FloatNumberFormat { get; private set; }
@@ -1643,19 +1640,26 @@ namespace Xtensive.Sql.Compiler
         && context.HasOptions(SqlCompilerNamingOptions.DatabaseQualifiedObjects);
       var actualizer = context.SqlNodeActualizer;
 
-      if (!dbQualified && context.ParametrizeSchemaNames) {
-        context.PlaceholderValues.TryAdd(BracketedNodePlaceholder, QuoteIdentifier(actualizer.Actualize(node.Schema)));
-        output.AppendPlaceholderWithId(BracketedNodePlaceholder);
-        output.Append(".");
-        TranslateIdentifier(output, node.DbName);
-        return;
-      }
+      var setup = EscapeSetup;
 
       if (dbQualified) {
-        TranslateIdentifier(output, actualizer.Actualize(node.Schema.Catalog), actualizer.Actualize(node.Schema), node.GetDbNameInternal());
+        TranslateIdentifier(output, actualizer.Actualize(node.Schema.Catalog));
+        output.AppendLiteral(setup.Delimiter);
+      }
+
+      if (context.ParametrizeSchemaNames) {
+        output.AppendPlaceholderWithId(node.Schema);
       }
       else {
-        TranslateIdentifier(output, actualizer.Actualize(node.Schema), node.DbName);
+        TranslateIdentifier(output, actualizer.Actualize(node.Schema));        
+      }
+      output.AppendLiteral(setup.Delimiter);
+
+      if (dbQualified) {
+        TranslateIdentifier(output, node.GetDbNameInternal());
+      }
+      else {
+        TranslateIdentifier(output, node.DbName);
       }
     }
 

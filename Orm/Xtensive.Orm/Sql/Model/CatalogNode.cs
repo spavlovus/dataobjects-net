@@ -103,7 +103,7 @@ namespace Xtensive.Sql.Model
       return name;
     }
 
-    internal string GetActualDbName(IDictionary<string, string> nodeNameMap)
+    internal string GetActualDbName(IReadOnlyDictionary<string, string> nodeNameMap)
     {
       if (!isNamesReadingDenied)
         return DbName;

@@ -1,6 +1,6 @@
-// Copyright (C) 2003-2010 Xtensive LLC.
-// All rights reserved.
-// For conditions of distribution and use, see license.
+// Copyright (C) 2009-2021 Xtensive LLC.
+// This code is distributed under MIT license terms.
+// See the License.txt file in the project root for more information.
 // Created by: Denis Krjuchkov
 // Created:    2009.07.15
 
@@ -44,12 +44,12 @@ namespace Xtensive.Sql.Compiler
     /// <summary>
     /// Gets database mapping.
     /// </summary>
-    public IDictionary<string, string> SchemaMapping { get; private set; }
+    public IReadOnlyDictionary<string, string> SchemaMapping { get; private set; }
 
     /// <summary>
     /// Gets database mapping.
     /// </summary>
-    public IDictionary<string, string> DatabaseMapping { get; private set; }
+    public IReadOnlyDictionary<string, string> DatabaseMapping { get; private set; }
 
     /// <summary>
     /// Clones this instance.
@@ -71,12 +71,12 @@ namespace Xtensive.Sql.Compiler
       DatabaseMapping = null;
     }
 
-    public SqlCompilerConfiguration([NotNull]IDictionary<string, string> databaseMapping, [NotNull]IDictionary<string, string> schemaMapping)
+    public SqlCompilerConfiguration([NotNull]IReadOnlyDictionary<string, string> databaseMapping, [NotNull] IReadOnlyDictionary<string, string> schemaMapping)
     {
       ArgumentValidator.EnsureArgumentNotNull(databaseMapping, "databaseMapping");
       ArgumentValidator.EnsureArgumentNotNull(schemaMapping, "schemaMapping");
-      DatabaseMapping = new ReadOnlyDictionary<string, string>(databaseMapping);
-      SchemaMapping = new ReadOnlyDictionary<string, string>(schemaMapping);
+      DatabaseMapping = databaseMapping;
+      SchemaMapping = schemaMapping;
     }
   }
 }

@@ -18,8 +18,8 @@ namespace Xtensive.Sql.Compiler
     private readonly IReadOnlyDictionary<object, string> parameterNames;
     private volatile int lastResultLength;
 
-    private readonly IReadOnlyDictionary<object, string> placeholderValues;
     private readonly TypeIdRegistry typeIdRegistry;
+    private readonly IReadOnlyDictionary<string, string> schemaMapping;
 
     /// <inheritdoc/>
     public override string ToString()
@@ -46,7 +46,7 @@ namespace Xtensive.Sql.Compiler
     /// </summary>
     /// <value>The SQL text command.</value>
     public string GetCommandText() =>
-      GetCommandText(new SqlPostCompilerConfiguration { TypeIdRegistry = typeIdRegistry });
+      GetCommandText(new SqlPostCompilerConfiguration(typeIdRegistry, schemaMapping));
 
     /// <summary>
     /// Gets the textual representation of SQL DOM statement compilation.
@@ -58,7 +58,7 @@ namespace Xtensive.Sql.Compiler
     {
       if (resultText!=null)
         return resultText;
-      string result = PostCompiler.Process(resultNodes, configuration, lastResultLength, placeholderValues);
+      string result = PostCompiler.Process(resultNodes, configuration, lastResultLength);
       lastResultLength = result.Length;
       return result;
     }
@@ -68,8 +68,9 @@ namespace Xtensive.Sql.Compiler
 
     internal SqlCompilationResult(IReadOnlyList<Node> result,
       IReadOnlyDictionary<object, string> parameterNames,
-      IReadOnlyDictionary<object, string> placeholderValues,
-      TypeIdRegistry typeIdRegistry)
+      TypeIdRegistry typeIdRegistry,
+      IReadOnlyDictionary<string, string> schemaMapping
+      )
     {
       switch (result.Count) {
         case 0:
@@ -83,8 +84,8 @@ namespace Xtensive.Sql.Compiler
           break;
       }
       this.parameterNames = parameterNames.Count > 0 ? parameterNames : null;
-      this.placeholderValues = placeholderValues;
       this.typeIdRegistry = typeIdRegistry;
+      this.schemaMapping = schemaMapping;
     }
   }
 }

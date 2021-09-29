@@ -34,7 +34,10 @@ namespace Xtensive.Orm.Providers
 
     private readonly DomainConfiguration configuration;
     private readonly SqlDriver underlyingDriver;
+
     private readonly SqlTranslator translator;
+    public SqlTranslator Translator => translator;
+
     private readonly TypeMappingRegistry allMappings;
     private readonly bool isLoggingEnabled;
     private readonly bool hasSavepoints;

@@ -24,8 +24,6 @@ namespace Xtensive.Sql.Compiler
 
     public ContainerNode Output { get; private set; }
 
-    public Dictionary<object, string> PlaceholderValues { get; } = new Dictionary<object, string>();
-
     public SqlCompilerNamingOptions NamingOptions { get; private set; }
 
     public SqlNodeActualizer SqlNodeActualizer { get; private set; }

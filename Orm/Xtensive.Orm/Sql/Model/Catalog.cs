@@ -177,23 +177,18 @@ namespace Xtensive.Sql.Model
         throw new ArgumentNullException("catalogNameMap");
 
       var name = GetNameInternal();
-      string actualName;
-      if (catalogNameMap.TryGetValue(name, out actualName))
-        return actualName;
-      return name;
+      return catalogNameMap.TryGetValue(name, out var actualName) ? actualName : name;
     }
 
-    internal string GetActualDbName(IDictionary<string, string> catalogNameMap)
+    internal string GetActualDbName(IReadOnlyDictionary<string, string> catalogNameMap)
     {
       if (!isNamesReadingDenied)
         return DbName;
       if (catalogNameMap==null)
         throw new InvalidOperationException("Unable to calculate real name for catalog");
+
       var name = GetDbNameInternal();
-      string actualName;
-      if (catalogNameMap.TryGetValue(name, out actualName))
-        return actualName;
-      return name;
+      return catalogNameMap.TryGetValue(name, out var actualName) ? actualName : name;
     }
 
     // Constructors

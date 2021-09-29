@@ -7,7 +7,10 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using Xtensive.Orm;
+using Xtensive.Orm.Configuration;
 using Xtensive.Orm.Model;
+using Xtensive.Sql.Model;
 
 namespace Xtensive.Sql.Compiler
 {
@@ -19,7 +22,8 @@ namespace Xtensive.Sql.Compiler
     public HashSet<object> AlternativeBranches { get; } = new HashSet<object>();
 
     public Dictionary<object, string> PlaceholderValues { get; } = new Dictionary<object, string>();
-    public TypeIdRegistry TypeIdRegistry { get; set; }
+    public TypeIdRegistry TypeIdRegistry { get; }
+    public IReadOnlyDictionary<string, string> SchemaMapping { get; }
 
     public Dictionary<object, List<string[]>> DynamicFilterValues { get; } = new Dictionary<object, List<string[]>>();
 
@@ -27,13 +31,24 @@ namespace Xtensive.Sql.Compiler
       node.Id is TypeInfo typeInfo
           && (TypeIdRegistry?.GetTypeId(typeInfo) ?? TypeInfo.NoTypeId) is var typeId && typeId != TypeInfo.NoTypeId
         ? typeId.ToString(CultureInfo.InvariantCulture)
+        : node.Id is Schema schema ? schema.GetActualDbName(SchemaMapping)
         : PlaceholderValues.TryGetValue(node.Id, out var value) ? value
         : throw new InvalidOperationException(string.Format(Strings.ExValueForPlaceholderXIsNotSet, node.Id));
 
     // Constructors
 
-    public SqlPostCompilerConfiguration()
+    public SqlPostCompilerConfiguration(StorageNode storageNode = null)
     {
+      if (storageNode != null) {
+        TypeIdRegistry = storageNode.TypeIdRegistry;
+        SchemaMapping = storageNode.Configuration.GetSchemaMapping();
+      }
+    }
+
+    public SqlPostCompilerConfiguration(TypeIdRegistry typeIdRegistry, IReadOnlyDictionary<string, string> schemaMapping)
+    {
+      TypeIdRegistry = typeIdRegistry;
+      SchemaMapping = schemaMapping;
     }
   }
 }

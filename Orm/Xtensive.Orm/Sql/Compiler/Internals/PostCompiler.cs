@@ -22,15 +22,10 @@ namespace Xtensive.Sql.Compiler
 
     private string[] currentCycleItem;
 
-    public static string Process(IReadOnlyList<Node> nodes, SqlPostCompilerConfiguration configuration, int estimatedResultLength, IReadOnlyDictionary<object, string> placeholders)
+    public static string Process(IReadOnlyList<Node> nodes, SqlPostCompilerConfiguration configuration, int estimatedResultLength)
     {
       var textNodesLength = nodes.OfType<TextNode>().Sum(o => o.Text.Length);
-      var compiler = new PostCompiler(configuration, Math.Max(textNodesLength, estimatedResultLength));
-      if (placeholders != null) {
-        foreach (var kv in placeholders) {
-          _ = compiler.configuration.PlaceholderValues.TryAdd(kv.Key, kv.Value);  // Don't override values added in CreateQueryPart()
-        }
-      }
+      var compiler = new PostCompiler(configuration, Math.Max(textNodesLength, estimatedResultLength));      
       compiler.VisitNodes(nodes);
       return compiler.result.ToString();
     }
