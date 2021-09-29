@@ -82,7 +82,7 @@ namespace Xtensive.Orm.Providers
     {
       var options = new SqlCompilerConfiguration {
         DatabaseQualifiedObjects = configuration.IsMultidatabase,
-        ShareQueryCacheOverNodes = configuration.ShareQueryCacheOverNodes
+        ParametrizeSchemaNames = configuration.ShareQueryCacheOverNodes
       };
       return underlyingDriver.Compile(statement, options);
     }
@@ -95,7 +95,7 @@ namespace Xtensive.Orm.Providers
       else
         options = new SqlCompilerConfiguration();
       options.DatabaseQualifiedObjects = configuration.IsMultidatabase;
-      options.ShareQueryCacheOverNodes = configuration.ShareQueryCacheOverNodes;
+      options.ParametrizeSchemaNames = configuration.ShareQueryCacheOverNodes;
       return underlyingDriver.Compile(statement, options);
     }
 

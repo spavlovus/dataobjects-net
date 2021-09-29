@@ -29,7 +29,11 @@ namespace Xtensive.Sql.Compiler
     /// </summary>
     public bool DatabaseQualifiedObjects { get; set; }
 
-    public bool ShareQueryCacheOverNodes { get; set; }
+    /// <summary>
+    /// Insert Placeholder nodes instead of real schema names
+    /// Allows to share compiled query over multiple schemas.
+    /// </summary>
+    public bool ParametrizeSchemaNames { get; set; }
 
     /// <summary>
     /// Gets database mapping.
@@ -50,7 +54,7 @@ namespace Xtensive.Sql.Compiler
       return new SqlCompilerConfiguration {
         ParameterNamePrefix = ParameterNamePrefix,
         DatabaseQualifiedObjects = DatabaseQualifiedObjects,
-        ShareQueryCacheOverNodes = ShareQueryCacheOverNodes
+        ParametrizeSchemaNames = ParametrizeSchemaNames
       };
     }
 

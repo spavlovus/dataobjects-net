@@ -152,7 +152,7 @@ namespace Xtensive.Sql.Compiler
       ParameterNameProvider = new SqlParameterNameProvider(configuration);
       Output = new ContainerNode();
       SqlNodeActualizer = new SqlNodeActualizer(configuration.DatabaseMapping, configuration.SchemaMapping);
-      ShareQueryCacheOverNodes = configuration.ShareQueryCacheOverNodes;
+      ShareQueryCacheOverNodes = configuration.ParametrizeSchemaNames;
     }
   }
 }

@@ -1644,7 +1644,7 @@ namespace Xtensive.Sql.Compiler
       var actualizer = context.SqlNodeActualizer;
 
       if (!dbQualified && context.ShareQueryCacheOverNodes) {
-        _ = context.PlaceholderValues.TryAdd(BracketedNodePlaceholder, QuoteIdentifier(actualizer.Actualize(node.Schema)));
+        context.PlaceholderValues.TryAdd(BracketedNodePlaceholder, QuoteIdentifier(actualizer.Actualize(node.Schema)));
         output.AppendPlaceholderWithId(BracketedNodePlaceholder);
         output.Append(".");
         TranslateIdentifier(output, node.DbName);
