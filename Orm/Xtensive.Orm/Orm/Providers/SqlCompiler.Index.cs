@@ -219,7 +219,7 @@ namespace Xtensive.Orm.Providers
       var underlyingIndex = index.UnderlyingIndexes[0];
       var baseQueryAndBindings = BuildProviderQuery(underlyingIndex);
       var baseQuery = baseQueryAndBindings.Query;
-      var bindings = baseQueryAndBindings.Bindings.ToList();
+      var bindings = baseQueryAndBindings.Bindings;
 
       SqlExpression filter = null;
       var type = index.ReflectedType;
@@ -282,7 +282,7 @@ namespace Xtensive.Orm.Providers
       var underlyingIndex = index.UnderlyingIndexes[0];
       var baseQueryAndBindings = BuildProviderQuery(underlyingIndex);
       var baseQuery = baseQueryAndBindings.Query;
-      var bindings = baseQueryAndBindings.Bindings.ToList();
+      var bindings = baseQueryAndBindings.Bindings;
       var query = SqlDml.Select(baseQuery.From);
       query.Where = baseQuery.Where;
 
@@ -308,7 +308,7 @@ namespace Xtensive.Orm.Providers
         }
 
         typeIdColumn = SqlDml.Column(sqlCase);
-        bindings = baseQueryAndBindings.Bindings.ToList();
+        bindings = baseQueryAndBindings.Bindings;
       }
 
       var typeIdColumnRef = SqlDml.ColumnRef(typeIdColumn, WellKnown.TypeIdFieldName);
