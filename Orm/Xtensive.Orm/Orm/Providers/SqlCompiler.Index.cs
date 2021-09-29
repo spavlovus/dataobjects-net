@@ -300,11 +300,10 @@ namespace Xtensive.Orm.Providers
         var sqlCase = SqlDml.Case(discriminatorColumn);
         foreach (var pair in discriminatorMap) {
           var discriminatorValue = GetDiscriminatorValue(discriminatorMap, pair.First);
-          var typeId = TypeIdRegistry[pair.Second];
-          _ = sqlCase.Add(SqlDml.Literal(discriminatorValue), SqlDml.Literal(typeId));
+          _ = sqlCase.Add(SqlDml.Literal(discriminatorValue), SqlDml.Placeholder(pair.Second));
         }
         if (discriminatorMap.Default != null) {
-          sqlCase.Else = SqlDml.Literal(TypeIdRegistry[discriminatorMap.Default]);
+          sqlCase.Else = SqlDml.Placeholder(discriminatorMap.Default);
         }
 
         typeIdColumn = SqlDml.Column(sqlCase);

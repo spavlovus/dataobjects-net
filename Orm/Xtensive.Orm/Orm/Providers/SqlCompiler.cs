@@ -38,19 +38,14 @@ namespace Xtensive.Orm.Providers
     protected ModelMapping Mapping { get; private set; }
 
     /// <summary>
-    /// Gets type identifier registry.
-    /// </summary>
-    protected TypeIdRegistry TypeIdRegistry { get; private set; }
-
-    /// <summary>
     /// Gets the SQL domain handler.
     /// </summary>
-    protected DomainHandler DomainHandler { get { return Handlers.DomainHandler; } }
+    protected DomainHandler DomainHandler => Handlers.DomainHandler;
 
     /// <summary>
     /// Gets the SQL driver.
     /// </summary>
-    protected StorageDriver Driver { get { return Handlers.StorageDriver; } }
+    protected StorageDriver Driver => Handlers.StorageDriver;
 
     /// <summary>
     /// Gets the <see cref="HandlerAccessor"/> object providing access to available storage handlers.
@@ -559,7 +554,6 @@ namespace Xtensive.Orm.Providers
       OuterReferences = new BindingCollection<ApplyParameter, Pair<SqlProvider, bool>>();
       var storageNode = configuration.StorageNode;
       Mapping = storageNode.Mapping;
-      TypeIdRegistry = storageNode.TypeIdRegistry;
       NodeConfiguration = storageNode.Configuration;
 
       providerInfo = Handlers.ProviderInfo;
