@@ -179,7 +179,7 @@ namespace Xtensive.Orm.Internals.Prefetch
     private QueryTask CreateQueryTask()
     {
       var session = manager.Owner.Session;
-      var parameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry);
+      var parameterContext = new ParameterContext();
       parameterContext.SetValue(ownerParameter, ownerKey.Value);
       if (ItemCountLimit != null) {
         parameterContext.SetValue(itemCountLimitParameter, ItemCountLimit.Value);

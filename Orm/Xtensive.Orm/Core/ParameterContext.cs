@@ -21,8 +21,6 @@ namespace Xtensive.Core
     private Dictionary<Parameter, object> values;
     private Dictionary<Parameter, object> Values => values ??= new Dictionary<Parameter, object>();
 
-    private readonly TypeIdRegistry typeIdRegistry;
-
     [DebuggerStepThrough]
     internal bool TryGetValue(Parameter parameter, out object value)
     {
@@ -43,19 +41,13 @@ namespace Xtensive.Core
     [DebuggerStepThrough]
     internal void SetValue(Parameter parameter, object value) => Values[parameter] = value;
 
-    public int GetTypeId(TypeInfo type) =>
-        typeIdRegistry?[type]
-        ?? outerContext?.GetTypeId(type)
-        ?? throw new InvalidOperationException(string.Format(Strings.ExTypeIdForTypeXIsNotFound, type));
-
     // Constructors
 
     /// <summary>
     /// Initializes new instance of this type.
     /// </summary>
-    public ParameterContext(TypeIdRegistry typeIdRegistry = null, ParameterContext outerContext = null)
+    public ParameterContext(ParameterContext outerContext = null)
     {
-      this.typeIdRegistry = typeIdRegistry;
       this.outerContext = outerContext;
     }
   }

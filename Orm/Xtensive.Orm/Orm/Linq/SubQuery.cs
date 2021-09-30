@@ -82,7 +82,7 @@ namespace Xtensive.Orm.Linq
       var currentTranslatedQuery = query;
 
       var outerParameterContext = context.ParameterContext;
-      var parameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry, outerParameterContext);
+      var parameterContext = new ParameterContext(outerParameterContext);
       // Gather Parameter<Tuple> values from current ParameterScope for future use.
       outerParameterContext.SetValue(parameter, tuple);
       foreach (var tupleParameter in currentTranslatedQuery.TupleParameters) {

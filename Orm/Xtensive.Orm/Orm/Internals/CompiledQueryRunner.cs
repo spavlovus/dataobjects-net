@@ -110,7 +110,7 @@ namespace Xtensive.Orm.Internals
     {
       AllocateParameterAndReplacer();
 
-      var parameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry, outerContext);
+      var parameterContext = new ParameterContext(outerContext);
       parameterContext.SetValue(queryParameter, queryTarget);
       var scope = new CompiledQueryProcessingScope(
         queryParameter, queryParameterReplacer, parameterContext, executeAsSideEffect);
@@ -205,7 +205,7 @@ namespace Xtensive.Orm.Internals
 
     private ParameterContext CreateParameterContext(ParameterizedQuery query)
     {
-      var parameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry, outerContext);
+      var parameterContext = new ParameterContext(outerContext);
       if (query.QueryParameter!=null) {
         parameterContext.SetValue(query.QueryParameter, queryTarget);
       }

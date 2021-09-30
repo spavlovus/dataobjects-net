@@ -65,7 +65,7 @@ namespace Xtensive.Orm.Linq
     /// <returns>Query execution result.</returns>
     public QueryResult<T> ExecuteSequence<T>(Session session, ParameterContext parameterContext)
     {
-      var newParameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry, parameterContext);
+      var newParameterContext = new ParameterContext(parameterContext);
       foreach (var (parameter, tuple) in TupleParameterBindings) {
         newParameterContext.SetValue(parameter, tuple);
       }
@@ -101,7 +101,7 @@ namespace Xtensive.Orm.Linq
     public async Task<QueryResult<T>> ExecuteSequenceAsync<T>(
       Session session, ParameterContext parameterContext, CancellationToken token)
     {
-      var newParameterContext = new ParameterContext(session.StorageNode.TypeIdRegistry, parameterContext);
+      var newParameterContext = new ParameterContext(parameterContext);
       foreach (var (parameter, tuple) in TupleParameterBindings) {
         newParameterContext.SetValue(parameter, tuple);
       }

@@ -109,7 +109,7 @@ namespace Xtensive.Orm.Services
 
       var command = commandFactory.CreateCommand();
       var session = Session;
-      command.AddPart(commandFactory.CreateQueryPart(request.RealRequest, new ParameterContext(session.StorageNode.TypeIdRegistry)));
+      command.AddPart(commandFactory.CreateQueryPart(request.RealRequest, new ParameterContext()));
       return new QueryCommand(driver, session, command.Prepare());
     }
 

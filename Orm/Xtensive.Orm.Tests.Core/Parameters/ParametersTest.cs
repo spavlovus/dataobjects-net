@@ -28,7 +28,7 @@ namespace Xtensive.Orm.Tests.Core.Parameters
       firstContext.SetValue(parameter, 15);
       Assert.AreEqual(15, firstContext.GetValue(parameter));
 
-      var secondContext = new ParameterContext(null, firstContext);
+      var secondContext = new ParameterContext(firstContext);
       Assert.AreEqual(15, secondContext.GetValue(parameter));
       secondContext.SetValue(parameter, 20);
       Assert.AreEqual(20, secondContext.GetValue(parameter));
