@@ -32,7 +32,7 @@ namespace Xtensive.Sql.Compiler
       switch (node.Id) {
         case TypeInfo typeInfo when TypeIdRegistry != null:
           if (TypeIdRegistry.GetTypeId(typeInfo) is var typeId && typeId != TypeInfo.NoTypeId) {
-            sb.Append(typeId);
+            sb.Append(typeId);      // We assume typeId > 0 here to avoid using .AppendFormat(CultureInfo.InvariantCulture) with boxing
             return;
           }
           break;
