@@ -6,7 +6,7 @@
 
 using System;
 using System.Collections.Generic;
-using System.Globalization;
+using System.Text;
 using Xtensive.Orm;
 using Xtensive.Orm.Configuration;
 using Xtensive.Orm.Model;
@@ -27,13 +27,24 @@ namespace Xtensive.Sql.Compiler
 
     public Dictionary<object, List<string[]>> DynamicFilterValues { get; } = new Dictionary<object, List<string[]>>();
 
-    internal string GetPlaceholderValue(PlaceholderNode node) =>
-      node.Id is TypeInfo typeInfo
-          && (TypeIdRegistry?.GetTypeId(typeInfo) ?? TypeInfo.NoTypeId) is var typeId && typeId != TypeInfo.NoTypeId
-        ? typeId.ToString(CultureInfo.InvariantCulture)
-        : node.Id is Schema schema ? schema.GetActualDbName(SchemaMapping)
-        : PlaceholderValues.TryGetValue(node.Id, out var value) ? value
-        : throw new InvalidOperationException(string.Format(Strings.ExValueForPlaceholderXIsNotSet, node.Id));
+    internal void AppendPlaceholderValue(StringBuilder sb, PlaceholderNode node)
+    {
+      switch (node.Id) {
+        case TypeInfo typeInfo when TypeIdRegistry != null:
+          if (TypeIdRegistry.GetTypeId(typeInfo) is var typeId && typeId != TypeInfo.NoTypeId) {
+            sb.Append(typeId);
+            return;
+          }
+          break;
+        case Schema schema:
+          sb.Append(schema.GetActualDbName(SchemaMapping));
+          return;
+      }
+      if (!PlaceholderValues.TryGetValue(node.Id, out var value)) {
+        throw new InvalidOperationException(string.Format(Strings.ExValueForPlaceholderXIsNotSet, node.Id));
+      }
+      sb.Append(value);
+    }
 
     // Constructors
 
