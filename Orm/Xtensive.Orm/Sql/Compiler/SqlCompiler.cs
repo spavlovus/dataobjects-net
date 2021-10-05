@@ -299,10 +299,19 @@ namespace Xtensive.Sql.Compiler
       }
 
       using (context.EnterScope(node)) {
+        var left = node.Left;
+        var right = node.Right;
+
         AppendTranslated(node, NodeSection.Entry);
-        node.Left.AcceptVisitor(this);
+        left.AcceptVisitor(this);
         AppendTranslated(node.NodeType);
-        node.Right.AcceptVisitor(this);
+
+        // Replace int TypeId by TypeInfo placeholder
+        if (left is SqlTableColumn column && column.Name == Xtensive.Orm.WellKnown.TypeIdFieldName && right is SqlLiteral literal) {
+          right = SqlDml.Placeholder(this.configuration.TypeIdRegistry[(int) literal.GetValue()]);
+        }
+
+        right.AcceptVisitor(this);
         AppendTranslated(node, NodeSection.Exit);
       }
     }
