@@ -89,7 +89,7 @@ namespace Xtensive.Sql.Model
       isNamesReadingDenied = true;
     }
 
-    internal string GetActualName(IDictionary<string, string> nodeNameMap)
+    internal string GetActualName(IReadOnlyDictionary<string, string> nodeNameMap)
     {
       if (!isNamesReadingDenied)
         return Name;

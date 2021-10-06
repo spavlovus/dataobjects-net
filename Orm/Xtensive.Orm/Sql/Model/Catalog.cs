@@ -169,7 +169,7 @@ namespace Xtensive.Sql.Model
       this.PartitionSchemas.ForEach(ps => ps.MakeNamesUnreadable());
     }
 
-    internal string GetActualName(IDictionary<string, string> catalogNameMap)
+    internal string GetActualName(IReadOnlyDictionary<string, string> catalogNameMap)
     {
       if (!isNamesReadingDenied)
         return Name;

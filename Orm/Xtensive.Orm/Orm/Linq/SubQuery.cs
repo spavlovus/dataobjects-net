@@ -101,7 +101,7 @@ namespace Xtensive.Orm.Linq
         query.Materializer,
         query.ResultAccessMethod,
         tupleParameterBindings,
-        EnumerableUtils<Parameter<Tuple>>.Empty);
+        Enumerable.Empty<Parameter<Tuple>>());
       delayedQuery = new DelayedQuery<TElement>(session, translatedQuery, parameterContext);
       session.RegisterUserDefinedDelayedQuery(delayedQuery.Task);
       context.MaterializationContext.MaterializationQueue.Enqueue(MaterializeSelf);

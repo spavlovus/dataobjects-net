@@ -5,8 +5,8 @@
 // Created:    2009.07.15
 
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using JetBrains.Annotations;
-using Xtensive.Collections;
 using Xtensive.Core;
 using Xtensive.Orm.Model;
 using Xtensive.Sql.Info;
