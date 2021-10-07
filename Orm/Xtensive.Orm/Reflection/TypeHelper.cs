@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2020 Xtensive LLC.
+// Copyright (C) 2007-2021 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Nick Svetlov
@@ -61,6 +61,9 @@ namespace Xtensive.Reflection
 
     private static readonly ConcurrentDictionary<Pair<Type, Type>, InterfaceMapping> interfaceMaps =
       new ConcurrentDictionary<Pair<Type, Type>, InterfaceMapping>();
+
+    private static readonly ConcurrentDictionary<(Type, Type), Type> genericInterfaceMap =
+      new ConcurrentDictionary<(Type, Type), Type>();
 
     private static int createDummyTypeNumber = 0;
     private static AssemblyBuilder assemblyBuilder;
@@ -992,8 +995,11 @@ namespace Xtensive.Reflection
     /// where type parameters are bound in case it is implemented by the <paramref name="type"/>;
     /// otherwise, <see langword="null"/>.
     /// </returns>
-    public static Type GetGenericInterface(this Type type, Type openGenericInterface)
-    {
+    public static Type GetGenericInterface(this Type type, Type openGenericInterface) =>
+      genericInterfaceMap.GetOrAdd((type, openGenericInterface), GenericInterfaceMapFactory);
+
+    private static readonly Func<(Type, Type), Type> GenericInterfaceMapFactory = key => {
+      (Type type, Type openGenericInterface) = key;
       var metadataToken = openGenericInterface.MetadataToken;
       var module = openGenericInterface.Module;
       if (type == null || ((type.MetadataToken ^ metadataToken) == 0 && ReferenceEquals(type.Module, module))) {
@@ -1009,7 +1015,7 @@ namespace Xtensive.Reflection
       }
 
       return null;
-    }
+    };
 
     /// <summary>
     /// Converts <paramref name="type"/> to type that can assign both

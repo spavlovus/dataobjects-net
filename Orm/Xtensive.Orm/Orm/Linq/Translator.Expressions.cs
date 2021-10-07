@@ -75,7 +75,7 @@ namespace Xtensive.Orm.Linq
     {
       if (e==null)
         return null;
-      if (e.IsProjection())
+      if (e.StripMarkers().IsProjection())
         return e;
       if (context.Evaluator.CanBeEvaluated(e)) {
         if (WellKnownInterfaces.Queryable.IsAssignableFrom(e.Type))
@@ -135,7 +135,7 @@ namespace Xtensive.Orm.Linq
           && body.NodeType!=ExpressionType.MemberInit
           && !(body.NodeType==ExpressionType.Constant && state.BuildingProjection);
         if (shouldTranslate)
-          body = body.IsProjection()
+          body = body.StripMarkers().IsProjection()
             ? BuildSubqueryResult((ProjectionExpression) body, le.Body.Type)
             : ProcessProjectionElement(body);
         ProjectionExpression projection = context.Bindings[parameter];
@@ -150,7 +150,7 @@ namespace Xtensive.Orm.Linq
         expression = Visit(ma.Expression);
       }
 
-      expression = expression.IsProjection() 
+      expression = expression.StripMarkers().IsProjection()
         ? BuildSubqueryResult((ProjectionExpression) expression, ma.Expression.Type) 
         : ProcessProjectionElement(expression);
 
@@ -440,7 +440,7 @@ namespace Xtensive.Orm.Linq
         var result = base.VisitMethodCall(mc);
         if (result!=mc && result.NodeType==ExpressionType.Call) {
           var visitedMethodCall = (MethodCallExpression) result;
-          if (visitedMethodCall.Arguments.Any(arg => arg.IsProjection()))
+          if (visitedMethodCall.Arguments.Any(arg => arg.StripMarkers().IsProjection()))
             throw new InvalidOperationException(String.Format(Strings.ExMethodCallExpressionXIsNotSupported, mc.ToString(true)));
         }
         return result;
@@ -578,9 +578,10 @@ namespace Xtensive.Orm.Linq
       // ReSharper disable HeuristicUnreachableCode
       // ReSharper disable ConditionIsAlwaysTrueOrFalse
 
-      if (newExpression.Members==null) {
-        if (newExpression.IsGroupingExpression()
-          || newExpression.IsSubqueryExpression()
+      var strippedMarkersExpression = newExpression.StripMarkers();
+      if (newExpression.Members == null) {
+        if (strippedMarkersExpression.IsGroupingExpression()
+          || strippedMarkersExpression.IsSubqueryExpression()
           || newExpression.IsNewExpressionSupportedByStorage())
           return base.VisitNew(newExpression);
       }
@@ -589,7 +590,7 @@ namespace Xtensive.Orm.Linq
       // ReSharper restore HeuristicUnreachableCode
 
       var arguments = VisitNewExpressionArguments(newExpression);
-      if (newExpression.IsAnonymousConstructor()) {
+      if (strippedMarkersExpression.IsAnonymousConstructor()) {
         return newExpression.Members==null
           ? Expression.New(newExpression.Constructor, arguments)
           : Expression.New(newExpression.Constructor, arguments, newExpression.Members);

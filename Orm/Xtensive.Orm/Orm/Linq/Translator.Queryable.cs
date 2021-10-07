@@ -752,7 +752,7 @@ namespace Xtensive.Orm.Linq
       if (source is ParameterExpression groupingParameter) {
         var groupingProjection = context.Bindings[groupingParameter];
         if (groupingProjection.ItemProjector.DataSource is AggregateProvider groupingDataSource
-          && groupingProjection.ItemProjector.Item.IsGroupingExpression()) {
+          && groupingProjection.ItemProjector.Item.StripMarkers().IsGroupingExpression()) {
           var groupingFilterParameter = context.GetApplyParameter(groupingDataSource);
           var commonOriginDataSource = ChooseSourceForAggregate(groupingDataSource.Source,
             SubqueryFilterRemover.Process(originDataSource, groupingFilterParameter),
@@ -1222,7 +1222,7 @@ namespace Xtensive.Orm.Linq
         innerGrouping = VisitGroupBy(groupingResultType, visitedInnerSource, innerKey, null, null);
       }
 
-      if (innerGrouping.ItemProjector.Item.IsGroupingExpression()
+      if (innerGrouping.ItemProjector.Item.StripMarkers().IsGroupingExpression()
         && visitedInnerSource is ProjectionExpression innerSourceExpression
         && visitedOuterSource is ProjectionExpression outerSourceExpression) {
         var groupingExpression = (GroupingExpression) innerGrouping.ItemProjector.Item;
@@ -1293,7 +1293,7 @@ namespace Xtensive.Orm.Linq
             })) {
           var visitedCollectionSelector = Visit(collectionSelector.Body);
 
-          if (visitedCollectionSelector.IsGroupingExpression()) {
+          if (visitedCollectionSelector.StripMarkers().IsGroupingExpression()) {
             var selectManyInfo = ((GroupingExpression) visitedCollectionSelector).SelectManyInfo;
             if (selectManyInfo.GroupByProjection == null) {
               var rewriteSucceeded = SelectManySelectorRewriter.TryRewrite(
@@ -1680,18 +1680,19 @@ namespace Xtensive.Orm.Linq
       var visitedExpression = Visit(sequenceExpression).StripCasts();
       ProjectionExpression result = null;
 
-      if (visitedExpression.IsGroupingExpression() || visitedExpression.IsSubqueryExpression()) {
+      var strippedMarkersVisitedExpression = visitedExpression.StripMarkers();
+      if (strippedMarkersVisitedExpression.IsGroupingExpression() || strippedMarkersVisitedExpression.IsSubqueryExpression()) {
         result = ((SubQueryExpression) visitedExpression).ProjectionExpression;
       }
 
-      if (visitedExpression.IsEntitySetExpression()) {
+      if (strippedMarkersVisitedExpression.IsEntitySetExpression()) {
         var entitySetExpression = (EntitySetExpression) visitedExpression;
         var entitySetQuery =
           QueryHelper.CreateEntitySetQuery((Expression) entitySetExpression.Owner, entitySetExpression.Field);
         result = (ProjectionExpression) Visit(entitySetQuery);
       }
 
-      if (visitedExpression.IsProjection()) {
+      if (strippedMarkersVisitedExpression.IsProjection()) {
         result = (ProjectionExpression) visitedExpression;
       }
 
