@@ -307,7 +307,7 @@ namespace Xtensive.Sql.Compiler
         AppendTranslated(node.NodeType);
 
         // Replace int TypeId by TypeInfo placeholder
-        if (this.configuration.TypeIdRegistry != null // ShareQueryCacheOverNodes case
+        if (this.configuration.TypeIdRegistry != null // ShareStorageSchemaOverNodes case
               && left is SqlTableColumn column
               && column.Name == Xtensive.Orm.WellKnown.TypeIdFieldName
               && right is SqlLiteral literal) {
