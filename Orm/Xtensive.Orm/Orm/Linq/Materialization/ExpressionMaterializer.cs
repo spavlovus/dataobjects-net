@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2020 Xtensive LLC.
+// Copyright (C) 2009-2021 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Alexey Gamzov
@@ -31,9 +31,12 @@ namespace Xtensive.Orm.Linq.Materialization
     private static readonly MethodInfo GetParameterValueMethod;
     private static readonly PropertyInfo ParameterContextProperty;
     private static readonly MethodInfo GetTupleParameterValueMethod;
+    private static readonly ParameterExpression tupleParameter = Expression.Parameter(WellKnownOrmTypes.Tuple, "tuple");
+
+    private static readonly ParameterExpression materializationContextParameter = Expression.Parameter(WellKnownOrmTypes.ItemMaterializationContext, "mc");
+    private static readonly ConstantExpression typeReferenceAccuracyBaseTypeConstantExpression = Expression.Constant(TypeReferenceAccuracy.BaseType);
 
     private readonly TranslatorContext context;
-    private readonly ParameterExpression tupleParameter;
     private readonly ParameterExpression itemMaterializationContextParameter;
     private readonly Dictionary<IEntityExpression, int> entityRegistry = new Dictionary<IEntityExpression, int>();
     private readonly HashSet<Parameter<Tuple>> tupleParameters;
@@ -50,8 +53,7 @@ namespace Xtensive.Orm.Linq.Materialization
 
     public static LambdaExpression MakeLambda(Expression expression, TranslatorContext context)
     {
-      var tupleParameter = Expression.Parameter(WellKnownOrmTypes.Tuple, "tuple");
-      var visitor = new ExpressionMaterializer(tupleParameter, context, null, Enumerable.Empty<Parameter<Tuple>>());
+      var visitor = new ExpressionMaterializer(context, null, Enumerable.Empty<Parameter<Tuple>>());
       var processedExpression = OwnerRemover.RemoveOwner(expression);
       return FastExpression.Lambda(visitor.Visit(processedExpression), tupleParameter);
     }
@@ -59,9 +61,7 @@ namespace Xtensive.Orm.Linq.Materialization
     public static MaterializationInfo MakeMaterialization(ItemProjectorExpression projector, TranslatorContext context, 
       IEnumerable<Parameter<Tuple>> tupleParameters)
     {
-      var tupleParameter = Expression.Parameter(WellKnownOrmTypes.Tuple, "tuple");
-      var materializationContextParameter = Expression.Parameter(WellKnownOrmTypes.ItemMaterializationContext, "mc");
-      var visitor = new ExpressionMaterializer(tupleParameter, context, materializationContextParameter, tupleParameters);
+      var visitor = new ExpressionMaterializer(context, materializationContextParameter, tupleParameters);
       var lambda = FastExpression.Lambda(visitor.Visit(projector.Item), tupleParameter, materializationContextParameter);
       var count = visitor.entityRegistry.Count;
       return new MaterializationInfo(count, lambda);
@@ -162,35 +162,30 @@ namespace Xtensive.Orm.Linq.Materialization
 
     private TranslatedQuery PrepareSubqueryParameters(SubQueryExpression subQueryExpression, out Parameter<Tuple> parameterOfTuple, out Type elementType, out ProjectionExpression projection)
     {
+      var projectionExpression = subQueryExpression.ProjectionExpression;
+
       // 1. Rewrite recordset and ItemProjector to parameter<tuple>
       var subqueryTupleParameter = context.GetTupleParameter(subQueryExpression.OuterParameter);
       var newDataSource = ApplyParameterToTupleParameterRewriter.Rewrite(
-        subQueryExpression.ProjectionExpression.ItemProjector.DataSource,
+        projectionExpression.ItemProjector.DataSource,
         subqueryTupleParameter,
         subQueryExpression.ApplyParameter);
 
       var newItemProjectorBody = ApplyParameterToTupleParameterRewriter.Rewrite(
-        subQueryExpression.ProjectionExpression.ItemProjector.Item,
+        projectionExpression.ItemProjector.Item,
         subqueryTupleParameter,
         subQueryExpression.ApplyParameter);
 
-      var itemProjector = new ItemProjectorExpression(newItemProjectorBody, newDataSource, subQueryExpression.ProjectionExpression.ItemProjector.Context);
+      var itemProjector = new ItemProjectorExpression(newItemProjectorBody, newDataSource, projectionExpression.ItemProjector.Context);
       parameterOfTuple = context.GetTupleParameter(subQueryExpression.OuterParameter);
 
       // 2. Add only parameter<tuple>. Tuple value will be assigned 
       // at the moment of materialization in SubQuery constructor
-      projection = new ProjectionExpression(
-        subQueryExpression.ProjectionExpression.Type,
-        itemProjector,
-        subQueryExpression.ProjectionExpression.TupleParameterBindings,
-        subQueryExpression.ProjectionExpression.ResultAccessMethod);
+      projection = projectionExpression.Apply(itemProjector);
 
       // 3. Make translation 
-      elementType = subQueryExpression.ProjectionExpression.ItemProjector.Item.Type;
-      var translateMethod = Translator.TranslateMethod;
-      return (TranslatedQuery) translateMethod.Invoke(
-        context.Translator,
-        new object[] {projection, tupleParameters.Append(parameterOfTuple)});
+      elementType = projectionExpression.ItemProjector.Item.Type;
+      return context.Translator.Translate(projection, tupleParameters.Append(parameterOfTuple));
     }
 
     protected override Expression VisitFieldExpression(FieldExpression expression)
@@ -324,7 +319,7 @@ namespace Xtensive.Orm.Linq.Materialization
           Expression.Field(itemMaterializationContextParameter, ItemMaterializationContext.SessionFieldInfo),
           WellKnownMembers.SessionNodeId),
         Expression.Constant(expression.EntityType),
-        Expression.Constant(TypeReferenceAccuracy.BaseType),
+        typeReferenceAccuracyBaseTypeConstantExpression,
         tupleExpression);
     }
 
@@ -547,14 +542,12 @@ namespace Xtensive.Orm.Linq.Materialization
 
     // Constructors
 
-    private ExpressionMaterializer(ParameterExpression
-      tupleParameter,
+    private ExpressionMaterializer(
       TranslatorContext context,
       ParameterExpression itemMaterializationContextParameter,
       IEnumerable<Parameter<Tuple>> tupleParameters)
     {
       this.itemMaterializationContextParameter = itemMaterializationContextParameter;
-      this.tupleParameter = tupleParameter;
       this.context = context;
       this.tupleParameters = new HashSet<Parameter<Tuple>>(tupleParameters);
     }
