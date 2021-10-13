@@ -16,13 +16,11 @@ using Xtensive.Reflection;
 
 namespace Xtensive.Orm.Linq
 {
-  using MemberTypeDictinaryKey = ValueTuple<int, Module>;
-
   internal static class ExpressionExtensions
   {
-    private static readonly ConcurrentDictionary<MemberTypeDictinaryKey, MemberType> memberTypeByType = new ConcurrentDictionary<MemberTypeDictinaryKey, MemberType>();
+    private static readonly ConcurrentDictionary<Type, MemberType> memberTypeByType = new ConcurrentDictionary<Type, MemberType>();
 
-    private static readonly Func<MemberTypeDictinaryKey, Type, MemberType> memberTypeFactory = (_, type) =>
+    private static readonly Func<Type, MemberType> memberTypeFactory = type =>
       WellKnownOrmTypes.Key.IsAssignableFrom(type) ? MemberType.Key
       : WellKnownOrmInterfaces.Entity.IsAssignableFrom(type) ? MemberType.Entity
       : WellKnownOrmTypes.Structure.IsAssignableFrom(type) ? MemberType.Structure
@@ -166,8 +164,7 @@ namespace Xtensive.Orm.Linq
       e = e.StripMarkers();
       var type = e.Type;
 
-      if (memberTypeByType.GetOrAdd((type.MetadataToken, type.Module), memberTypeFactory, type) is var memberType
-          && memberType != MemberType.Unknown) {
+      if (memberTypeByType.GetOrAdd(type, memberTypeFactory) is var memberType && memberType != MemberType.Unknown) {
         return memberType;
       }
 
