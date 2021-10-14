@@ -62,6 +62,21 @@ namespace Xtensive.Reflection
     private static readonly ConcurrentDictionary<Pair<Type, Type>, InterfaceMapping> interfaceMaps =
       new ConcurrentDictionary<Pair<Type, Type>, InterfaceMapping>();
 
+    private static readonly ConcurrentDictionary<(Type, Type), Type> genericInterfaceMap =
+      new ConcurrentDictionary<(Type, Type), Type>();
+
+    private static readonly ConcurrentDictionary<(MethodInfo, Type), MethodInfo> genericMethodInstances1 =
+      new ConcurrentDictionary<(MethodInfo, Type), MethodInfo>();
+
+    private static readonly Func<(MethodInfo, Type), MethodInfo> genericMethodFactory1 =
+      key => key.Item1.MakeGenericMethod(key.Item2);
+
+    private static readonly ConcurrentDictionary<(MethodInfo, Type, Type), MethodInfo> genericMethodInstances2 =
+      new ConcurrentDictionary<(MethodInfo, Type, Type), MethodInfo>();
+
+    private static readonly Func<(MethodInfo, Type, Type), MethodInfo> genericMethodFactory2 =
+      key => key.Item1.MakeGenericMethod(key.Item2, key.Item3);
+
     private static int createDummyTypeNumber = 0;
     private static AssemblyBuilder assemblyBuilder;
     private static ModuleBuilder moduleBuilder;
@@ -924,6 +939,12 @@ namespace Xtensive.Reflection
       && (ReferenceEquals(method.Module, genericMethodDefinition.Module)
         || method.Module == genericMethodDefinition.Module)
       && method.IsGenericMethod && genericMethodDefinition.IsGenericMethodDefinition;
+
+    public static MethodInfo CachedMakeGenericMethod(this MethodInfo methodInfo, Type type) =>
+      genericMethodInstances1.GetOrAdd((methodInfo, type), genericMethodFactory1);
+
+    public static MethodInfo CachedMakeGenericMethod(this MethodInfo methodInfo, Type type1, Type type2) =>
+      genericMethodInstances2.GetOrAdd((methodInfo, type1, type2), genericMethodFactory2);
 
     /// <summary>
     /// Determines whether the specified <paramref name="type"/> is an ancestor or an instance of the

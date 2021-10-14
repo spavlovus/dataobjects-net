@@ -1640,7 +1640,7 @@ namespace Xtensive.Orm.Linq
 
         var itemType = QueryHelper.GetSequenceElementType(sequenceType);
         return (ProjectionExpression) VisitLocalCollectionSequenceMethod
-          .MakeGenericMethod(itemType)
+          .CachedMakeGenericMethod(itemType)
           .Invoke(this, new object[] {sequence});
       }
 
@@ -1698,7 +1698,7 @@ namespace Xtensive.Orm.Linq
 
       var setAIsQuery = setA.IsQuery();
       var parameter = Expression.Parameter(elementType, "a");
-      var containsMethod = WellKnownMembers.Enumerable.Contains.MakeGenericMethod(elementType);
+      var containsMethod = WellKnownMembers.Enumerable.Contains.CachedMakeGenericMethod(elementType);
 
       if (setAIsQuery) {
         var lambda = FastExpression.Lambda(Expression.Call(containsMethod, setB, parameter), parameter);
@@ -1716,7 +1716,7 @@ namespace Xtensive.Orm.Linq
       QueryHelper.TryAddConvarianceCast(ref setB, elementType);
 
       var parameter = Expression.Parameter(elementType, "a");
-      var containsMethod = WellKnownMembers.Enumerable.Contains.MakeGenericMethod(elementType);
+      var containsMethod = WellKnownMembers.Enumerable.Contains.CachedMakeGenericMethod(elementType);
 
       var lambda = FastExpression.Lambda(Expression.Call(containsMethod, setA, parameter), parameter);
       return VisitAll(setB, lambda, isRoot);
@@ -1729,7 +1729,7 @@ namespace Xtensive.Orm.Linq
 
       var setAIsQuery = setA.IsQuery();
       var parameter = Expression.Parameter(elementType, "a");
-      var containsMethod = WellKnownMembers.Enumerable.Contains.MakeGenericMethod(elementType);
+      var containsMethod = WellKnownMembers.Enumerable.Contains.CachedMakeGenericMethod(elementType);
       if (setAIsQuery) {
         var lambda = FastExpression.Lambda(Expression.Not(Expression.Call(containsMethod, setB, parameter)), parameter);
         return VisitAll(setA, lambda, isRoot);

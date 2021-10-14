@@ -74,7 +74,7 @@ namespace Xtensive.Linq
     internal Factory CreateFactorySlow(Type delegateType)
     {
       var factory = (SlowFactory) Delegate.CreateDelegate(
-        SlowFactoryType, slowFactoryMethod.MakeGenericMethod(delegateType));
+        SlowFactoryType, slowFactoryMethod.CachedMakeGenericMethod(delegateType));
 
       return (body, parameters) => factory.Invoke(body, parameters);
     }
