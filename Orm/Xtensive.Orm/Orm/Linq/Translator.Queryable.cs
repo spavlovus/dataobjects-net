@@ -375,7 +375,7 @@ namespace Xtensive.Orm.Linq
       var replacer = new ExtendedExpressionReplacer(e => e == sourceEntity ? expression : null);
       var targetItem = replacer.Replace(projection.ItemProjector.Item);
       var targetItemProjector = new ItemProjectorExpression(targetItem, recordSet, context);
-      var targetProjectionType = WellKnownInterfaces.QueryableOfT.MakeGenericType(targetType);
+      var targetProjectionType = WellKnownInterfaces.QueryableOfT.CachedMakeGenericType(targetType);
       return new ProjectionExpression(targetProjectionType, targetItemProjector, projection.TupleParameterBindings,
         projection.ResultAccessMethod);
 //      if (targetType.IsSubclassOf(sourceType)) {
@@ -946,7 +946,7 @@ namespace Xtensive.Orm.Linq
       using (CreateScope(new TranslatorState(state) { CalculateExpressions = true, GroupingKey = true })) {
         var itemProjector = (ItemProjectorExpression) VisitLambda(keySelector);
         groupingSourceProjection = new ProjectionExpression(
-          WellKnownInterfaces.QueryableOfT.MakeGenericType(keySelector.Body.Type),
+          WellKnownInterfaces.QueryableOfT.CachedMakeGenericType(keySelector.Body.Type),
           itemProjector,
           sequence.TupleParameterBindings);
       }
@@ -1050,7 +1050,7 @@ namespace Xtensive.Orm.Linq
       var elementType = elementSelector == null
         ? keySelector.Parameters[0].Type
         : elementSelector.Type.GetGenericArguments()[1];
-      var groupingType = WellKnownInterfaces.GroupingOfTKeyTElement.MakeGenericType(keyType, elementType);
+      var groupingType = WellKnownInterfaces.GroupingOfTKeyTElement.CachedMakeGenericType(keyType, elementType);
 
       var realGroupingType =
         resultSelector != null
@@ -1197,9 +1197,9 @@ namespace Xtensive.Orm.Linq
       var visitedInnerSource = Visit(innerSource);
       var visitedOuterSource = Visit(outerSource);
       var innerItemType = visitedInnerSource.Type.GetGenericArguments()[0];
-      var groupingType = WellKnownInterfaces.GroupingOfTKeyTElement.MakeGenericType(innerKey.Type, innerItemType);
-      var enumerableType = WellKnownInterfaces.EnumerableOfT.MakeGenericType(innerItemType);
-      var groupingResultType = WellKnownInterfaces.QueryableOfT.MakeGenericType(enumerableType);
+      var groupingType = WellKnownInterfaces.GroupingOfTKeyTElement.CachedMakeGenericType(innerKey.Type, innerItemType);
+      var enumerableType = WellKnownInterfaces.EnumerableOfT.CachedMakeGenericType(innerItemType);
+      var groupingResultType = WellKnownInterfaces.QueryableOfT.CachedMakeGenericType(enumerableType);
 
       ProjectionExpression innerGrouping;
       using (CreateScope(new TranslatorState(state) { SkipNullableColumnsDetectionInGroupBy = true })) {
@@ -1355,7 +1355,7 @@ namespace Xtensive.Orm.Linq
       using (CreateScope(new TranslatorState(state) { BuildingProjection = true })) {
         var itemProjector = (ItemProjectorExpression) VisitLambda(le);
         return new ProjectionExpression(
-          WellKnownInterfaces.QueryableOfT.MakeGenericType(le.Body.Type),
+          WellKnownInterfaces.QueryableOfT.CachedMakeGenericType(le.Body.Type),
           itemProjector,
           TranslatedQuery.EmptyTupleParameterBindings);
       }

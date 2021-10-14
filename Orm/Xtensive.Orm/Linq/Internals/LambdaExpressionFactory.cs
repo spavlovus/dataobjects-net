@@ -81,7 +81,7 @@ namespace Xtensive.Linq
 
     internal static Factory CreateFactoryFast(Type delegateType)
     {
-      var method = WellKnownTypes.ExpressionOfT.MakeGenericType(delegateType).GetMethod(
+      var method = WellKnownTypes.ExpressionOfT.CachedMakeGenericType(delegateType).GetMethod(
         "Create", BindingFlags.Static | BindingFlags.NonPublic, null, internalFactorySignature, null);
 
       if (method == null) {

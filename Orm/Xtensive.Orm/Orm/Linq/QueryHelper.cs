@@ -85,7 +85,7 @@ namespace Xtensive.Orm.Linq
       // (ParameterExtractor.IsParameter => true)
       var owner = entitySet.Owner;
       var wrapper = Activator.CreateInstance(
-        typeof (OwnerWrapper<>).MakeGenericType(owner.GetType()), owner);
+        typeof (OwnerWrapper<>).CachedMakeGenericType(owner.GetType()), owner);
       var wrappedOwner = Expression.Property(Expression.Constant(wrapper), "Owner");
       if (!entitySet.Field.IsDynamicallyDefined) {
         return Expression.Property(wrappedOwner, entitySet.Field.UnderlyingProperty);

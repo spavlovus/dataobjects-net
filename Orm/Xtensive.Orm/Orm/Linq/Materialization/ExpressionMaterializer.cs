@@ -76,7 +76,7 @@ namespace Xtensive.Orm.Linq.Materialization
       var rankMaterializer = Visit(expression.RankExpression);
       var entityMaterializer = Visit(expression.EntityExpression);
       var constructorInfo = WellKnownOrmTypes.FullTextMatchOfT
-        .MakeGenericType(expression.EntityExpression.Type)
+        .CachedMakeGenericType(expression.EntityExpression.Type)
         .GetConstructor(BindingFlags.NonPublic | BindingFlags.Instance,
           new object[] {WellKnownTypes.Double, expression.EntityExpression.Type});
 
@@ -113,7 +113,7 @@ namespace Xtensive.Orm.Linq.Materialization
       var keyType = groupingExpression.KeyExpression.Type;
       var keyMaterializer = Visit(groupingExpression.KeyExpression);
       var groupingCtor = WellKnownOrmTypes.GroupingOfTKeyTElement
-        .MakeGenericType(keyType, elementType)
+        .CachedMakeGenericType(keyType, elementType)
         .GetConstructor(new[] {
           WellKnownOrmTypes.ProjectionExpression,
           WellKnownOrmTypes.TranslatedQuery,
@@ -145,7 +145,7 @@ namespace Xtensive.Orm.Linq.Materialization
 
       // 2. Create constructor
       var subQueryCtor = WellKnownOrmTypes.SubQueryOfT
-        .MakeGenericType(elementType)
+        .CachedMakeGenericType(elementType)
         .GetConstructor(SubQueryConstructorArgumentTypes);
 
       // 3. Create result expression.
