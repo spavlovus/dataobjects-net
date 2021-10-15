@@ -68,26 +68,26 @@ namespace Xtensive.Reflection
     private static readonly ConcurrentDictionary<(MethodInfo, Type), MethodInfo> genericMethodInstances1 =
       new ConcurrentDictionary<(MethodInfo, Type), MethodInfo>();
 
-    private static readonly Func<(MethodInfo, Type), MethodInfo> genericMethodFactory1 =
-      key => key.Item1.MakeGenericMethod(key.Item2);
+    private static readonly Func<(MethodInfo genericDefinition, Type typeArgument), MethodInfo> genericMethodFactory1 =
+      key => key.genericDefinition.MakeGenericMethod(key.typeArgument);
 
     private static readonly ConcurrentDictionary<(MethodInfo, Type, Type), MethodInfo> genericMethodInstances2 =
       new ConcurrentDictionary<(MethodInfo, Type, Type), MethodInfo>();
 
-    private static readonly Func<(MethodInfo, Type, Type), MethodInfo> genericMethodFactory2 =
-      key => key.Item1.MakeGenericMethod(key.Item2, key.Item3);
+    private static readonly Func<(MethodInfo genericDefinition, Type typeArgument1, Type typeArgument2), MethodInfo> genericMethodFactory2 =
+      key => key.genericDefinition.MakeGenericMethod(key.typeArgument1, key.typeArgument2);
 
     private static readonly ConcurrentDictionary<(Type, Type), Type> genericTypeInstances1 =
       new ConcurrentDictionary<(Type, Type), Type>();
 
-    private static readonly Func<(Type, Type), Type> genericTypeFactory1 = key =>
-      key.Item1.MakeGenericType(key.Item2);
+    private static readonly Func<(Type genericDefinition, Type typeArgument), Type> genericTypeFactory1 = key =>
+      key.genericDefinition.MakeGenericType(key.typeArgument);
 
     private static readonly ConcurrentDictionary<(Type, Type, Type), Type> genericTypeInstances2 =
       new ConcurrentDictionary<(Type, Type, Type), Type>();
 
-    private static readonly Func<(Type, Type, Type), Type> genericTypeFactory2 = key =>
-      key.Item1.MakeGenericType(key.Item2, key.Item3);
+    private static readonly Func<(Type genericDefinition, Type typeArgument1, Type typeArgument2), Type> genericTypeFactory2 = key =>
+      key.genericDefinition.MakeGenericType(key.typeArgument1, key.typeArgument2);
 
     private static int createDummyTypeNumber = 0;
     private static AssemblyBuilder assemblyBuilder;
@@ -952,17 +952,17 @@ namespace Xtensive.Reflection
         || method.Module == genericMethodDefinition.Module)
       && method.IsGenericMethod && genericMethodDefinition.IsGenericMethodDefinition;
 
-    public static MethodInfo CachedMakeGenericMethod(this MethodInfo methodInfo, Type type) =>
-      genericMethodInstances1.GetOrAdd((methodInfo, type), genericMethodFactory1);
+    public static MethodInfo CachedMakeGenericMethod(this MethodInfo genericDefinition, Type typeArgument) =>
+      genericMethodInstances1.GetOrAdd((genericDefinition, typeArgument), genericMethodFactory1);
 
-    public static MethodInfo CachedMakeGenericMethod(this MethodInfo methodInfo, Type type1, Type type2) =>
-      genericMethodInstances2.GetOrAdd((methodInfo, type1, type2), genericMethodFactory2);
+    public static MethodInfo CachedMakeGenericMethod(this MethodInfo genericDefinition, Type typeArgument1, Type typeArgument2) =>
+      genericMethodInstances2.GetOrAdd((genericDefinition, typeArgument1, typeArgument2), genericMethodFactory2);
 
-    public static Type CachedMakeGenericType(this Type genericType, Type type) =>
-      genericTypeInstances1.GetOrAdd((genericType, type), genericTypeFactory1);
+    public static Type CachedMakeGenericType(this Type genericDefinition, Type typeArgument) =>
+      genericTypeInstances1.GetOrAdd((genericDefinition, typeArgument), genericTypeFactory1);
 
-    public static Type CachedMakeGenericType(this Type genericType, Type type1, Type type2) =>
-      genericTypeInstances2.GetOrAdd((genericType, type1, type2), genericTypeFactory2);
+    public static Type CachedMakeGenericType(this Type genericDefinition, Type typeArgument1, Type typeArgument2) =>
+      genericTypeInstances2.GetOrAdd((genericDefinition, typeArgument1, typeArgument2), genericTypeFactory2);
 
     /// <summary>
     /// Determines whether the specified <paramref name="type"/> is an ancestor or an instance of the
