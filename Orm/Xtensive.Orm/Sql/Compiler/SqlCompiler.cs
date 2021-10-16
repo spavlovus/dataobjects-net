@@ -6,12 +6,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Xtensive.Core;
+using Xtensive.Orm.Model;
 using Xtensive.Reflection;
 using Xtensive.Sql.Info;
 using Xtensive.Sql.Model;
 using Xtensive.Sql.Ddl;
 using Xtensive.Sql.Dml;
 using Index = Xtensive.Sql.Model.Index;
+using TypeInfo = Xtensive.Orm.Model.TypeInfo;
 
 namespace Xtensive.Sql.Compiler
 {
@@ -37,13 +39,13 @@ namespace Xtensive.Sql.Compiler
       context.Output.StartOfCollection = false;
     }
 
-    public SqlCompilationResult Compile(ISqlCompileUnit unit, SqlCompilerConfiguration compilerConfiguration)
+    public SqlCompilationResult Compile(ISqlCompileUnit unit, SqlCompilerConfiguration compilerConfiguration, TypeIdRegistry typeIdRegistry = null)
     {
       ArgumentValidator.EnsureArgumentNotNull(unit, "unit");
       configuration = compilerConfiguration;
       context = new SqlCompilerContext(configuration);
       unit.AcceptVisitor(this);
-      return new SqlCompilationResult(context.Output.Children, context.ParameterNameProvider.NameTable, compilerConfiguration.TypeIdRegistry, compilerConfiguration.SchemaMapping);
+      return new SqlCompilationResult(context.Output.Children, context.ParameterNameProvider.NameTable, typeIdRegistry, compilerConfiguration.SchemaMapping);
     }
 
     public virtual void Visit(SqlAggregate node)
@@ -306,15 +308,6 @@ namespace Xtensive.Sql.Compiler
         AppendTranslated(node, NodeSection.Entry);
         left.AcceptVisitor(this);
         AppendTranslated(node.NodeType);
-
-        // Replace int TypeId by TypeInfo placeholder
-        if (this.configuration.TypeIdRegistry != null // ShareStorageSchemaOverNodes case
-              && left is SqlTableColumn column
-              && column.Name == Xtensive.Orm.WellKnown.TypeIdFieldName
-              && right is SqlLiteral literal) {
-          right = SqlDml.Placeholder(this.configuration.TypeIdRegistry[(int) literal.GetValue()]);
-        }
-
         right.AcceptVisitor(this);
         AppendTranslated(node, NodeSection.Exit);
       }

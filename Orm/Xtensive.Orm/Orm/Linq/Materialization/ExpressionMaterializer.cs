@@ -26,20 +26,15 @@ namespace Xtensive.Orm.Linq.Materialization
   [Serializable]
   internal class ExpressionMaterializer : PersistentExpressionVisitor
   {
-    private static readonly MethodInfo BuildPersistentTupleMethod;
-    private static readonly MethodInfo GetTupleSegmentMethod;
-    private static readonly MethodInfo GetParameterValueMethod;
-    private static readonly PropertyInfo ParameterContextProperty;
-    private static readonly MethodInfo GetTupleParameterValueMethod;
+    private static readonly PropertyInfo ParameterContextProperty = WellKnownOrmTypes.ItemMaterializationContext.GetProperty(nameof(ItemMaterializationContext.ParameterContext));
+    private static readonly MethodInfo BuildPersistentTupleMethod = typeof(ExpressionMaterializer).GetMethod("BuildPersistentTuple", BindingFlags.NonPublic | BindingFlags.Static);
+    private static readonly MethodInfo GetTupleSegmentMethod = typeof(ExpressionMaterializer).GetMethod("GetTupleSegment", BindingFlags.NonPublic | BindingFlags.Static);
+    private static readonly MethodInfo GetParameterValueMethod = WellKnownOrmTypes.ParameterContext.GetMethod(nameof(ParameterContext.GetValue));
+    private static readonly MethodInfo GetTupleParameterValueMethod = GetParameterValueMethod.CachedMakeGenericMethod(WellKnownOrmTypes.Tuple);
+    private static readonly MethodInfo GetTypeInfoMethod = typeof(ItemMaterializationContext).GetMethod("GetTypeInfo");
     private static readonly ParameterExpression tupleParameter = Expression.Parameter(WellKnownOrmTypes.Tuple, "tuple");
-
     private static readonly ParameterExpression materializationContextParameter = Expression.Parameter(WellKnownOrmTypes.ItemMaterializationContext, "mc");
     private static readonly ConstantExpression typeReferenceAccuracyBaseTypeConstantExpression = Expression.Constant(TypeReferenceAccuracy.BaseType);
-
-    private readonly TranslatorContext context;
-    private readonly ParameterExpression itemMaterializationContextParameter;
-    private readonly Dictionary<IEntityExpression, int> entityRegistry = new Dictionary<IEntityExpression, int>();
-    private readonly HashSet<Parameter<Tuple>> tupleParameters;
 
     private static readonly Type[] SubQueryConstructorArgumentTypes = {
       WellKnownOrmTypes.ProjectionExpression,
@@ -48,6 +43,11 @@ namespace Xtensive.Orm.Linq.Materialization
       WellKnownOrmTypes.Tuple,
       WellKnownOrmTypes.ItemMaterializationContext
     };
+
+    private readonly TranslatorContext context;
+    private readonly ParameterExpression itemMaterializationContextParameter;
+    private readonly Dictionary<IEntityExpression, int> entityRegistry = new Dictionary<IEntityExpression, int>();
+    private readonly HashSet<Parameter<Tuple>> tupleParameters;
 
     #region Public static methods
 
@@ -412,27 +412,32 @@ namespace Xtensive.Orm.Linq.Materialization
       var originalOperandType = u.Operand.Type;
       var convertedOperandType = u.Type;
 
-      var isConvertToNullable = u.NodeType == ExpressionType.Convert
-        && !originalOperandType.IsNullable()
-        && convertedOperandType.IsNullable()
-        && originalOperandType == convertedOperandType.StripNullable();
-      // Optimize tuple access by replacing
-      //   (T?) tuple.GetValueOrDefault<T>(index)
-      // with
-      //   tuple.GetValueOrDefault<T?>(index)
-      if (isConvertToNullable) {
-        var operand = Visit(u.Operand);
-        var tupleAccess = operand.AsTupleAccess();
-        if (tupleAccess != null) {
-          var index = tupleAccess.GetTupleAccessArgument();
-          return tupleAccess.Object.MakeTupleAccess(u.Type, index);
-        }
-        if (operand != u.Operand) {
-          return Expression.Convert(operand, u.Type);
-        }
-        return u;
+      switch (u.NodeType) {
+        // Optimize tuple access by replacing
+        //   (T?) tuple.GetValueOrDefault<T>(index)
+        // with
+        //   tuple.GetValueOrDefault<T?>(index)
+        case ExpressionType.Convert when !originalOperandType.IsNullable()
+            && convertedOperandType.IsNullable()
+            && originalOperandType == convertedOperandType.StripNullable():
+          var operand = Visit(u.Operand);
+          var tupleAccess = operand.AsTupleAccess();
+          if (tupleAccess != null) {
+            var index = tupleAccess.GetTupleAccessArgument();
+            return tupleAccess.Object.MakeTupleAccess(u.Type, index);
+          }
+          return operand != u.Operand
+            ? Expression.Convert(operand, u.Type)
+            : u;
+        // Replace '(o.TypeId as TypeInfo)' expression by 'mc.GetTypeInfo(o.TypeId)'
+        case ExpressionType.TypeAs when originalOperandType == WellKnownTypes.Int32
+              && convertedOperandType == WellKnownOrmTypes.TypeInfo
+              && u.Operand is FieldExpression fe
+              && fe.Field.OriginalName == WellKnown.TypeIdFieldName:
+          return Expression.Call(materializationContextParameter, GetTypeInfoMethod, Visit(u.Operand));
+        default:
+          return base.VisitUnary(u);
       }
-      return base.VisitUnary(u);
     }
 
     protected override Expression VisitMemberAccess(MemberExpression m)
@@ -550,16 +555,6 @@ namespace Xtensive.Orm.Linq.Materialization
       this.itemMaterializationContextParameter = itemMaterializationContextParameter;
       this.context = context;
       this.tupleParameters = new HashSet<Parameter<Tuple>>(tupleParameters);
-    }
-
-    static ExpressionMaterializer()
-    {
-      ParameterContextProperty =
-        WellKnownOrmTypes.ItemMaterializationContext.GetProperty(nameof(ItemMaterializationContext.ParameterContext));
-      GetParameterValueMethod = WellKnownOrmTypes.ParameterContext.GetMethod(nameof(ParameterContext.GetValue));
-      GetTupleParameterValueMethod = GetParameterValueMethod.CachedMakeGenericMethod(WellKnownOrmTypes.Tuple);
-      BuildPersistentTupleMethod = typeof (ExpressionMaterializer).GetMethod("BuildPersistentTuple", BindingFlags.NonPublic | BindingFlags.Static);
-      GetTupleSegmentMethod = typeof (ExpressionMaterializer).GetMethod("GetTupleSegment", BindingFlags.NonPublic | BindingFlags.Static);
     }
   }
 }

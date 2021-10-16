@@ -1,7 +1,8 @@
-// Copyright (C) 2009-2020 Xtensive LLC.
+// Copyright (C) 2009-2021 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 
+using System;
 using System.Reflection;
 using Xtensive.Core;
 using Xtensive.Orm.Internals;
@@ -14,13 +15,12 @@ namespace Xtensive.Orm.Linq.Materialization
 {
   internal sealed class ItemMaterializationContext
   {
+    public static MethodInfo IsMaterializedMethodInfo { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(IsMaterialized));
+    public static MethodInfo GetEntityMethodInfo      { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(GetEntity));
+    public static MethodInfo MaterializeMethodInfo    { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(Materialize));
+    public static System.Reflection.FieldInfo SessionFieldInfo { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetField(nameof(Session));
+
     public ParameterContext ParameterContext { get; }
-    public static MethodInfo IsMaterializedMethodInfo { get; private set; }
-    public static MethodInfo GetEntityMethodInfo      { get; private set; }
-    public static MethodInfo MaterializeMethodInfo    { get; private set; }
-
-    public static System.Reflection.FieldInfo SessionFieldInfo { get; private set; }
-
     public readonly Session Session;
     public readonly MaterializationContext MaterializationContext;
 
@@ -38,6 +38,8 @@ namespace Xtensive.Orm.Linq.Materialization
     {
       return entities[index];
     }
+
+    public TypeInfo GetTypeInfo(int typeId) => typeIdRegistry[typeId];
 
     public Entity Materialize(int entityIndex, int typeIdIndex, TypeInfo type, Pair<int>[] entityColumns, Tuple tuple)
     {
@@ -87,14 +89,6 @@ namespace Xtensive.Orm.Linq.Materialization
 
       typeIdRegistry = Session.StorageNode.TypeIdRegistry;
       entities = new Entity[materializationContext.EntitiesInRow];
-    }
-
-    static ItemMaterializationContext()
-    {
-      IsMaterializedMethodInfo = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(IsMaterialized));
-      GetEntityMethodInfo = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(GetEntity));
-      MaterializeMethodInfo = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(Materialize));
-      SessionFieldInfo = WellKnownOrmTypes.ItemMaterializationContext.GetField(nameof(Session));
     }
   }
 }

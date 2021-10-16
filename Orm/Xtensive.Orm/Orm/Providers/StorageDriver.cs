@@ -93,15 +93,12 @@ namespace Xtensive.Orm.Providers
 
     public SqlCompilationResult Compile(ISqlCompileUnit statement, NodeConfiguration nodeConfiguration)
     {
-      SqlCompilerConfiguration options;
-      if (configuration.ShareStorageSchemaOverNodes)
-        options = new SqlCompilerConfiguration(nodeConfiguration.GetDatabaseMapping(), nodeConfiguration.GetSchemaMapping());
-      else
-        options = new SqlCompilerConfiguration();
+      var options = configuration.ShareStorageSchemaOverNodes
+        ? new SqlCompilerConfiguration(nodeConfiguration.GetDatabaseMapping(), nodeConfiguration.GetSchemaMapping())
+        : new SqlCompilerConfiguration();
       options.DatabaseQualifiedObjects = configuration.IsMultidatabase;
       options.ParametrizeSchemaNames = configuration.ShareQueryCacheOverNodes;
-      options.TypeIdRegistry = nodeConfiguration.TypeIdRegistry;
-      return underlyingDriver.Compile(statement, options);
+      return underlyingDriver.Compile(statement, options, nodeConfiguration.TypeIdRegistry);
     }
 
     public DbDataReaderAccessor GetDataReaderAccessor(TupleDescriptor descriptor)

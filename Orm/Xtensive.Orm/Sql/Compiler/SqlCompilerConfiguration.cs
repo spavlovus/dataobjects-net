@@ -37,11 +37,6 @@ namespace Xtensive.Sql.Compiler
     public bool ParametrizeSchemaNames { get; set; }
 
     /// <summary>
-    /// Maps TypeInfo -> int TypeId
-    /// </summary>
-    public TypeIdRegistry TypeIdRegistry { get; set; }
-
-    /// <summary>
     /// Gets database mapping.
     /// </summary>
     public IReadOnlyDictionary<string, string> SchemaMapping { get; private set; }
@@ -61,7 +56,6 @@ namespace Xtensive.Sql.Compiler
         ParameterNamePrefix = ParameterNamePrefix,
         DatabaseQualifiedObjects = DatabaseQualifiedObjects,
         ParametrizeSchemaNames = ParametrizeSchemaNames,
-        TypeIdRegistry = TypeIdRegistry
       };
     }
 
