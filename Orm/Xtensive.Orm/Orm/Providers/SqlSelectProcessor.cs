@@ -1,4 +1,4 @@
-using Xtensive.Core;
+﻿using Xtensive.Core;
 using Xtensive.Sql;
 using Xtensive.Sql.Ddl;
 using Xtensive.Sql.Dml;
@@ -545,9 +545,10 @@ namespace Xtensive.Orm.Providers
 
     public void Visit(SqlExpression sqlExpression)
     {
-      if (visitedExpressions.Add(sqlExpression)) {
-        sqlExpression.AcceptVisitor(this);
-      }
+      if (visitedExpressions.Contains(sqlExpression))
+        return;
+      visitedExpressions.Add(sqlExpression);
+      sqlExpression.AcceptVisitor(this);
     }
 
     public void Visit(SqlStatement sqlStatement)

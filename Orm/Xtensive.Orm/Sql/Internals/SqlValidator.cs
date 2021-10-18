@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2021 Xtensive LLC.
+// Copyright (C) 2009-2010 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 
@@ -8,34 +8,12 @@ using System.Linq;
 using Xtensive.Core;
 using Xtensive.Reflection;
 using Xtensive.Sql.Dml;
-using TypeInfo = Xtensive.Orm.Model.TypeInfo;
 
 namespace Xtensive.Sql
 {
   internal static class SqlValidator
   {
-    private static readonly IReadOnlySet<Type> supportedTypes = new HashSet<Type> {
-      WellKnownTypes.Bool,
-      WellKnownTypes.Char,
-      WellKnownTypes.SByte,
-      WellKnownTypes.Byte,
-      WellKnownTypes.Int16,
-      WellKnownTypes.UInt16,
-      WellKnownTypes.Int32,
-      WellKnownTypes.UInt32,
-      WellKnownTypes.Int64,
-      WellKnownTypes.UInt64,
-      WellKnownTypes.String,
-      WellKnownTypes.Single,
-      WellKnownTypes.Double,
-      WellKnownTypes.Decimal,
-      WellKnownTypes.DateTime,
-      WellKnownTypes.DateTimeOffset,
-      WellKnownTypes.TimeSpan,
-      WellKnownTypes.ByteArray,
-      WellKnownTypes.Guid,
-      typeof(TypeInfo)
-    };
+    private static readonly HashSet<Type> supportedTypes;
 
     public static void EnsureAreSqlRowArguments(IEnumerable<SqlExpression> nodes)
     {
@@ -85,7 +63,7 @@ namespace Xtensive.Sql
 
     public static bool IsBooleanExpression(SqlExpression node)
     {
-      if (node == null)
+      if (node==null)
         return true;
       switch (node.NodeType) {
         case SqlNodeType.And:
@@ -122,7 +100,7 @@ namespace Xtensive.Sql
         case SqlNodeType.DynamicFilter:
           return true;
         case SqlNodeType.Cast:
-          return ((SqlCast) node).Type.Type == SqlType.Boolean;
+          return ((SqlCast) node).Type.Type==SqlType.Boolean;
         case SqlNodeType.Literal:
           return (node is SqlLiteral<bool>);
         case SqlNodeType.Variant:
@@ -135,7 +113,7 @@ namespace Xtensive.Sql
 
     public static bool IsArithmeticExpression(SqlExpression node)
     {
-      if (node == null) {
+      if (node==null) {
         return true;
       }
 
@@ -187,7 +165,7 @@ namespace Xtensive.Sql
 
     public static bool IsCharacterExpression(SqlExpression node)
     {
-      if (node == null)
+      if (node==null)
         return true;
       if (node is SqlBinary)
         return true; // Allow easy operation for SQLite
@@ -210,7 +188,7 @@ namespace Xtensive.Sql
         case SqlNodeType.Placeholder:
           return true;
         case SqlNodeType.Variant:
-          var variant = (SqlVariant) node;
+          var variant = (SqlVariant)node;
           return IsCharacterExpression(variant.Main) && IsCharacterExpression(variant.Alternative);
         default:
           return false;
@@ -220,20 +198,48 @@ namespace Xtensive.Sql
     public static bool IsLimitOffsetArgument(SqlExpression node)
     {
       switch (node.NodeType) {
-        case SqlNodeType.Literal:
-        case SqlNodeType.Placeholder:
-          return true;
-        case SqlNodeType.Variant:
-          var variant = (SqlVariant) node;
-          return IsLimitOffsetArgument(variant.Main) && IsLimitOffsetArgument(variant.Alternative);
-        default:
-          return false;
+      case SqlNodeType.Literal:
+      case SqlNodeType.Placeholder:
+        return true;
+      case SqlNodeType.Variant:
+        var variant = (SqlVariant) node;
+        return IsLimitOffsetArgument(variant.Main) && IsLimitOffsetArgument(variant.Alternative);
+      default:
+        return false;
       }
     }
 
     public static bool IsLiteralTypeSupported(Type type)
     {
       return supportedTypes.Contains(type);
+    }
+    
+    // Static constructor
+
+    static SqlValidator()
+    {
+      supportedTypes = new[]
+        {
+          WellKnownTypes.Bool,
+          WellKnownTypes.Char,
+          WellKnownTypes.SByte,
+          WellKnownTypes.Byte,
+          WellKnownTypes.Int16,
+          WellKnownTypes.UInt16,
+          WellKnownTypes.Int32,
+          WellKnownTypes.UInt32,
+          WellKnownTypes.Int64,
+          WellKnownTypes.UInt64,
+          WellKnownTypes.String,
+          WellKnownTypes.Single,
+          WellKnownTypes.Double,
+          WellKnownTypes.Decimal,
+          WellKnownTypes.DateTime,
+          WellKnownTypes.DateTimeOffset,
+          WellKnownTypes.TimeSpan,
+          WellKnownTypes.ByteArray,
+          WellKnownTypes.Guid
+        }.ToHashSet();
     }
   }
 }

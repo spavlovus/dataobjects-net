@@ -12,7 +12,6 @@ using Xtensive.Sql.Model;
 using Xtensive.Sql.Ddl;
 using Xtensive.Sql.Dml;
 using Index = Xtensive.Sql.Model.Index;
-using TypeInfo = Xtensive.Orm.Model.TypeInfo;
 
 namespace Xtensive.Sql.Compiler
 {
@@ -307,6 +306,15 @@ namespace Xtensive.Sql.Compiler
         AppendTranslated(node, NodeSection.Entry);
         left.AcceptVisitor(this);
         AppendTranslated(node.NodeType);
+
+        // Replace int TypeId by TypeInfo placeholder
+        if (this.configuration.TypeIdRegistry != null // ShareStorageSchemaOverNodes case
+              && left is SqlTableColumn column
+              && column.Name == Xtensive.Orm.WellKnown.TypeIdFieldName
+              && right is SqlLiteral literal) {
+          right = SqlDml.Placeholder(this.configuration.TypeIdRegistry[(int) literal.GetValue()]);
+        }
+
         right.AcceptVisitor(this);
         AppendTranslated(node, NodeSection.Exit);
       }

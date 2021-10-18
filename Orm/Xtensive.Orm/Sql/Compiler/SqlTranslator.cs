@@ -13,7 +13,6 @@ using Xtensive.Sql.Model;
 using Xtensive.Sql.Ddl;
 using Xtensive.Sql.Dml;
 using Index = Xtensive.Sql.Model.Index;
-using TypeInfo = Xtensive.Orm.Model.TypeInfo;
 
 namespace Xtensive.Sql.Compiler
 {
@@ -1172,9 +1171,6 @@ namespace Xtensive.Sql.Compiler
       switch (literalValue) {
         case TimeSpan timeSpan:
           output.Append(SqlHelper.TimeSpanToString(timeSpan, TimeSpanFormatString));
-          break;
-        case TypeInfo typeInfo:
-          output.AppendPlaceholderWithId(typeInfo);
           break;
         case Guid:
         case byte[]:

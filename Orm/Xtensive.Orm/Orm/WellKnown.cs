@@ -43,11 +43,6 @@ namespace Xtensive.Orm
     public const string TypeIdFieldName = "TypeId";
 
     /// <summary>
-    /// Name of the <see cref="Entity.TypeInfo"/> property.
-    /// </summary>
-    public const string TypeInfoPropertyName = "TypeInfo";
-
-    /// <summary>
     /// Name of the <see cref="Entity.PersistenceState"/> property.
     /// </summary>
     public const string PersistenceStatePropertyName = "PersistenceState";
