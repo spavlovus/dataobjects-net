@@ -229,7 +229,7 @@ namespace Xtensive.Orm.Linq
     public static readonly PropertyInfo TypeId = WellKnownOrmInterfaces.Entity.GetProperty(WellKnown.TypeIdFieldName);
 
     // ApplyParameter
-    public static readonly PropertyInfo ApplyParameterValue = WellKnownOrmTypes.ApplyParameter.GetProperty("Value");
+    public static readonly PropertyInfo ApplyParameterValue = WellKnownOrmTypes.ApplyParameter.GetProperty(nameof(ApplyParameter.Value));
 
     // Parameter<Tuple>
     public static readonly PropertyInfo ParameterOfTupleValue = WellKnownOrmTypes.ParameterOfTuple.GetProperty("Value", typeof(Tuples.Tuple));
@@ -239,7 +239,7 @@ namespace Xtensive.Orm.Linq
 
     // Record
     public static readonly MethodInfo RecordKey = typeof(Record).GetMethods()
-        .Single(methodInfo => methodInfo.Name == "GetKey" && methodInfo.GetParameters().Length == 1);
+        .Single(methodInfo => methodInfo.Name == nameof(Record.GetKey) && methodInfo.GetParameters().Length == 1);
 
     // Structure
     public static readonly MethodInfo CreateStructure = typeof(Internals.Activator)
