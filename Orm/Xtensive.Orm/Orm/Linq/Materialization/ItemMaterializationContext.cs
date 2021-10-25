@@ -39,7 +39,7 @@ namespace Xtensive.Orm.Linq.Materialization
       return entities[index];
     }
 
-    public TypeInfo GetTypeInfo(int typeId) => typeId == 0 ? null : typeIdRegistry[typeId];
+    public TypeInfo GetTypeInfo(int typeId) => typeId == TypeInfo.NoTypeId ? null : typeIdRegistry[typeId];
 
     public Entity Materialize(int entityIndex, int typeIdIndex, TypeInfo type, Pair<int>[] entityColumns, Tuple tuple)
     {
