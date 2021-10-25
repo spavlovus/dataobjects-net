@@ -257,7 +257,7 @@ namespace Xtensive.Orm.Linq
           && methodInfo.GetParameters().Length == 2);
 
     // Session
-    public static readonly PropertyInfo SessionNodeId = typeof(Session).GetProperty("StorageNodeId");
+    public static readonly PropertyInfo SessionNodeId = typeof(Session).GetProperty(nameof(Session.StorageNodeId));
 
     private static MethodInfo GetMethod(Type type, string name, int numberOfGenericArgument, int numberOfArguments)
     {
