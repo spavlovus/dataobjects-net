@@ -27,11 +27,11 @@ namespace Xtensive.Orm.Linq.Materialization
   internal class ExpressionMaterializer : PersistentExpressionVisitor
   {
     private static readonly PropertyInfo ParameterContextProperty = WellKnownOrmTypes.ItemMaterializationContext.GetProperty(nameof(ItemMaterializationContext.ParameterContext));
-    private static readonly MethodInfo BuildPersistentTupleMethod = typeof(ExpressionMaterializer).GetMethod("BuildPersistentTuple", BindingFlags.NonPublic | BindingFlags.Static);
-    private static readonly MethodInfo GetTupleSegmentMethod = typeof(ExpressionMaterializer).GetMethod("GetTupleSegment", BindingFlags.NonPublic | BindingFlags.Static);
+    private static readonly MethodInfo BuildPersistentTupleMethod = typeof(ExpressionMaterializer).GetMethod(nameof(ExpressionMaterializer.BuildPersistentTuple), BindingFlags.NonPublic | BindingFlags.Static);
+    private static readonly MethodInfo GetTupleSegmentMethod = typeof(ExpressionMaterializer).GetMethod(nameof(ExpressionMaterializer.GetTupleSegment), BindingFlags.NonPublic | BindingFlags.Static);
     private static readonly MethodInfo GetParameterValueMethod = WellKnownOrmTypes.ParameterContext.GetMethod(nameof(ParameterContext.GetValue));
     private static readonly MethodInfo GetTupleParameterValueMethod = GetParameterValueMethod.CachedMakeGenericMethod(WellKnownOrmTypes.Tuple);
-    private static readonly MethodInfo GetTypeInfoMethod = typeof(ItemMaterializationContext).GetMethod("GetTypeInfo");
+    private static readonly MethodInfo GetTypeInfoMethod = typeof(ItemMaterializationContext).GetMethod(nameof(ItemMaterializationContext.GetTypeInfo));
     private static readonly ParameterExpression tupleParameter = Expression.Parameter(WellKnownOrmTypes.Tuple, "tuple");
     private static readonly ParameterExpression materializationContextParameter = Expression.Parameter(WellKnownOrmTypes.ItemMaterializationContext, "mc");
     private static readonly ConstantExpression typeReferenceAccuracyBaseTypeConstantExpression = Expression.Constant(TypeReferenceAccuracy.BaseType);
