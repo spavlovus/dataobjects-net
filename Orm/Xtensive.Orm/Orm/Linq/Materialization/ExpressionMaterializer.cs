@@ -430,10 +430,12 @@ namespace Xtensive.Orm.Linq.Materialization
             ? Expression.Convert(operand, u.Type)
             : u;
         // Replace '(o.TypeId as TypeInfo)' expression by 'mc.GetTypeInfo(o.TypeId)'
-        case ExpressionType.TypeAs when originalOperandType == WellKnownTypes.Int32
-              && convertedOperandType == WellKnownOrmTypes.TypeInfo
-              && u.Operand is FieldExpression fe
-              && fe.Field.OriginalName == WellKnown.TypeIdFieldName:
+        case ExpressionType.TypeAs when
+            context.Translator.state.BuildingProjection
+            &&  originalOperandType == WellKnownTypes.Int32
+            && convertedOperandType == WellKnownOrmTypes.TypeInfo
+            && u.Operand is FieldExpression fe
+            && fe.Field.OriginalName == WellKnown.TypeIdFieldName:
           return Expression.Call(materializationContextParameter, GetTypeInfoMethod, Visit(u.Operand));
         default:
           return base.VisitUnary(u);
