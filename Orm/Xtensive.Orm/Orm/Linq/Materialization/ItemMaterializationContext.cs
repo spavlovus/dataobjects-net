@@ -20,24 +20,17 @@ namespace Xtensive.Orm.Linq.Materialization
     public static MethodInfo MaterializeMethodInfo    { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(Materialize));
     public static System.Reflection.FieldInfo SessionFieldInfo { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetField(nameof(Session));
 
-    public ParameterContext ParameterContext { get; }
     public readonly Session Session;
     public readonly MaterializationContext MaterializationContext;
 
     private readonly TypeIdRegistry typeIdRegistry;
     private readonly Entity[] entities;
 
-    // ReSharper disable UnusedMember.Global
+    public ParameterContext ParameterContext { get; }
 
-    public bool IsMaterialized(int index)
-    {
-      return entities[index]!=null;
-    }
+    public bool IsMaterialized(int index) => entities[index] != null;
 
-    public Entity GetEntity(int index)
-    {
-      return entities[index];
-    }
+    public Entity GetEntity(int index) => entities[index];
 
     public TypeInfo GetTypeInfo(int typeId) => typeId == TypeInfo.NoTypeId ? null : typeIdRegistry[typeId];
 
@@ -47,12 +40,11 @@ namespace Xtensive.Orm.Linq.Materialization
       if (result!=null)
         return result;
 
-      TypeReferenceAccuracy accuracy;
-      int typeId = EntityDataReader.ExtractTypeId(type, typeIdRegistry, tuple, typeIdIndex, out accuracy);
+      var typeId = EntityDataReader.ExtractTypeId(type, typeIdRegistry, tuple, typeIdIndex, out var accuracy);
       if (typeId==TypeInfo.NoTypeId)
         return null;
 
-      bool canCache = accuracy==TypeReferenceAccuracy.ExactType;
+      var canCache = accuracy==TypeReferenceAccuracy.ExactType;
       var materializationInfo = MaterializationContext.GetTypeMapping(entityIndex, type, typeId, entityColumns);
       Key key;
       var keyIndexes = materializationInfo.KeyIndexes;
@@ -75,8 +67,6 @@ namespace Xtensive.Orm.Linq.Materialization
       entities[entityIndex] = result;
       return result;
     }
-
-    // ReSharper restore UnusedMember.Global
 
 
     // Constructors

@@ -140,11 +140,11 @@ namespace Xtensive.Orm.Linq
       var arguments = new List<Expression>();
       foreach (var argument in n.Arguments) {
         Expression body;
-        using (CreateScope(new TranslatorState(state) { CalculateExpressions = false })) {
+        using (CreateScope(new TranslatorState(State) { CalculateExpressions = false })) {
           body = Visit(argument);
         }
         body = body.StripMarkers().IsProjection()
-          ? BuildSubqueryResult((ProjectionExpression) body, argument.Type) 
+          ? BuildSubqueryResult((ProjectionExpression) body, argument.Type)
           : ProcessProjectionElement(body);
         arguments.Add(body);
       }
@@ -193,6 +193,7 @@ namespace Xtensive.Orm.Linq
     {
       this.compiledQueryScope = compiledQueryScope;
       this.context = context;
+      tagsEnabled = context.Domain.Configuration.TagsLocation != TagsLocation.Nowhere;
     }
   }
 }
