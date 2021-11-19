@@ -15,26 +15,26 @@ namespace Xtensive.Sql
   internal static class SqlValidator
   {
     private static readonly IReadOnlySet<Type> supportedTypes = new HashSet<Type> {
-      WellKnownTypes.Bool,
-      WellKnownTypes.Char,
-      WellKnownTypes.SByte,
-      WellKnownTypes.Byte,
-      WellKnownTypes.Int16,
-      WellKnownTypes.UInt16,
-      WellKnownTypes.Int32,
-      WellKnownTypes.UInt32,
-      WellKnownTypes.Int64,
-      WellKnownTypes.UInt64,
-      WellKnownTypes.String,
-      WellKnownTypes.Single,
-      WellKnownTypes.Double,
-      WellKnownTypes.Decimal,
-      WellKnownTypes.DateTime,
-      WellKnownTypes.DateTimeOffset,
-      WellKnownTypes.TimeSpan,
-      WellKnownTypes.ByteArray,
-      WellKnownTypes.Guid,
-      WellKnownOrmTypes.TypeInfo
+        WellKnownTypes.Bool,
+        WellKnownTypes.Char,
+        WellKnownTypes.SByte,
+        WellKnownTypes.Byte,
+        WellKnownTypes.Int16,
+        WellKnownTypes.UInt16,
+        WellKnownTypes.Int32,
+        WellKnownTypes.UInt32,
+        WellKnownTypes.Int64,
+        WellKnownTypes.UInt64,
+        WellKnownTypes.String,
+        WellKnownTypes.Single,
+        WellKnownTypes.Double,
+        WellKnownTypes.Decimal,
+        WellKnownTypes.DateTime,
+        WellKnownTypes.DateTimeOffset,
+        WellKnownTypes.TimeSpan,
+        WellKnownTypes.ByteArray,
+        WellKnownTypes.Guid
+        WellKnownOrmTypes.TypeInfo
     };
 
     public static void EnsureAreSqlRowArguments(IEnumerable<SqlExpression> nodes)
@@ -234,6 +234,6 @@ namespace Xtensive.Sql
     public static bool IsLiteralTypeSupported(Type type)
     {
       return supportedTypes.Contains(type);
-    }
+    }    
   }
 }

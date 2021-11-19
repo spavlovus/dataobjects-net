@@ -15,10 +15,10 @@ namespace Xtensive.Orm.Linq.Materialization
 {
   internal sealed class ItemMaterializationContext
   {
-    public static MethodInfo IsMaterializedMethodInfo { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(IsMaterialized));
-    public static MethodInfo GetEntityMethodInfo      { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(GetEntity));
-    public static MethodInfo MaterializeMethodInfo    { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(Materialize));
-    public static System.Reflection.FieldInfo SessionFieldInfo { get; } = WellKnownOrmTypes.ItemMaterializationContext.GetField(nameof(Session));
+    public static readonly MethodInfo IsMaterializedMethodInfo = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(IsMaterialized));
+    public static readonly MethodInfo GetEntityMethodInfo = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(GetEntity));
+    public static readonly MethodInfo MaterializeMethodInfo = WellKnownOrmTypes.ItemMaterializationContext.GetMethod(nameof(Materialize));
+    public static readonly System.Reflection.FieldInfo SessionFieldInfo = WellKnownOrmTypes.ItemMaterializationContext.GetField(nameof(Session));
 
     public readonly Session Session;
     public readonly MaterializationContext MaterializationContext;

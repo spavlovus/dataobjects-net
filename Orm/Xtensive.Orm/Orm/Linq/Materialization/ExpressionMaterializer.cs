@@ -29,11 +29,11 @@ namespace Xtensive.Orm.Linq.Materialization
     private const string RootQueryTagsPrefix = "Root query tags ->";
 
     private static readonly PropertyInfo ParameterContextProperty = WellKnownOrmTypes.ItemMaterializationContext.GetProperty(nameof(ItemMaterializationContext.ParameterContext));
-    private static readonly MethodInfo BuildPersistentTupleMethod = typeof(ExpressionMaterializer).GetMethod(nameof(ExpressionMaterializer.BuildPersistentTuple), BindingFlags.NonPublic | BindingFlags.Static);
-    private static readonly MethodInfo GetTupleSegmentMethod = typeof(ExpressionMaterializer).GetMethod(nameof(ExpressionMaterializer.GetTupleSegment), BindingFlags.NonPublic | BindingFlags.Static);
+    private static readonly MethodInfo BuildPersistentTupleMethod = typeof(ExpressionMaterializer).GetMethod(nameof(BuildPersistentTuple), BindingFlags.NonPublic | BindingFlags.Static);
+    private static readonly MethodInfo GetTupleSegmentMethod = typeof(ExpressionMaterializer).GetMethod(nameof(GetTupleSegment), BindingFlags.NonPublic | BindingFlags.Static);
     private static readonly MethodInfo GetParameterValueMethod = WellKnownOrmTypes.ParameterContext.GetMethod(nameof(ParameterContext.GetValue));
+    private static readonly PropertyInfo ParameterContextProperty = WellKnownOrmTypes.ItemMaterializationContext.GetProperty(nameof(ItemMaterializationContext.ParameterContext));
     private static readonly MethodInfo GetTupleParameterValueMethod = GetParameterValueMethod.CachedMakeGenericMethod(WellKnownOrmTypes.Tuple);
-    private static readonly MethodInfo GetTypeInfoMethod = typeof(ItemMaterializationContext).GetMethod(nameof(ItemMaterializationContext.GetTypeInfo));
     private static readonly ParameterExpression TupleParameter = Expression.Parameter(WellKnownOrmTypes.Tuple, "tuple");
     private static readonly ParameterExpression MaterializationContextParameter = Expression.Parameter(WellKnownOrmTypes.ItemMaterializationContext, "mc");
     private static readonly ConstantExpression TypeReferenceAccuracyConstantExpression = Expression.Constant(TypeReferenceAccuracy.BaseType);
