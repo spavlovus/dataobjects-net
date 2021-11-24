@@ -28,7 +28,6 @@ namespace Xtensive.Orm.Linq.Materialization
   {
     private const string RootQueryTagsPrefix = "Root query tags ->";
 
-    private static readonly PropertyInfo ParameterContextProperty = WellKnownOrmTypes.ItemMaterializationContext.GetProperty(nameof(ItemMaterializationContext.ParameterContext));
     private static readonly MethodInfo BuildPersistentTupleMethod = typeof(ExpressionMaterializer).GetMethod(nameof(BuildPersistentTuple), BindingFlags.NonPublic | BindingFlags.Static);
     private static readonly MethodInfo GetTupleSegmentMethod = typeof(ExpressionMaterializer).GetMethod(nameof(GetTupleSegment), BindingFlags.NonPublic | BindingFlags.Static);
     private static readonly MethodInfo GetParameterValueMethod = WellKnownOrmTypes.ParameterContext.GetMethod(nameof(ParameterContext.GetValue));
@@ -37,6 +36,7 @@ namespace Xtensive.Orm.Linq.Materialization
     private static readonly ParameterExpression TupleParameter = Expression.Parameter(WellKnownOrmTypes.Tuple, "tuple");
     private static readonly ParameterExpression MaterializationContextParameter = Expression.Parameter(WellKnownOrmTypes.ItemMaterializationContext, "mc");
     private static readonly ConstantExpression TypeReferenceAccuracyConstantExpression = Expression.Constant(TypeReferenceAccuracy.BaseType);
+    private static readonly MethodInfo GetTypeInfoMethod = typeof(ItemMaterializationContext).GetMethod(nameof(ItemMaterializationContext.GetTypeInfo));
 
     private static readonly Type[] SubQueryConstructorArgumentTypes = {
       WellKnownOrmTypes.ProjectionExpression,
@@ -502,8 +502,8 @@ namespace Xtensive.Orm.Linq.Materialization
           fieldExpression = Expression.MakeMemberAccess(materializedOwner, field.Field.UnderlyingProperty);
         return defaultIfEmpty
           ? Expression.Condition(
-            Expression.Equal(materializedOwner, Expression.Constant(null, materializedOwner.Type)),
-              Expression.Call(MaterializationHelper.GetDefaultMethodInfo.MakeGenericMethod(field.Type)),
+              Expression.Equal(materializedOwner, Expression.Constant(null, materializedOwner.Type)),
+              Expression.Call(MaterializationHelper.GetDefaultMethodInfo.CachedMakeGenericMethod(field.Type)),
               fieldExpression)
           : fieldExpression;
       }

@@ -33,7 +33,7 @@ namespace Xtensive.Sql
         WellKnownTypes.DateTimeOffset,
         WellKnownTypes.TimeSpan,
         WellKnownTypes.ByteArray,
-        WellKnownTypes.Guid
+        WellKnownTypes.Guid,
         WellKnownOrmTypes.TypeInfo
     };
 
