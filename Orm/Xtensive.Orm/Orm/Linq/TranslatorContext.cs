@@ -54,6 +54,8 @@ namespace Xtensive.Orm.Linq
 
     public LinqBindingCollection Bindings { get; }
 
+    public IReadOnlyList<string> SessionTags { get; }
+
     public bool IsRoot(Expression expression)
     {
       return Query==expression;
@@ -142,6 +144,7 @@ namespace Xtensive.Orm.Linq
 
       Domain = session.Domain;
       RseCompilerConfiguration = rseCompilerConfiguration;
+      SessionTags = (Domain.Configuration.TagsLocation != TagsLocation.Nowhere) ? session.Tags : null;
 
       // Applying query preprocessors
       query = Domain.Handler.QueryPreprocessors

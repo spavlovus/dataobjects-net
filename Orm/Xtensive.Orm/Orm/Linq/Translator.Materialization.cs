@@ -43,8 +43,13 @@ namespace Xtensive.Orm.Linq
     internal TranslatedQuery Translate(ProjectionExpression projection,
       IEnumerable<Parameter<Tuple>> tupleParameterBindings)
     {
+      var result = projection;
+      if (context.SessionTags != null) {
+        result = ApplySessionTags(projection, context.SessionTags);
+      }
+
       var newItemProjector = projection.ItemProjector.EnsureEntityIsJoined();
-      var result = projection.Apply(newItemProjector);
+      result = projection.Apply(newItemProjector);
       var optimized = Optimize(result);
 
       // Prepare cached query, if required
@@ -72,6 +77,15 @@ namespace Xtensive.Orm.Linq
       }
 
       return translatedQuery;
+    }
+
+    private static ProjectionExpression ApplySessionTags(ProjectionExpression projection, IReadOnlyList<string> tags)
+    {
+      var result = projection;
+      foreach (var tag in tags) {
+        //!!!TODO
+      }
+      return result;
     }
 
     private static ProjectionExpression Optimize(ProjectionExpression origin)
