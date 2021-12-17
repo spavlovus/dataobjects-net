@@ -13,16 +13,10 @@ namespace Xtensive.Orm.Rse.Compilation
   public sealed class CompositePreCompiler : IPreCompiler
   {
     public IReadOnlyList<IPreCompiler> items { get; }
-    public IReadOnlyList<string> tags { get; }
 
     public CompilableProvider Process(CompilableProvider rootProvider)
     {
       var provider = rootProvider;
-      if (tags != null) {
-        foreach (var tag in tags) {
-          provider = new TagProvider(provider, tag);
-        }
-      }
 
       foreach (var item in items) {
         provider = item.Process(provider);
@@ -33,9 +27,8 @@ namespace Xtensive.Orm.Rse.Compilation
 
     // Constructors
 
-    public CompositePreCompiler(IReadOnlyList<string> tags, params IPreCompiler[] preCompilers)
+    public CompositePreCompiler(params IPreCompiler[] preCompilers)
     {
-      this.tags = tags;
       items = preCompilers;
     }
   }
