@@ -54,7 +54,7 @@ namespace Xtensive.Orm.Linq
 
     public LinqBindingCollection Bindings { get; }
 
-    public IReadOnlyList<string> SessionTags { get; }
+    public IReadOnlyList<string> SessionTags { get; private set; }
 
     public bool IsRoot(Expression expression)
     {
@@ -89,12 +89,19 @@ namespace Xtensive.Orm.Linq
       return parameter;
     }
 
-    public IReadOnlyList<string> GetAllTags()
+    public IReadOnlyList<string> GetMainQueryTags()
     {
       if (Domain.Configuration.TagsLocation == TagsLocation.Nowhere)
         return Array.Empty<string>();
 
       return applyParameters.Keys.OfType<TagProvider>().Select(p => p.Tag).ToList();
+    }
+
+    public IDisposable DisableSessionTags()
+    {
+      var originalTags = SessionTags;
+      SessionTags = null;
+      return new Disposable(_ => SessionTags = originalTags);
     }
 
     public void RebindApplyParameter(CompilableProvider old, CompilableProvider @new)

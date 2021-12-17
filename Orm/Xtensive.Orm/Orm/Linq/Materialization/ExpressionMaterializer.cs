@@ -167,7 +167,7 @@ namespace Xtensive.Orm.Linq.Materialization
       var subqueryTupleParameter = context.GetTupleParameter(subQueryExpression.OuterParameter);
       var dataSource = projectionExpression.ItemProjector.DataSource;
 
-      var rootTags = context.GetAllTags();
+      var rootTags = context.GetMainQueryTags();
       if (rootTags.Count > 0) {
         dataSource = dataSource.Tag($"{RootQueryTagsPrefix} {string.Join(' ', rootTags)}");
       }
