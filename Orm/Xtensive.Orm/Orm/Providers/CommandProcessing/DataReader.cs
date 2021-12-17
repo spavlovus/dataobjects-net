@@ -107,6 +107,7 @@ namespace Xtensive.Orm.Providers
     {
       source = tuples.GetEnumerator();
       accessor = null;
+      token = default;
     }
 
     /// <summary>
