@@ -61,26 +61,26 @@ namespace Xtensive.Sql.Compiler
     {
       using (context.EnterScope(node)) {
         AppendTranslated(node, AlterDomainSection.Entry);
-        if (node.Action is SqlAddConstraint) {
-          var constraint = (DomainConstraint) ((SqlAddConstraint) node.Action).Constraint;
-          AppendTranslated(node, AlterDomainSection.AddConstraint);
-          AppendTranslated(constraint, ConstraintSection.Entry);
-          AppendTranslated(constraint, ConstraintSection.Check);
-          constraint.Condition.AcceptVisitor(this);
-          AppendTranslated(constraint, ConstraintSection.Exit);
-        }
-        else if (node.Action is SqlDropConstraint) {
-          var action = node.Action as SqlDropConstraint;
-          AppendTranslated(node, AlterDomainSection.DropConstraint);
-          AppendTranslated(action.Constraint, ConstraintSection.Entry);
-        }
-        else if (node.Action is SqlSetDefault) {
-          var action = node.Action as SqlSetDefault;
-          AppendTranslated(node, AlterDomainSection.SetDefault);
-          action.DefaultValue.AcceptVisitor(this);
-        }
-        else if (node.Action is SqlDropDefault) {
-          AppendTranslated(node, AlterDomainSection.DropDefault);
+        switch (node.Action) {
+          case SqlAddConstraint action:
+            var constraint = (DomainConstraint) action.Constraint;
+            AppendTranslated(node, AlterDomainSection.AddConstraint);
+            AppendTranslated(constraint, ConstraintSection.Entry);
+            AppendTranslated(constraint, ConstraintSection.Check);
+            constraint.Condition.AcceptVisitor(this);
+            AppendTranslated(constraint, ConstraintSection.Exit);
+            break;
+          case SqlDropConstraint action:
+            AppendTranslated(node, AlterDomainSection.DropConstraint);
+            AppendTranslated(action.Constraint, ConstraintSection.Entry);
+            break;
+          case SqlSetDefault action:
+            AppendTranslated(node, AlterDomainSection.SetDefault);
+            action.DefaultValue.AcceptVisitor(this);
+            break;
+          case SqlDropDefault _:
+            AppendTranslated(node, AlterDomainSection.DropDefault);
+            break;
         }
         AppendTranslated(node, AlterDomainSection.Exit);
       }
@@ -1408,6 +1408,11 @@ namespace Xtensive.Sql.Compiler
         node.Operand.AcceptVisitor(this);
         AppendTranslated(node, NodeSection.Exit);
       }
+    }
+
+    public virtual void Visit(SqlMetadata node)
+    {
+      node.Expression.AcceptVisitor(this);
     }
 
     public virtual void Visit(SqlUpdate node)
