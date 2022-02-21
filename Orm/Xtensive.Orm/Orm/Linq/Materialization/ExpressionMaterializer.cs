@@ -168,9 +168,9 @@ namespace Xtensive.Orm.Linq.Materialization
       var subqueryTupleParameter = context.GetTupleParameter(subQueryExpression.OuterParameter);
       var dataSource = projectionExpression.ItemProjector.DataSource;
 
-      var rootTags = context.GetAllTags();
+      var rootTags = context.GetMainQueryTags();
       if (rootTags.Count > 0) {
-        dataSource = dataSource.Tag($"{RootQueryTagsPrefix} {string.Join(' ', rootTags)}");
+        dataSource = dataSource.Tag($"({RootQueryTagsPrefix} {string.Join(' ', rootTags)})");
       }
 
       var newDataSource = ApplyParameterToTupleParameterRewriter.Rewrite(
@@ -192,7 +192,10 @@ namespace Xtensive.Orm.Linq.Materialization
 
       // 3. Make translation
       elementType = projectionExpression.ItemProjector.Item.Type;
-      return context.Translator.Translate(projection, tupleParameters.Append(parameterOfTuple));
+
+      using (context.DisableSessionTags()) {
+        return context.Translator.Translate(projection, tupleParameters.Append(parameterOfTuple));
+      }
     }
 
     protected override Expression VisitFieldExpression(FieldExpression expression)
