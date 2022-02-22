@@ -13,7 +13,7 @@ namespace Xtensive.Orm.Internals
 {
   internal sealed class CompiledQueryProcessingScope
   {
-    private TranslatedQuery parameterizedQuery;
+    private ParameterizedQuery parameterizedQuery;
 
     public Parameter QueryParameter { get; }
     public ExtendedExpressionReplacer QueryParameterReplacer { get; }
@@ -43,7 +43,7 @@ namespace Xtensive.Orm.Internals
     public ThreadBindingToken Enter() => new ThreadBindingToken(this);
 
     /// <exception cref="NotSupportedException">Second attempt to set this property.</exception>
-    public TranslatedQuery ParameterizedQuery {
+    public ParameterizedQuery ParameterizedQuery {
       get => parameterizedQuery;
       set {
         if (parameterizedQuery != null) {

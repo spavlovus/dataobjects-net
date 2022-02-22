@@ -1,4 +1,4 @@
-// Copyright (C) 2012-2021 Xtensive LLC.
+// Copyright (C) 2012-2022 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Denis Krjuchkov
@@ -7,6 +7,7 @@
 using System;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Xtensive.Caching;
@@ -44,7 +45,7 @@ namespace Xtensive.Orm.Internals
     public TResult ExecuteCompiled<TResult>(Func<QueryEndpoint, TResult> query)
     {
       var parameterizedQuery = GetCachedQuery();
-      if (parameterizedQuery!=null) {
+      if (parameterizedQuery != null) {
         return parameterizedQuery.ExecuteScalar<TResult>(session, CreateParameterContext(parameterizedQuery));
       }
 
@@ -65,12 +66,12 @@ namespace Xtensive.Orm.Internals
 
     public Task<QueryResult<TElement>> ExecuteCompiledAsync<TElement>(
       Func<QueryEndpoint, IOrderedQueryable<TElement>> query, CancellationToken token) =>
-      ExecuteCompiledAsync((Func<QueryEndpoint, IQueryable<TElement>>)query, token);
+      ExecuteCompiledAsync((Func<QueryEndpoint, IQueryable<TElement>>) query, token);
 
     public Task<TResult> ExecuteCompiledAsync<TResult>(Func<QueryEndpoint, TResult> query, CancellationToken token)
     {
       var parameterizedQuery = GetCachedQuery();
-      if (parameterizedQuery!=null) {
+      if (parameterizedQuery != null) {
         token.ThrowIfCancellationRequested();
         return parameterizedQuery.ExecuteScalarAsync<TResult>(session, CreateParameterContext(parameterizedQuery), token);
       }
@@ -108,7 +109,7 @@ namespace Xtensive.Orm.Internals
     private ParameterizedQuery GetScalarQuery<TResult>(
       Func<QueryEndpoint, TResult> query, bool executeAsSideEffect, out TResult result)
     {
-      AllocateParameterAndReplacer();
+      var cacheable = AllocateParameterAndReplacer();
 
       var parameterContext = new ParameterContext(outerContext);
       parameterContext.SetValue(queryParameter, queryTarget);
@@ -118,12 +119,14 @@ namespace Xtensive.Orm.Internals
         result = query.Invoke(endpoint);
       }
 
-      var parameterizedQuery = (ParameterizedQuery) scope.ParameterizedQuery;
-      if (parameterizedQuery==null && queryTarget!=null) {
+      var parameterizedQuery = scope.ParameterizedQuery;
+      if (parameterizedQuery == null && queryTarget != null) {
         throw new NotSupportedException(Strings.ExNonLinqCallsAreNotSupportedWithinQueryExecuteDelayed);
       }
 
-      PutCachedQuery(parameterizedQuery);
+      if (cacheable) {
+        PutCachedQuery(parameterizedQuery);
+      }
       return parameterizedQuery;
     }
 
@@ -131,11 +134,11 @@ namespace Xtensive.Orm.Internals
       Func<QueryEndpoint, IQueryable<TElement>> query)
     {
       var parameterizedQuery = GetCachedQuery();
-      if (parameterizedQuery!=null) {
+      if (parameterizedQuery != null) {
         return parameterizedQuery;
       }
 
-      AllocateParameterAndReplacer();
+      var cacheable = AllocateParameterAndReplacer();
       var scope = new CompiledQueryProcessingScope(queryParameter, queryParameterReplacer);
       using (scope.Enter()) {
         var result = query.Invoke(endpoint);
@@ -143,16 +146,19 @@ namespace Xtensive.Orm.Internals
         parameterizedQuery = (ParameterizedQuery) translatedQuery;
       }
 
-      PutCachedQuery(parameterizedQuery);
+      if (cacheable) {
+        PutCachedQuery(parameterizedQuery);
+      }
       return parameterizedQuery;
     }
 
-    private void AllocateParameterAndReplacer()
+    // Returns true is query is cacheable (closure-less).
+    private bool AllocateParameterAndReplacer()
     {
       if (queryTarget == null) {
         queryParameter = null;
         queryParameterReplacer = new ExtendedExpressionReplacer(e => e);
-        return;
+        return true;
       }
 
       var closureType = queryTarget.GetType();
@@ -160,38 +166,35 @@ namespace Xtensive.Orm.Internals
       var valueMemberInfo = parameterType.GetProperty(nameof(Parameter<object>.Value), closureType);
       queryParameter = (Parameter) System.Activator.CreateInstance(parameterType, "pClosure");
       queryParameterReplacer = new ExtendedExpressionReplacer(expression => {
-        if (expression.NodeType == ExpressionType.Constant) {
-          if ((expression as ConstantExpression).Value == null) {
+        if (expression.NodeType != ExpressionType.Constant || (expression as ConstantExpression).Value == null) {
           return null;
         }
-        if (expression.Type.IsClosure()) {
-          if (expression.Type==closureType) {
-            return Expression.MakeMemberAccess(Expression.Constant(queryParameter, parameterType), valueMemberInfo);
-          }
-            else {
-          throw new NotSupportedException(string.Format(
-            Strings.ExExpressionDefinedOutsideOfCachingQueryClosure, expression));
-        }
-          }
 
-        if (closureType.DeclaringType==null) {
-            if (expression.Type.IsAssignableFrom(closureType))
-            return Expression.MakeMemberAccess(Expression.Constant(queryParameter, parameterType), valueMemberInfo);
-          }
-        else {
-            if (expression.Type.IsAssignableFrom(closureType))
-            return Expression.MakeMemberAccess(Expression.Constant(queryParameter, parameterType), valueMemberInfo);
-            if (expression.Type.IsAssignableFrom(closureType.DeclaringType)) {
-            var memberInfo = closureType.TryGetFieldInfoFromClosure(expression.Type);
-              if (memberInfo != null)
-              return Expression.MakeMemberAccess(
-                Expression.MakeMemberAccess(Expression.Constant(queryParameter, parameterType), valueMemberInfo),
-                memberInfo);
-            }
-          }
+        var expressionType = expression.Type;
+        if (expressionType.IsClosure()) {
+          return expressionType == closureType
+            ? Expression.MakeMemberAccess(Expression.Constant(queryParameter, parameterType), valueMemberInfo)
+            : throw new NotSupportedException(string.Format(Strings.ExExpressionDefinedOutsideOfCachingQueryClosure, expression));
         }
-        return null;
+
+        return expressionType.IsAssignableFrom(closureType)
+          ? Expression.MakeMemberAccess(Expression.Constant(queryParameter, parameterType), valueMemberInfo)
+          : closureType.DeclaringType != null
+            && expressionType.IsAssignableFrom(closureType.DeclaringType)
+            && closureType.TryGetFieldInfoFromClosure(expressionType) is MemberInfo memberInfo
+              ? Expression.MakeMemberAccess(Expression.MakeMemberAccess(Expression.Constant(queryParameter, parameterType), valueMemberInfo), memberInfo)
+              : null;
       });
+      return !closureType.Name.Contains("<>c__DisplayClass")            // 'DisplayClass' is generated class for captured objects
+        || closureType.GetFields().All(f => TypeIsSimple(f.FieldType));
+    }
+
+    private static bool TypeIsSimple(Type type)
+    {
+      var typeInfo = type.GetTypeInfo();
+      return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == WellKnownTypes.NullableOfT
+        ? TypeIsSimple(typeInfo.GetGenericArguments()[0])       // nullable type, check if the nested type is simple.
+        : typeInfo.IsPrimitive || typeInfo.IsEnum || type == WellKnownTypes.String || type == WellKnownTypes.Decimal;
     }
 
     private ParameterizedQuery GetCachedQuery() =>
@@ -203,7 +206,7 @@ namespace Xtensive.Orm.Internals
     private ParameterContext CreateParameterContext(ParameterizedQuery query)
     {
       var parameterContext = new ParameterContext(outerContext);
-      if (query.QueryParameter!=null) {
+      if (query.QueryParameter != null) {
         parameterContext.SetValue(query.QueryParameter, queryTarget);
       }
 
