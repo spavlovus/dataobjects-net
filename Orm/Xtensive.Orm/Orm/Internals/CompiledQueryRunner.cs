@@ -152,7 +152,7 @@ namespace Xtensive.Orm.Internals
       return parameterizedQuery;
     }
 
-    // Returns true is query is cacheable (closure-less).
+    // Returns true is query is cacheable (target contains only simple-type captured vars).
     private bool AllocateParameterAndReplacer()
     {
       if (queryTarget == null) {
