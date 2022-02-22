@@ -20,6 +20,8 @@ namespace Xtensive.Orm.Internals
 {
   internal class CompiledQueryRunner
   {
+    private static readonly Func<FieldInfo, bool> FieldIsSimple = fieldInfo => TypeIsSimple(fieldInfo.FieldType);
+
     private readonly Domain domain;
     private readonly Session session;
     private readonly QueryEndpoint endpoint;
@@ -186,7 +188,7 @@ namespace Xtensive.Orm.Internals
               : null;
       });
       return !closureType.Name.Contains("<>c__DisplayClass")            // 'DisplayClass' is generated class for captured objects
-        || closureType.GetFields().All(f => TypeIsSimple(f.FieldType));
+        || closureType.GetFields().All(FieldIsSimple);
     }
 
     private static bool TypeIsSimple(Type type)
