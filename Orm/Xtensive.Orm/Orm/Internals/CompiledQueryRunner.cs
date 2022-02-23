@@ -194,9 +194,17 @@ namespace Xtensive.Orm.Internals
     private static bool TypeIsSimple(Type type)
     {
       var typeInfo = type.GetTypeInfo();
-      return typeInfo.IsGenericType && typeInfo.GetGenericTypeDefinition() == WellKnownTypes.NullableOfT
-        ? TypeIsSimple(typeInfo.GetGenericArguments()[0])       // nullable type, check if the nested type is simple.
-        : typeInfo.IsPrimitive || typeInfo.IsEnum || type == WellKnownTypes.String || type == WellKnownTypes.Decimal;
+      if (typeInfo.IsGenericType) {
+        var genericDef = typeInfo.GetGenericTypeDefinition();
+        return (genericDef == WellKnownTypes.NullableOfT || genericDef.IsAssignableTo(WellKnownTypes.IReadOnlyList))
+          && TypeIsSimple(typeInfo.GetGenericArguments()[0]);
+      }
+      else if (typeInfo.IsArray) {
+        return TypeIsSimple(typeInfo.GetElementType());
+      }
+      else {
+        return typeInfo.IsPrimitive || typeInfo.IsEnum || type == WellKnownTypes.String || type == WellKnownTypes.Decimal;
+      }
     }
 
     private ParameterizedQuery GetCachedQuery() =>

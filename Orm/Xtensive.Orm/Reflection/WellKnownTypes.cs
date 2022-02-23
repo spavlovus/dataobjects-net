@@ -3,6 +3,7 @@
 // See the License.txt file in the project root for more information.
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
@@ -73,6 +74,7 @@ namespace Xtensive.Reflection
 
     public static readonly Type ByteArray = typeof(byte[]);
     public static readonly Type ObjectArray = typeof(object[]);
+    public static readonly Type IReadOnlyList = typeof(IReadOnlyList<>);
 
     public static readonly Type DefaultMemberAttribute = typeof(DefaultMemberAttribute);
   }
