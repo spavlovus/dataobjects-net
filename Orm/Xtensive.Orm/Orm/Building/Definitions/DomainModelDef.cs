@@ -80,8 +80,8 @@ namespace Xtensive.Orm.Building.Definitions
     public HierarchyDef FindHierarchy(TypeDef item)
     {
       ArgumentValidator.EnsureArgumentNotNull(item, "item");
-      return Hierarchies
-        .FirstOrDefault(hierarchy => hierarchy.Root.UnderlyingType.IsAssignableFrom(item.UnderlyingType));
+      var itemUnderlyingType = item.UnderlyingType;
+      return Hierarchies.FirstOrDefault(hierarchy => hierarchy.Root.UnderlyingType.IsAssignableFrom(itemUnderlyingType));
     }
 
     private void OnTypesCleared(object sender, TypeDefCollectionClearedEventArgs e)
