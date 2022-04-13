@@ -494,23 +494,14 @@ namespace Xtensive.Orm.Model
     /// Gets the ancestors recursively. Root-to-inheritor order.
     /// </summary>
     /// <returns>The ancestor</returns>
-    public IReadOnlyList<TypeInfo> GetAncestors() => IsLocked ? ancestors : InnerGetAncestors();
+    public IEnumerable<TypeInfo> GetAncestors() => IsLocked ? ancestors : InnerGetAncestors();
 
-    private List<TypeInfo> InnerGetAncestors()
-    {
-      static void EnlistAncestors(List<TypeInfo> ancestors, TypeInfoCollection types, TypeInfo type)
-      {
-        var ancestor = types.FindAncestor(type);
-        if (ancestor != null) {
-          EnlistAncestors(ancestors, types, ancestor);
-          ancestors.Add(ancestor);
-        }
-      }
+    private static IEnumerable<TypeInfo> EnlistAncestors(TypeInfoCollection types, TypeInfo type) =>
+      types.FindAncestor(type) is TypeInfo ancestor
+        ? EnlistAncestors(types, ancestor).Append(ancestor)
+        : Array.Empty<TypeInfo>();
 
-      var result = new List<TypeInfo>();
-      EnlistAncestors(result, model.Types, this);
-      return result;
-    }
+    private IEnumerable<TypeInfo> InnerGetAncestors() => EnlistAncestors(model.Types, this);
 
     /// <summary>
     /// Gets the root of the hierarchy.
@@ -586,7 +577,7 @@ namespace Xtensive.Orm.Model
     {
       base.UpdateState();
 
-      ancestors = InnerGetAncestors().AsReadOnly();
+      ancestors = InnerGetAncestors().ToList();
       targetAssociations = InnerGetTargetAssociations().AsReadOnly();
       ownerAssociations = InnerGetOwnerAssociations().AsReadOnly();
 

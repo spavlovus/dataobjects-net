@@ -1,4 +1,4 @@
-// Copyright (C) 2008-2021 Xtensive LLC.
+// Copyright (C) 2008-2022 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Alex Yakunin
@@ -19,10 +19,9 @@ namespace Xtensive.Reflection
   /// </summary>
   public static class AttributeHelper
   {
-    private static class AttributeDictionary<TAttribute> where TAttribute : Attribute
+    private static class AttributeDictionary<TAttribute> where TAttribute : class
     {
-      public static readonly ConcurrentDictionary<PerAttributeKey, TAttribute[]> Dictionary
-        = new ConcurrentDictionary<PerAttributeKey, TAttribute[]>();
+      public static readonly ConcurrentDictionary<PerAttributeKey, TAttribute[]> Dictionary = new();
     }
 
     private static readonly ConcurrentDictionary<AttributesKey, Attribute[]> attributesByMemberInfoAndSearchOptions
@@ -37,10 +36,10 @@ namespace Xtensive.Reflection
     /// <returns>An array of attributes of specified type.</returns>
     ///
     public static IReadOnlyList<TAttribute> GetAttributes<TAttribute>(this MemberInfo member, AttributeSearchOptions options = AttributeSearchOptions.InheritNone)
-        where TAttribute : Attribute =>
+        where TAttribute : class =>
       AttributeDictionary<TAttribute>.Dictionary.GetOrAdd(
         new PerAttributeKey(member, options),
-        key => GetAttributes(key.Item1, typeof(TAttribute), key.Item2).Cast<TAttribute>().ToArray()
+        static key => GetAttributes(key.Item1, typeof(TAttribute), key.Item2).Cast<TAttribute>().ToArray()
       );
 
     /// <summary>

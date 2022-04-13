@@ -152,6 +152,7 @@ namespace Xtensive.Sql.Info
     /// </summary>
     CrossApplyForSubqueriesOnly = CrossApply | (1 << 26),
 
+    /// <summary>
     /// Indicates that RDBMS supports SQL parameter in selected columns of SELECT statement.
     /// </summary>
     ParameterAsColumn = 1 << 27,
