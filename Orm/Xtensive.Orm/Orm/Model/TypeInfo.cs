@@ -38,6 +38,8 @@ namespace Xtensive.Orm.Model
     /// </summary>
     public const int MinTypeId = 100;
 
+    private static readonly IReadOnlySet<TypeInfo> EmptyTypes = new HashSet<TypeInfo>();
+
     private readonly ColumnInfoCollection      columns;
     private readonly FieldMap                  fieldMap;
     private readonly FieldInfoCollection       fields;
@@ -45,7 +47,6 @@ namespace Xtensive.Orm.Model
     private readonly NodeCollection<IndexInfo> affectedIndexes;
     private readonly DomainModel               model;
     private TypeAttributes                     attributes;
-    private IReadOnlyList<TypeInfo>             ancestors;
     private IReadOnlyList<AssociationInfo>      targetAssociations;
     private IReadOnlyList<AssociationInfo>      ownerAssociations;
     private IReadOnlyList<AssociationInfo>      removalSequence;
@@ -65,6 +66,111 @@ namespace Xtensive.Orm.Model
     private IDictionary<Pair<FieldInfo>, FieldInfo> structureFieldMapping;
     private List<AssociationInfo>              overridenAssociations;
     private FieldInfo typeIdField;
+    
+    public TypeInfo Ancestor { get; internal set;}
+
+    /// <summary>
+    /// Gets the ancestors recursively. Inheritor-to-root order.
+    /// </summary>
+    /// <returns>The ancestor</returns>
+    public IEnumerable<TypeInfo> AncestorChain
+    {
+      get {
+        for (var ancestor = Ancestor; ancestor != null; ancestor = ancestor.Ancestor) {
+          yield return ancestor;
+        }
+      }
+    }
+
+    private IReadOnlyList<TypeInfo> ancestors;
+
+    /// <summary>
+    /// Gets the ancestors recursively. Root-to-inheritor order. Reverse of AncestorChain.
+    /// </summary>
+    /// <returns>The ancestor</returns>
+    public IReadOnlyList<TypeInfo> Ancestors => ancestors ??= AncestorChain.Reverse().ToList();
+
+    private HashSet<TypeInfo> descendants;
+    public IReadOnlySet<TypeInfo> Descendants => descendants ?? EmptyTypes;
+
+    private IReadOnlySet<TypeInfo> recursiveDescendants;
+    public IReadOnlySet<TypeInfo> RecursiveDescendants
+    {
+      get {
+        if (recursiveDescendants == null) {
+          if (Descendants.Count == 0) {
+            recursiveDescendants = Descendants;
+          }
+          else {
+            var set = new HashSet<TypeInfo>(Descendants);
+            set.UnionWith(Descendants.SelectMany(static o => o.RecursiveDescendants));
+            recursiveDescendants = set;
+          }
+        } 
+        return recursiveDescendants;
+      }
+    }
+
+    private HashSet<TypeInfo> interfaces;
+    public IReadOnlySet<TypeInfo> Interfaces => interfaces ?? EmptyTypes;
+
+    private IReadOnlySet<TypeInfo> recursiveInterfaces;
+    public IReadOnlySet<TypeInfo> RecursiveInterfaces
+    {
+      get {
+        if (recursiveInterfaces == null) {
+          if (IsInterface) {
+            recursiveInterfaces = Interfaces;
+          }
+          else {
+            var set = new HashSet<TypeInfo>(Interfaces);
+            set.UnionWith(Ancestors.SelectMany(static o => o.Interfaces));
+            recursiveInterfaces = set;
+          }
+        } 
+        return recursiveInterfaces;
+      }
+    }
+
+    private HashSet<TypeInfo> implementors;
+    public IReadOnlySet<TypeInfo> Implementors => implementors ?? EmptyTypes;
+
+    private IReadOnlyList<TypeInfo> recursiveImplementors;
+    public IReadOnlyList<TypeInfo> RecursiveImplementors
+    {
+      get {
+        if (recursiveImplementors == null) {
+          if (Implementors.Count == 0) {
+            recursiveImplementors = Array.Empty<TypeInfo>();
+          }
+          else {
+            var list = new List<TypeInfo>(Implementors.Count);
+            foreach (var item in Implementors) {
+              list.Add(item);
+              if (!item.IsInterface) {
+                list.AddRange(item.RecursiveDescendants);
+              }
+            }
+            recursiveImplementors = list;
+          }
+        }
+        return recursiveImplementors;
+      }
+    }
+
+    private IReadOnlySet<TypeInfo> typeWithAncestorsAndInterfaces;
+    public IReadOnlySet<TypeInfo> TypeWithAncestorsAndInterfaces
+    {
+      get {
+        if (typeWithAncestorsAndInterfaces == null) {
+          var candidates = new HashSet<TypeInfo>(Ancestors);
+          candidates.UnionWith(RecursiveInterfaces);
+          candidates.Add(this);
+          typeWithAncestorsAndInterfaces = candidates;
+        }
+        return typeWithAncestorsAndInterfaces;
+      }
+    }
 
     #region IsXxx properties
 
@@ -124,7 +230,7 @@ namespace Xtensive.Orm.Model
 
     /// <summary>
     /// Gets a value indicating whether this instance is a leaf type,
-    /// i.e. its <see cref="GetDescendants()"/> method returns <see langword="0" />.
+    /// i.e. its <see cref="Descendants"/> property is empty />.
     /// </summary>
     public bool IsLeaf
     {
@@ -430,101 +536,43 @@ namespace Xtensive.Orm.Model
     }
 
     /// <summary>
-    /// Gets the direct descendants of this instance.
-    /// </summary>
-    public IEnumerable<TypeInfo> GetDescendants()
-    {
-      return GetDescendants(false);
-    }
-
-    /// <summary>
-    /// Gets descendants of this instance.
-    /// </summary>
-    /// <param name="recursive">if set to <see langword="true"/> then both direct and nested descendants will be returned.</param>
-    /// <returns></returns>
-    public IEnumerable<TypeInfo> GetDescendants(bool recursive)
-    {
-      return model.Types.FindDescendants(this, recursive);
-    }
-
-    /// <summary>
-    /// Gets the direct persistent interfaces this instance implements.
-    /// </summary>
-    public IEnumerable<TypeInfo> GetInterfaces()
-    {
-      return model.Types.FindInterfaces(this);
-    }
-
-    /// <summary>
-    /// Gets the persistent interfaces this instance implements.
-    /// </summary>
-    /// <param name="recursive">if set to <see langword="true"/> then both direct and non-direct implemented interfaces will be returned.</param>
-    public IEnumerable<TypeInfo> GetInterfaces(bool recursive)
-    {
-      return model.Types.FindInterfaces(this, recursive);
-    }
-
-    /// <summary>
-    /// Gets the direct implementors of this instance.
-    /// </summary>
-    public IEnumerable<TypeInfo> GetImplementors()
-    {
-      return model.Types.FindImplementors(this);
-    }
-
-    /// <summary>
-    /// Gets the direct implementors of this instance.
-    /// </summary>
-    /// <param name="recursive">if set to <see langword="true"/> then both direct and non-direct implementors will be returned.</param>
-    public IEnumerable<TypeInfo> GetImplementors(bool recursive)
-    {
-      return model.Types.FindImplementors(this, recursive);
-    }
-
-    /// <summary>
-    /// Gets the ancestor.
-    /// </summary>
-    /// <returns>The ancestor</returns>
-    public TypeInfo GetAncestor()
-    {
-      return model.Types.FindAncestor(this);
-    }
-
-    /// <summary>
-    /// Gets the ancestors recursively. Root-to-inheritor order.
-    /// </summary>
-    /// <returns>The ancestor</returns>
-    public IEnumerable<TypeInfo> GetAncestors() => IsLocked ? ancestors : InnerGetAncestors();
-
-    private static IEnumerable<TypeInfo> EnlistAncestors(TypeInfoCollection types, TypeInfo type) =>
-      types.FindAncestor(type) is TypeInfo ancestor
-        ? EnlistAncestors(types, ancestor).Append(ancestor)
-        : Array.Empty<TypeInfo>();
-
-    private IEnumerable<TypeInfo> InnerGetAncestors() => EnlistAncestors(model.Types, this);
-
-    /// <summary>
     /// Gets the root of the hierarchy.
     /// </summary>
     /// <returns>The hierarchy root.</returns>
-    public TypeInfo GetRoot()
-    {
-      return model.Types.FindRoot(this);
-    }
+    public TypeInfo GetRoot() =>
+      IsInterface || IsStructure
+        ? null
+        : (Ancestors.FirstOrDefault() ?? this);
 
     /// <summary>
     /// Gets the associations this instance is participating in as target (it is referenced by other entities).
     /// </summary>
-    public IReadOnlyList<AssociationInfo> GetTargetAssociations() => IsLocked ? targetAssociations : InnerGetTargetAssociations();
-
-    private List<AssociationInfo> InnerGetTargetAssociations() => model.Associations.Find(this, true).ToList();
+    public IEnumerable<AssociationInfo> GetTargetAssociations()
+    {
+      if (targetAssociations == null) {
+        var result = model.Associations.Find(this, true);
+        if (!IsLocked) {
+          return result;
+        }
+        targetAssociations = result.ToList().AsReadOnly();
+      }
+      return targetAssociations;
+    }
 
     /// <summary>
     /// Gets the associations this instance is participating in as owner (it has references to other entities).
     /// </summary>
-    public IReadOnlyList<AssociationInfo> GetOwnerAssociations() => IsLocked ? ownerAssociations : InnerGetOwnerAssociations();
-
-    public List<AssociationInfo> InnerGetOwnerAssociations() => model.Associations.Find(this, false).ToList();
+    public IEnumerable<AssociationInfo> GetOwnerAssociations()
+    {
+      if (ownerAssociations == null) {
+        var result = model.Associations.Find(this, false);
+        if (!IsLocked) {
+          return result;
+        }
+        ownerAssociations = result.ToList().AsReadOnly();
+      }
+      return ownerAssociations;
+    }
 
     /// <summary>
     /// Gets the association sequence for entity removal.
@@ -577,10 +625,6 @@ namespace Xtensive.Orm.Model
     {
       base.UpdateState();
 
-      ancestors = InnerGetAncestors().ToList();
-      targetAssociations = InnerGetTargetAssociations().AsReadOnly();
-      ownerAssociations = InnerGetOwnerAssociations().AsReadOnly();
-
       var adapterIndex = 0;
       foreach (var field in Fields) {
         if (field.IsStructure || field.IsEntitySet) {
@@ -616,7 +660,7 @@ namespace Xtensive.Orm.Model
         // Collect mapping information from the first implementor (if any)
         // We'll check that all implementors are mapped to the same database later.
         // MappingSchema is not important: it's copied for consistency.
-        var firstImplementor = GetImplementors().FirstOrDefault();
+        var firstImplementor = Implementors.FirstOrDefault();
         if (firstImplementor != null) {
           MappingDatabase = firstImplementor.MappingDatabase;
           MappingSchema = firstImplementor.MappingSchema;
@@ -646,12 +690,14 @@ namespace Xtensive.Orm.Model
           (a.Reversed!=null && (a.Reversed.Ancestors.Count > 0 && ((a.Reversed.OwnerType==this && a.Reversed.Ancestors.All(an => an.OwnerType!=this) || (a.Reversed.TargetType==this && a.Reversed.Ancestors.All(an => an.TargetType!=this)))))))
         .SelectMany(a => a.Ancestors.Concat(a.Reversed==null ? Enumerable.Empty<AssociationInfo>() : a.Reversed.Ancestors))
         .ToList();
-      var ancestor = GetAncestor();
-      if (ancestor!=null && ancestor.overridenAssociations!=null)
+      var ancestor = Ancestor;
+      if (ancestor != null && ancestor.overridenAssociations != null) {
         overridenAssociations.AddRange(ancestor.overridenAssociations);
+      }
 
-      foreach (var ancestorAssociation in overridenAssociations)
+      foreach (var ancestorAssociation in overridenAssociations) {
         associations.Remove(ancestorAssociation);
+      }
 
       //
       //Commented action sequence bellow may add dublicates to "sequence".
@@ -722,19 +768,13 @@ namespace Xtensive.Orm.Model
 
     #region Private / internal methods
 
-    private KeyInfo GetKey()
-    {
-      if (Hierarchy==null)
-        return IsInterface
-          ? GetImplementors().First().Hierarchy.Key
-          : null;
-      return Hierarchy.Key;
-    }
+    private KeyInfo GetKey() =>
+      Hierarchy != null ? Hierarchy.Key
+        : IsInterface ? Implementors.First().Hierarchy.Key
+        : null;
 
-    private bool GetIsLeaf()
-    {
-      return IsEntity && !GetDescendants().Any();
-    }
+    private bool GetIsLeaf() =>
+      IsEntity && !Descendants.Any();
 
     private void CreateTupleDescriptor()
     {
@@ -832,6 +872,14 @@ namespace Xtensive.Orm.Model
       return Name;
     }
 
+    internal void AddDescendant(TypeInfo descendant) =>
+      (descendants ??= new()).Add(descendant);
+
+    internal void AddInterface(TypeInfo iface) =>
+      (interfaces ??= new()).Add(iface);
+
+    internal void AddImplementor(TypeInfo implementor) =>
+      (implementors ??= new()).Add(implementor);
 
     // Constructors
 

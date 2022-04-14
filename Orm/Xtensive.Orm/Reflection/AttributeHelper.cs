@@ -19,7 +19,7 @@ namespace Xtensive.Reflection
   /// </summary>
   public static class AttributeHelper
   {
-    private static class AttributeDictionary<TAttribute> where TAttribute : class
+    private static class AttributeDictionary<TAttribute> where TAttribute : Attribute
     {
       public static readonly ConcurrentDictionary<PerAttributeKey, TAttribute[]> Dictionary = new();
     }
@@ -36,7 +36,7 @@ namespace Xtensive.Reflection
     /// <returns>An array of attributes of specified type.</returns>
     ///
     public static IReadOnlyList<TAttribute> GetAttributes<TAttribute>(this MemberInfo member, AttributeSearchOptions options = AttributeSearchOptions.InheritNone)
-        where TAttribute : class =>
+        where TAttribute : Attribute =>
       AttributeDictionary<TAttribute>.Dictionary.GetOrAdd(
         new PerAttributeKey(member, options),
         static key => GetAttributes(key.Item1, typeof(TAttribute), key.Item2).Cast<TAttribute>().ToArray()

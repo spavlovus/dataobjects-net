@@ -577,7 +577,7 @@ namespace Xtensive.Orm.Providers
     /// <returns>Computed hash.</returns>
     private static string GetHash(string name)
     {
-      using (var hashAlgorithm = new MD5CryptoServiceProvider()) {
+      using (var hashAlgorithm = MD5.Create()) {
         byte[] hash = hashAlgorithm.ComputeHash(Encoding.UTF8.GetBytes(name));
         return $"H{hash[0]:x2}{hash[1]:x2}{hash[2]:x2}{hash[3]:x2}";
       }
