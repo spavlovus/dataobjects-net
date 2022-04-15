@@ -383,9 +383,9 @@ namespace Xtensive.Orm.Model
     private void CreateTupleDescriptors()
     {
       tupleDescriptor = TupleDescriptor.Create(
-        Columns.Select(c => c.ValueType).ToArray(Columns.Count));
+        Columns.Select(static c => c.ValueType).ToArray(Columns.Count));
       keyTupleDescriptor = TupleDescriptor.Create(
-        KeyColumns.Select(c => c.Key.ValueType).ToArray(KeyColumns.Count));
+        KeyColumns.Select(static c => c.Key.ValueType).ToArray(KeyColumns.Count));
     }
 
     private void CreateColumns()
