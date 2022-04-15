@@ -155,13 +155,7 @@ namespace Xtensive.Orm.Building.Builders
                     }
                     type = type.Ancestor;
                   }
-                  var filterByTypes = new List<TypeInfo>();
-                  if (!implementor.IsAbstract)
-                    filterByTypes.Add(implementor);
-                  filterByTypes.AddRange(GatherDescendants(implementor, hierarchyImplementors));
-                  var filterIndex = typedIndex != null
-                    ? BuildFilterIndex(implementor, typedIndex, filterByTypes)
-                    : BuildFilterIndex(implementor, typeIndexes.Dequeue(), filterByTypes);
+                  var filterIndex = BuildFilterIndex(implementor, typedIndex ?? typeIndexes.Dequeue(), NonAbstractTypeWithDescendants(implementor, hierarchyImplementors));
                   var indexesToJoin = new List<IndexInfo>(1 + typeIndexes.Count);
                   indexesToJoin.Add(filterIndex);
                   indexesToJoin.AddRange(typeIndexes);
@@ -178,11 +172,7 @@ namespace Xtensive.Orm.Building.Builders
                 if (untypedIndexes.Contains(primaryIndex))
                   primaryIndex = hierarchy.Key.Root.Indexes.Single(i => i.ReflectedType == hierarchy.Key.Root && i.IsPrimary && i.IsTyped);
                 foreach (var implementor in hierarchy) {
-                  var typesToFilter = new List<TypeInfo>();
-                  if (!implementor.IsAbstract)
-                    typesToFilter.Add(implementor);
-                  typesToFilter.AddRange(GatherDescendants(implementor, hierarchyImplementors));
-                  var filterIndex = BuildFilterIndex(implementor, primaryIndex, typesToFilter);
+                  var filterIndex = BuildFilterIndex(implementor, primaryIndex, NonAbstractTypeWithDescendants(implementor, hierarchyImplementors));
                   var indexView = BuildViewIndex(@interface, filterIndex);
                   underlyingIndex.UnderlyingIndexes.Add(indexView);
                 }
@@ -248,12 +238,8 @@ namespace Xtensive.Orm.Building.Builders
                   var index = untypedIndexes.Contains(rootIndex)
                     ? hierarchy.Key.Root.Indexes.Single(i => i.DeclaringIndex == localIndex.DeclaringIndex && i.ReflectedType == rootIndex.ReflectedType && i.IsTyped)
                     : rootIndex;
-                  var filterByTypes = new List<TypeInfo>();
                   var reflectedType = rootIndex.ReflectedType;
-                  if (!reflectedType.IsAbstract)
-                    filterByTypes.Add(reflectedType);
-                  filterByTypes.AddRange(GatherDescendants(reflectedType, hierarchyImplementors));
-                  index = BuildFilterIndex(reflectedType, index, filterByTypes);
+                  index = BuildFilterIndex(reflectedType, index, NonAbstractTypeWithDescendants(reflectedType, hierarchyImplementors));
                   underlyingIndex.UnderlyingIndexes.Add(index);
                 }
                 underlyingIndexes.Add(underlyingIndex);
@@ -528,14 +514,14 @@ namespace Xtensive.Orm.Building.Builders
       return result;
     }
 
-    private IndexInfo BuildFilterIndex(TypeInfo reflectedType, IndexInfo indexToFilter, IEnumerable<TypeInfo> filterByTypes)
+    private IndexInfo BuildFilterIndex(TypeInfo reflectedType, IndexInfo indexToFilter, IReadOnlyList<TypeInfo> filterByTypes)
     {
       var nameBuilder = context.NameBuilder;
       var attributes = indexToFilter.Attributes
         & (IndexAttributes.Primary | IndexAttributes.Secondary | IndexAttributes.Unique | IndexAttributes.Abstract)
         | IndexAttributes.Filtered | IndexAttributes.Virtual;
       var result = new IndexInfo(reflectedType, attributes, indexToFilter, Array.Empty<IndexInfo>()) {
-        FilterByTypes = filterByTypes.ToList().AsReadOnly()
+        FilterByTypes = filterByTypes
       };
 
       // Adding key columns
@@ -776,6 +762,16 @@ namespace Xtensive.Orm.Building.Builders
 
     private static IEnumerable<TypeInfo> GatherDescendants(TypeInfo type, IEnumerable<TypeInfo> hierarchyImplementors) =>
       type.RecursiveDescendants.Where(static t => !t.IsAbstract).Except(hierarchyImplementors);
+
+    private static IReadOnlyList<TypeInfo> NonAbstractTypeWithDescendants(TypeInfo type, IEnumerable<TypeInfo> hierarchyImplementors)
+    {
+      var filterByTypes = new List<TypeInfo>(10);
+      if (!type.IsAbstract) {
+        filterByTypes.Add(type);
+      }
+      filterByTypes.AddRange(GatherDescendants(type, hierarchyImplementors));
+      return filterByTypes;
+    }
 
     private IEnumerable<ColumnInfo> GatherValueColumns(IEnumerable<ColumnInfo> columns)
     {
