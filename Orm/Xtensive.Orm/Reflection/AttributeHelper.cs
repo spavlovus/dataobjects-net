@@ -24,8 +24,7 @@ namespace Xtensive.Reflection
       public static readonly ConcurrentDictionary<PerAttributeKey, TAttribute[]> Dictionary = new();
     }
 
-    private static readonly ConcurrentDictionary<AttributesKey, Attribute[]> attributesByMemberInfoAndSearchOptions
-      = new ConcurrentDictionary<AttributesKey, Attribute[]>();
+    private static readonly ConcurrentDictionary<AttributesKey, IReadOnlyList<Attribute>> AttributesByMemberInfoAndSearchOptions = new();
 
     /// <summary>
     /// A shortcut to <see cref="MemberInfo.GetCustomAttributes(Type,bool)"/> method.
@@ -68,22 +67,22 @@ namespace Xtensive.Reflection
     }
 
     private static IReadOnlyList<Attribute> GetAttributes(MemberInfo member, Type attributeType, AttributeSearchOptions options) =>
-      attributesByMemberInfoAndSearchOptions.GetOrAdd(
+      AttributesByMemberInfoAndSearchOptions.GetOrAdd(
         new AttributesKey(member, attributeType, options),
-        t => ExtractAttributes(t).ToArray()
+        ExtractAttributes
       );
 
-    private static Attribute[] GetAttributes(this MemberInfo member, Type attributeType)
+    private static List<Attribute> GetAttributesAsNewList(this MemberInfo member, Type attributeType)
     {
       var attrObjects = member.GetCustomAttributes(attributeType, false);
-      var attrs = new Attribute[attrObjects.Length];
-      for (int i = attrObjects.Length; i-- > 0;) {
-        attrs[i] = (Attribute) attrObjects[i];
+      var attrs = new List<Attribute>(attrObjects.Length);
+      for (int i = 0, count = attrObjects.Length; i < count; ++i) {
+        attrs.Add((Attribute) attrObjects[i]);
       }
       return attrs;
     }
 
-    private static IEnumerable<Attribute> ExtractAttributes((MemberInfo member, Type attributeType, AttributeSearchOptions options) t) {
+    private static IReadOnlyList<Attribute> ExtractAttributes((MemberInfo member, Type attributeType, AttributeSearchOptions options) t) {
       (var member, var attributeType, var options) = t;
 
       var attributes = member.GetCustomAttributes(attributeType, false).Cast<Attribute>().ToList();
@@ -93,7 +92,7 @@ namespace Xtensive.Reflection
         if ((options & AttributeSearchOptions.InheritFromPropertyOrEvent) != 0
             && member is MethodInfo m
             && ((MemberInfo) m.GetProperty() ?? m.GetEvent()) is MemberInfo poe) {
-          attributes = poe.GetAttributes(attributeType).ToList();
+          attributes = poe.GetAttributesAsNewList(attributeType);
         }
         if ((options & AttributeSearchOptions.InheritFromBase) != 0
             && (options & AttributeSearchOptions.InheritFromAllBase) == 0

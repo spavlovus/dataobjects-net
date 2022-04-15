@@ -865,7 +865,7 @@ namespace Xtensive.Modelling
 
           const BindingFlags propertyBindingFlags =
             BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly;
-          foreach (var p in entityType.GetProperties(propertyBindingFlags)) {
+          foreach (var p in TypeHelper.GetProperties(entityType, propertyBindingFlags)) {
             if (p.GetAttribute<PropertyAttribute>(AttributeSearchOptions.InheritNone) != null) {
               d.Add(p.Name, new PropertyAccessor(p));
             }

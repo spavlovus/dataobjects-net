@@ -1033,7 +1033,7 @@ namespace Xtensive.Orm.Linq
 
       var result = new List<Expression>();
       foreach (PersistentFieldExpression fieldExpression in structureFields) {
-        if (!structureType.GetProperties(BindingFlags.Instance | BindingFlags.Public).Contains(fieldExpression.UnderlyingProperty)) {
+        if (!TypeHelper.GetProperties(structureType, BindingFlags.Instance | BindingFlags.Public).Contains(fieldExpression.UnderlyingProperty)) {
           if (!context.Model.Types[structureType].Fields[fieldExpression.Name].IsDynamicallyDefined) {
             continue;
           }
@@ -1288,9 +1288,7 @@ namespace Xtensive.Orm.Linq
         if (constantExpression.Value==null && constantExpression.Type==WellKnownTypes.Object) {
           var newConstantExpressionType = anonymousTypeForNullValues ?? constantExpression.Type;
           constantExpression = Expression.Constant(null, newConstantExpressionType);
-          return constantExpression
-            .Type
-            .GetProperties()
+          return TypeHelper.GetProperties(constantExpression.Type)
             .OrderBy(property => property.Name)
             .Select(p => Expression.MakeMemberAccess(constantExpression, p))
             .Cast<Expression>()
@@ -1298,9 +1296,7 @@ namespace Xtensive.Orm.Linq
         }
       }
 
-      return expression
-        .Type
-        .GetProperties()
+      return TypeHelper.GetProperties(expression.Type)
         .OrderBy(property => property.Name)
         .Select(p => Expression.MakeMemberAccess(expression, p))
         .Select(e => (Expression) e)

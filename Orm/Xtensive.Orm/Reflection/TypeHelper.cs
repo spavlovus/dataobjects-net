@@ -56,10 +56,11 @@ namespace Xtensive.Reflection
     private static readonly ConcurrentDictionary<Type, IReadOnlyList<Type>> UnorderedInterfaces = new();
     private static readonly ConcurrentDictionary<Type, IReadOnlyList<Type>> OrderedInterfaces = new();
 
+    private static readonly ConcurrentDictionary<(Type Type, BindingFlags BindingAttr), IReadOnlyList<PropertyInfo>> Properties = new();
+
     private static readonly ConcurrentDictionary<Type, Type[]> OrderedCompatibles = new();
 
-    private static readonly ConcurrentDictionary<Pair<Type, Type>, InterfaceMapping> interfaceMaps =
-      new ConcurrentDictionary<Pair<Type, Type>, InterfaceMapping>();
+    private static readonly ConcurrentDictionary<(Type, Type), InterfaceMapping> InterfaceMaps = new();
 
     private static readonly ConcurrentDictionary<(MethodInfo, Type), MethodInfo> GenericMethodInstances1 =
       new ConcurrentDictionary<(MethodInfo, Type), MethodInfo>();
@@ -686,15 +687,14 @@ namespace Xtensive.Reflection
     /// <param name="targetInterface">The target interface.</param>
     /// <returns>Interface map for the specified interface.</returns>
     public static InterfaceMapping GetInterfaceMapFast(this Type type, Type targetInterface) =>
-      interfaceMaps.GetOrAdd(new Pair<Type, Type>(type, targetInterface),
-        pair => new InterfaceMapping(pair.First.GetInterfaceMap(pair.Second)));
+      InterfaceMaps.GetOrAdd((type, targetInterface), static pair => new InterfaceMapping(pair.Item1.GetInterfaceMap(pair.Item2)));
 
     /// <summary>
     /// Gets the interfaces of the specified type.
     /// Interfaces will be unordered.
     /// </summary>
     /// <param name="type">The type to get the interfaces of.</param>
-    public static IReadOnlyList<Type> GetInterfacesUnordered(this Type type) =>
+    public static IReadOnlyList<Type> GetInterfacesUnordered(Type type) =>
       UnorderedInterfaces.GetOrAdd(type, static t => t.GetInterfaces());
 
     /// <summary>
@@ -702,8 +702,16 @@ namespace Xtensive.Reflection
     /// Interfaces will be ordered from the very base ones to ancestors.
     /// </summary>
     /// <param name="type">The type to get the interfaces of.</param>
-    public static IReadOnlyList<Type> GetInterfaces(this Type type) =>
+    public static IReadOnlyList<Type> GetInterfaces(Type type) =>
       OrderedInterfaces.GetOrAdd(type, static t => t.GetInterfaces().OrderByInheritance().ToArray());
+
+    /// <summary>
+    /// Gets the properties of the specified combination of type and binding flags.
+    /// </summary>
+    /// <param name="type">The type to get the interfaces of.</param>
+    /// <param name="bindingAttr">The binding flags to get the properties.</param>
+    public static IReadOnlyList<PropertyInfo> GetProperties(Type type, BindingFlags bindingAttr = BindingFlags.Instance | BindingFlags.Static | BindingFlags.Public) =>
+      Properties.GetOrAdd((type, bindingAttr), static o => o.Type.GetProperties(o.BindingAttr));
 
     /// <summary>
     /// Gets the sequence of type itself, all its base types and interfaces.

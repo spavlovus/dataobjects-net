@@ -326,10 +326,10 @@ namespace Xtensive.Orm.Model
       base.UpdateState();
       CreateColumns();
       valueColumns.UpdateState();
-      foreach (IndexInfo baseIndex in underlyingIndexes)
+      foreach (IndexInfo baseIndex in underlyingIndexes) {
         baseIndex.UpdateState();
-      if (filter!=null)
-        filter.UpdateState();
+      }
+      filter?.UpdateState();
       CreateTupleDescriptors();
 
       if (!IsPrimary)
