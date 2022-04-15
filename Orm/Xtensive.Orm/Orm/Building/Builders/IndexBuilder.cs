@@ -159,10 +159,10 @@ namespace Xtensive.Orm.Building.Builders
                   if (!implementor.IsAbstract)
                     filterByTypes.Add(implementor);
                   filterByTypes.AddRange(GatherDescendants(implementor, hierarchyImplementors));
-                  var indexesToJoin = new List<IndexInfo>();
                   var filterIndex = typedIndex != null
                     ? BuildFilterIndex(implementor, typedIndex, filterByTypes)
                     : BuildFilterIndex(implementor, typeIndexes.Dequeue(), filterByTypes);
+                  var indexesToJoin = new List<IndexInfo>(1 + typeIndexes.Count);
                   indexesToJoin.Add(filterIndex);
                   indexesToJoin.AddRange(typeIndexes);
                   var indexToApplyView = indexesToJoin.Count > 1
@@ -762,7 +762,7 @@ namespace Xtensive.Orm.Building.Builders
       }
 
       result.ValueColumns.AddRange(valueColumns);
-      result.SelectColumns = columnMap.AsReadOnly();
+      result.SelectColumns = columnMap;
       result.Name = nameBuilder.BuildIndexName(reflectedType, result);
       result.Group = BuildColumnGroup(result);
 

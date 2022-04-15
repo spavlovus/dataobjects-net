@@ -64,7 +64,7 @@ namespace Xtensive.Orm.Building
 
     private static void InspectInterfaces(BuildingContext context)
     {
-      foreach (var interfaceDef in context.ModelDef.Types.Where(t => t.IsInterface)) {
+      foreach (var interfaceDef in context.ModelDef.Types.Where(static t => t.IsInterface)) {
 
         var interfaceNode = context.DependencyGraph.TryGetNode(interfaceDef);
 

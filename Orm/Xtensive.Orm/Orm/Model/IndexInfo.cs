@@ -39,8 +39,8 @@ namespace Xtensive.Orm.Model
     private TupleDescriptor tupleDescriptor;
     private TupleDescriptor keyTupleDescriptor;
     private IList<TypeInfo> filterByTypes;
-    private IList<int> selectColumns;
-    private List<Pair<int, List<int>>> valueColumnsMap;
+    private IReadOnlyList<int> selectColumns;
+    private IReadOnlyList<Pair<int, List<int>>> valueColumnsMap;
     private LambdaExpression filterExpression;
     private PartialIndexFilterInfo filter;
 
@@ -214,9 +214,9 @@ namespace Xtensive.Orm.Model
     /// <summary>
     /// Gets the column indexes for <see cref="IndexAttributes.View"/> index.
     /// </summary>
-    public IList<int> SelectColumns
+    public IReadOnlyList<int> SelectColumns
     {
-      get { return selectColumns; }
+      get => selectColumns;
       set
       {
         this.EnsureNotLocked();
@@ -224,7 +224,7 @@ namespace Xtensive.Orm.Model
       }
     }
 
-    public List<Pair<int, List<int>>> ValueColumnsMap
+    public IReadOnlyList<Pair<int, List<int>>> ValueColumnsMap
     {
       get { return valueColumnsMap; }
       set
@@ -390,7 +390,8 @@ namespace Xtensive.Orm.Model
 
     private void CreateColumns()
     {
-      var result = new List<ColumnInfo>(keyColumns.Select(pair => pair.Key));
+      var result = new List<ColumnInfo>(keyColumns.Count + valueColumns.Count);
+      result.AddRange(keyColumns.Select(static pair => pair.Key));
       result.AddRange(valueColumns);
       columns = result.AsReadOnly();
     }
