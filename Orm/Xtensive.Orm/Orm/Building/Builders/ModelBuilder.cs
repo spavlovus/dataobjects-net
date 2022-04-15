@@ -1,4 +1,4 @@
-// Copyright (C) 2007-2021 Xtensive LLC.
+// Copyright (C) 2007-2022 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Dmitri Maximov
@@ -172,13 +172,11 @@ namespace Xtensive.Orm.Building.Builders
       var domain = context.Domain;
       foreach (var type in context.Model.Types.Entities) {
         var associations = type.GetOwnerAssociations()
-          .Where(a => a.OnOwnerRemove is OnRemoveAction.Cascade or OnRemoveAction.Clear)
-          .ToList();
-        if (associations.Count <= 0)
-          continue;
-        var actionContainer = new PrefetchActionContainer(type, associations);
-        var action = actionContainer.BuildPrefetchAction();
-        domain.PrefetchActionMap.Add(type, action);
+          .Where(a => a.OnOwnerRemove is OnRemoveAction.Cascade or OnRemoveAction.Clear);
+        var action = new PrefetchActionContainer(type).BuildPrefetchAction(associations);
+        if (action != null) {
+          domain.PrefetchActionMap.Add(type, action);
+        }
       }
     }
 
