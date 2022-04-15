@@ -26,6 +26,14 @@ namespace Xtensive.Core
     public virtual void Lock(bool recursive) =>
       IsLocked = true;
 
+    // Copy of LockableExtensions.EnsureNotLocked() for efficiency (no null checking)
+    protected void EnsureNotLocked()
+    {
+      if (IsLocked) {
+        throw new InstanceIsLockedException(Strings.ExInstanceIsLocked);
+      }
+    }
+
     // Constructors
 
     /// <summary>
