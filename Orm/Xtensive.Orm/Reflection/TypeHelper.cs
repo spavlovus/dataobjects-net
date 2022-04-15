@@ -677,7 +677,7 @@ namespace Xtensive.Reflection
     /// </summary>
     /// <param name="types">The types to sort.</param>
     /// <returns>The list of <paramref name="types"/> ordered by their inheritance.</returns>
-    public static List<Type> OrderByInheritance(this IEnumerable<Type> types) =>
+    public static IEnumerable<Type> OrderByInheritance(this IEnumerable<Type> types) =>
       TopologicalSorter.Sort(types, static (t1, t2) => t1.IsAssignableFrom(t2));
 
     /// <summary>

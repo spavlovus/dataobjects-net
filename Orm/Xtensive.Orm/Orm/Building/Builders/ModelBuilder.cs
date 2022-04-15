@@ -143,7 +143,7 @@ namespace Xtensive.Orm.Building.Builders
     {
       using (BuildLog.InfoRegion(Strings.LogBuildingX, Strings.ActualModel)) {
         context.Model = new DomainModel();
-        BuildTypes(GetTypeBuildSequence());
+        BuildTypes(GetTypeBuildSequence().ToList());
         BuildAssociations();
         FindAndMarkInboundAndOutboundTypes(context);
         IndexBuilder.BuildIndexes(context);
@@ -180,7 +180,7 @@ namespace Xtensive.Orm.Building.Builders
       }
     }
 
-    private void BuildTypes(IEnumerable<TypeDef> typeDefs)
+    private void BuildTypes(IReadOnlyList<TypeDef> typeDefs)
     {
       using (BuildLog.InfoRegion(Strings.LogBuildingX, Strings.Types)) {
         // Building types, system fields and hierarchies
@@ -188,12 +188,14 @@ namespace Xtensive.Orm.Building.Builders
           typeBuilder.BuildType(typeDef);
         }
       }
-      using (BuildLog.InfoRegion(Strings.LogBuildingX, "Fields"))
+      using (BuildLog.InfoRegion(Strings.LogBuildingX, "Fields")) {
+        var typeInfoCollection = context.Model.Types;
         foreach (var typeDef in typeDefs) {
-          var typeInfo = context.Model.Types[typeDef.UnderlyingType];
+          var typeInfo = typeInfoCollection[typeDef.UnderlyingType];
           typeBuilder.BuildFields(typeDef, typeInfo);
           typeBuilder.BuildTypeDiscriminatorMap(typeDef, typeInfo);
         }
+      }
     }
 
     private void PreprocessAssociations()
@@ -532,25 +534,35 @@ namespace Xtensive.Orm.Building.Builders
 
     #region Topological sort helpers
 
+    private static List<Node<Node<TypeDef>, object>> PrepareNodesForTopologicalSort(IEnumerable<Node<TypeDef>> typeNodes)
+    {
+      var nodes = new List<Node<Node<TypeDef>, object>>();
+      foreach (var typeNode in typeNodes) {
+        var topoNode = new Node<Node<TypeDef>, object>(typeNode);
+        nodes.Add(topoNode);
+      }
+      var dict = nodes.ToDictionary(o => o.Item);
+      foreach (var typeNode in typeNodes) {
+        var tail = dict[typeNode];
+        foreach (var head in typeNode.OutgoingEdges.Where(static o => o.Weight == EdgeWeight.High).Select(o => o.Head).Distinct()) {
+          if (head != typeNode) {
+            dict[head].AddConnection(tail, null);
+          }
+        }
+      }
+      return nodes;
+    }
+
     private IEnumerable<TypeDef> GetTypeBuildSequence()
     {
       List<Node<Node<TypeDef>, object>> loops;
-      var result = TopologicalSorter.Sort(context.DependencyGraph.Nodes, TypeConnector, out loops);
-      if (result==null)
-        throw new DomainBuilderException(string.Format(
-          Strings.ExAtLeastOneLoopHaveBeenFoundInPersistentTypeDependenciesGraphSuspiciousTypesX,
-          loops.Select(node => node.Item.Value.Name).ToCommaDelimitedString()));
-      var dependentTypes = result.Select(n => n.Value);
+      var result = TopologicalSorter.Sort(PrepareNodesForTopologicalSort(context.DependencyGraph.Nodes), out loops)
+        ?? throw new DomainBuilderException(string.Format(
+            Strings.ExAtLeastOneLoopHaveBeenFoundInPersistentTypeDependenciesGraphSuspiciousTypesX,
+              loops.Select(node => node.Item.Value.Name).ToCommaDelimitedString()));
+      var dependentTypes = result.Select(n => n.Value).ToList();
       var independentTypes = context.ModelDef.Types.Except(dependentTypes);
       return independentTypes.Concat(dependentTypes);
-    }
-
-    private static bool TypeConnector(Node<TypeDef> first, Node<TypeDef> second)
-    {
-      foreach (var info in second.OutgoingEdges)
-        if (info.Weight==EdgeWeight.High && info.Head==first)
-          return true;
-      return false;
     }
 
     #endregion
