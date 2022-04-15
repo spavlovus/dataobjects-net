@@ -1,4 +1,4 @@
-// Copyright (C) 2009-2021 Xtensive LLC.
+// Copyright (C) 2009-2022 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Dmitri Maximov
@@ -103,7 +103,7 @@ namespace Xtensive.Orm.Building.Builders
 
         ProcessFullTextIndexes(typeDef);
 
-        typeDef.Validators.AddRange(type.GetCustomAttributes(typeof(IObjectValidator), false).Cast<IObjectValidator>());
+        typeDef.Validators.AddRange(type.GetCustomAttributes(WellKnownOrmInterfaces.ObjectValidator, false).Cast<IObjectValidator>());
         return typeDef;
       }
     }
@@ -320,7 +320,7 @@ namespace Xtensive.Orm.Building.Builders
         }
 
         // Validators
-        fieldDef.Validators.AddRange(propertyInfo.GetCustomAttributes(typeof(IPropertyValidator), false).Cast<IPropertyValidator>());
+        fieldDef.Validators.AddRange(propertyInfo.GetCustomAttributes(WellKnownOrmInterfaces.PropertyValidator, false).Cast<IPropertyValidator>());
       }
 
       return fieldDef;
