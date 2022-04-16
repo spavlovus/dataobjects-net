@@ -293,29 +293,33 @@ namespace Xtensive.Orm.Building.Builders
           attributeProcessor.Process(fieldDef, reversedFieldAttributes[i]);
         }
 
-        // Association
-        var reversedAssociationAttributes = GetReversedFieldAttributes<AssociationAttribute>(propertyInfo);
-        for (int i = reversedAssociationAttributes.Count; i-- > 0;) {
-          attributeProcessor.Process(fieldDef, reversedAssociationAttributes[i]);
-        }
-
-        // Mapping name
-        var reversedMappingAttributes = GetReversedFieldAttributes<FieldMappingAttribute>(propertyInfo);
-        for (int i = reversedMappingAttributes.Count; i-- > 0;) {
-          attributeProcessor.Process(fieldDef, reversedMappingAttributes[i]);
-        }
-
-        // Type discriminator
-        var typeDiscriminatorAttribute =
-          propertyInfo.GetAttribute<TypeDiscriminatorAttribute>(AttributeSearchOptions.InheritAll);
-        if (typeDiscriminatorAttribute != null) {
-          attributeProcessor.Process(fieldDef, typeDiscriminatorAttribute);
-        }
-
-        // Version
-        var versionAttribute = propertyInfo.GetAttribute<VersionAttribute>(AttributeSearchOptions.InheritAll);
-        if (versionAttribute != null) {
-          attributeProcessor.Process(fieldDef, versionAttribute);
+        bool typeDescriminatorAppeared = false, versionAppeared = false;
+        var reversedStorageAttributes = GetReversedFieldAttributes<StorageAttribute>(propertyInfo);
+        for (int i = reversedStorageAttributes.Count; i-- > 0;) {
+          switch (reversedStorageAttributes[i]) {
+            case AssociationAttribute associationAttribute:
+              attributeProcessor.Process(fieldDef, associationAttribute);
+              break;
+            case FieldMappingAttribute mappingAttribute:
+              attributeProcessor.Process(fieldDef, mappingAttribute);
+              break;
+            case TypeDiscriminatorAttribute typeDiscriminatorAttribute:
+              typeDescriminatorAppeared = typeDescriminatorAppeared
+                ? throw new InvalidOperationException(string.Format(Strings.ExMultipleAttributesOfTypeXAreNotAllowedHere,
+                    propertyInfo.GetShortName(true),
+                    nameof(TypeDiscriminatorAttribute)))
+                : true;
+              attributeProcessor.Process(fieldDef, typeDiscriminatorAttribute);
+              break;
+            case VersionAttribute versionAttribute:
+              versionAppeared = versionAppeared
+                ? throw new InvalidOperationException(string.Format(Strings.ExMultipleAttributesOfTypeXAreNotAllowedHere,
+                    propertyInfo.GetShortName(true),
+                    nameof(VersionAttribute)))
+                : true;
+              attributeProcessor.Process(fieldDef, versionAttribute);
+              break;
+          }
         }
 
         // Validators

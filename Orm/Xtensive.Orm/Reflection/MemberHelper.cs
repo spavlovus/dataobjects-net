@@ -211,8 +211,9 @@ namespace Xtensive.Reflection
         var isRuntimeMethodInfo = methodInfoType.FullName == WellKnown.RuntimeMethodInfoName;
         foreach (var iType in TypeHelper.GetInterfacesUnordered(type)) {
           var map = type.GetInterfaceMapFast(iType.UnderlyingSystemType);
-          for (var i = 0; i < map.InterfaceMethods.Count; i++) {
-            var tmi = map.TargetMethods[i];
+          var targetMethods = map.TargetMethods;
+          for (int i = 0, count = map.InterfaceMethods.Count; i < count; i++) {
+            var tmi = targetMethods[i];
             if (mi == tmi) {
               return map.InterfaceMethods[i];
             }
