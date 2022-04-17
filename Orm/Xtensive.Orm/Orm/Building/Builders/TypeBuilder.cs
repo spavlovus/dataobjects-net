@@ -39,6 +39,11 @@ namespace Xtensive.Orm.Building.Builders
     {
       using (BuildLog.InfoRegion(Strings.LogBuildingX, typeDef.UnderlyingType.GetShortName())) {
 
+        var validators = typeDef.Validators;
+        if (typeDef.IsEntity && DeclaresOnValidate(typeDef.UnderlyingType)) {
+          validators.Add(new EntityValidator());
+        }
+
         var typeInfo = new TypeInfo(context.Model, typeDef.Attributes) {
           UnderlyingType = typeDef.UnderlyingType,
           Name = typeDef.Name,
@@ -46,12 +51,8 @@ namespace Xtensive.Orm.Building.Builders
           MappingDatabase = typeDef.MappingDatabase,
           MappingSchema = typeDef.MappingSchema,
           HasVersionRoots = TypeHelper.GetInterfacesUnordered(typeDef.UnderlyingType).Any(static type => type == typeof(IHasVersionRoots)),
-          Validators = typeDef.Validators,
+          Validators = validators,
         };
-
-        if (typeInfo.IsEntity && DeclaresOnValidate(typeInfo.UnderlyingType)) {
-          typeInfo.Validators.Add(new EntityValidator());
-        }
 
         if (typeDef.StaticTypeId != null) {
           typeInfo.TypeId = typeDef.StaticTypeId.Value;

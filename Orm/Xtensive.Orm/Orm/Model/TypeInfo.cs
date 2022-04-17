@@ -52,7 +52,6 @@ namespace Xtensive.Orm.Model
     private IReadOnlyList<AssociationInfo>      removalSequence;
     private IReadOnlyList<FieldInfo>            versionFields;
     private IReadOnlyList<ColumnInfo> versionColumns;
-    private IList<IObjectValidator> validators;
     private Type                               underlyingType;
     private HierarchyInfo                      hierarchy;
     private int                                typeId = NoTypeId;
@@ -488,15 +487,7 @@ namespace Xtensive.Orm.Model
     /// Gets <see cref="IObjectValidator"/> instances
     /// associated with this type.
     /// </summary>
-    public IList<IObjectValidator> Validators
-    {
-      get { return validators; }
-      internal set
-      {
-        this.EnsureNotLocked();
-        validators = value;
-      }
-    }
+    public IReadOnlyList<IObjectValidator> Validators { get; init; }
 
     /// <summary>
     /// Gets value indicating if this type has validators (including field validators).
@@ -587,38 +578,55 @@ namespace Xtensive.Orm.Model
     /// Gets the version field sequence.
     /// </summary>
     /// <returns>The version field sequence.</returns>
-    public IReadOnlyList<FieldInfo> GetVersionFields() => IsLocked ? versionFields : InnerGetVersionFields();
+    public IEnumerable<FieldInfo> GetVersionFields()
+    {
+      if (versionFields == null) {
+        var result = InnerGetVersionFields();
+        if (!IsLocked) {
+          return result;
+        }
+        versionFields = result.ToList();
+      }
+      return versionFields;
+    }
 
-    private List<FieldInfo> InnerGetVersionFields()
+    private IEnumerable<FieldInfo> InnerGetVersionFields()
     {
       var fields = Fields
         .Where(field => field.IsPrimitive && (field.AutoVersion || field.ManualVersion))
         .ToList();
-      if (fields.Count == 0) {
-        var skipSet = Fields.Where(f => f.SkipVersion).ToHashSet();
-        fields.AddRange(Fields.Where(f => f.IsPrimitive
+      return fields.Count > 0
+        ? fields
+        : Fields.Where(f => f.IsPrimitive
           && !f.IsSystem
           && !f.IsPrimaryKey
           && !f.IsLazyLoad
           && !f.IsTypeId
           && !f.IsTypeDiscriminator
           && !f.ValueType.IsArray
-          && !skipSet.Contains(f)));
-      }
-      return fields;
+          && !f.SkipVersion);
     }
 
     /// <summary>
     /// Gets the version columns.
     /// </summary>
     /// <returns>The version columns.</returns>
-    public IReadOnlyList<ColumnInfo> GetVersionColumns() => IsLocked ? versionColumns : InnerGetVersionColumns();
+    public IEnumerable<ColumnInfo> GetVersionColumns()
+    {
+      if (versionColumns == null) {
+        var result = InnerGetVersionColumns();
+        if (!IsLocked) {
+          return result;
+        }
+        versionColumns = result.ToList();
+      }
+      return versionColumns;
+    }
 
-    private List<ColumnInfo> InnerGetVersionColumns() =>
+    private IEnumerable<ColumnInfo> InnerGetVersionColumns() =>
       InnerGetVersionFields()
         .SelectMany(f => f.Columns)
-        .OrderBy(c => c.Field.MappingInfo.Offset)
-        .ToList();
+        .OrderBy(c => c.Field.MappingInfo.Offset);
 
     /// <inheritdoc/>
     public override void UpdateState()
@@ -649,8 +657,7 @@ namespace Xtensive.Orm.Model
           versionColumns = Array.Empty<ColumnInfo>();
         }
         else {
-          versionFields = InnerGetVersionFields().AsReadOnly();
-          versionColumns = InnerGetVersionColumns().AsReadOnly();
+          versionFields = InnerGetVersionFields().ToList();
         }
         HasVersionFields = versionFields.Count > 0;
         HasExplicitVersionFields = versionFields.Any(f => f.ManualVersion || f.AutoVersion);
@@ -667,7 +674,7 @@ namespace Xtensive.Orm.Model
         }
       }
 
-      HasValidators = validators.Count > 0 || fields.Any(f => f.HasValidators);
+      HasValidators = Validators.Count > 0 || fields.Any(f => f.HasValidators);
 
       // Selecting master parts from paired associations & single associations
       var associations = model.Associations.Find(this)
@@ -757,8 +764,6 @@ namespace Xtensive.Orm.Model
       if (!recursive)
         return;
 
-      validators = Array.AsReadOnly(validators.ToArray());
-
       affectedIndexes.Lock(true);
       indexes.Lock(true);
       columns.Lock(true);
@@ -774,7 +779,7 @@ namespace Xtensive.Orm.Model
         : null;
 
     private bool GetIsLeaf() =>
-      IsEntity && !Descendants.Any();
+      IsEntity && Descendants.Count == 0;
 
     private void CreateTupleDescriptor()
     {
@@ -840,9 +845,9 @@ namespace Xtensive.Orm.Model
     private void BuildVersionExtractor()
     {
       // Building version tuple extractor
-      var versionColumns = GetVersionColumns();
-      var versionColumnsCount = versionColumns?.Count ?? 0;
-      if (versionColumns==null || versionColumnsCount==0) {
+      var versionColumns = GetVersionColumns().ToList();
+      var versionColumnsCount = versionColumns.Count;
+      if (versionColumnsCount == 0) {
         VersionExtractor = null;
         return;
       }
