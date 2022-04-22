@@ -946,6 +946,12 @@ namespace Xtensive.Sql.Compiler
       context.Output.Append(node.Cascade ? " CASCADE" : " RESTRICT");
     }
 
+    public virtual void Translate(SqlCompilerContext context, SqlTruncateTable node)
+    {
+      context.Output.Append("TRUNCATE TABLE ");
+      Translate(context, node.Table);
+    }
+
     public virtual void Translate(SqlCompilerContext context, SqlDropTranslation node)
     {
       context.Output.Append("DROP TRANSLATION ");
@@ -1070,10 +1076,10 @@ namespace Xtensive.Sql.Compiler
         case InsertSection.Entry:
           output.Append("INSERT INTO");
           break;
-        case InsertSection.ColumnsEntry when node.Values.Keys.Count > 0:
+        case InsertSection.ColumnsEntry when node.Values.Columns.Count > 0:
           output.AppendPunctuation("(");
           break;
-        case InsertSection.ColumnsExit when node.Values.Keys.Count > 0:
+        case InsertSection.ColumnsExit when node.Values.Columns.Count > 0:
           output.AppendClosingPunctuation(")");
           break;
         case InsertSection.From:
@@ -1087,6 +1093,9 @@ namespace Xtensive.Sql.Compiler
           break;
         case InsertSection.DefaultValues:
           output.Append("DEFAULT VALUES");
+          break;
+        case InsertSection.NewRow:
+          output.Append("), (");
           break;
       }
     }
@@ -1658,7 +1667,7 @@ namespace Xtensive.Sql.Compiler
         output.AppendLiteral(setup.Closer);
       }
       else {
-        TranslateIdentifier(output, actualizer.Actualize(node.Schema));        
+        TranslateIdentifier(output, actualizer.Actualize(node.Schema));
       }
       output.AppendLiteral(setup.Delimiter);
 

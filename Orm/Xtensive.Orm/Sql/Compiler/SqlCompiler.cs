@@ -871,6 +871,11 @@ namespace Xtensive.Sql.Compiler
       AppendTranslated(node);
     }
 
+    public virtual void Visit(SqlTruncateTable node)
+    {
+      AppendTranslated(node);
+    }
+
     public virtual void Visit(SqlFastFirstRowsHint node)
     {
       // nothing
@@ -975,15 +980,16 @@ namespace Xtensive.Sql.Compiler
         }
 
         AppendTranslated(node, InsertSection.ColumnsEntry);
-        if (node.Values.Keys.Count > 0)
+        var columns = node.Values.Columns;
+        if (columns.Count > 0)
           using (context.EnterCollectionScope())
-            foreach (SqlColumn item in node.Values.Keys) {
+            foreach (SqlColumn item in columns) {
               AppendCollectionDelimiterIfNecessary(AppendColumnDelimiter);
               translator.TranslateIdentifier(context.Output, item.Name);
             }
         AppendTranslated(node, InsertSection.ColumnsExit);
 
-        if (node.Values.Keys.Count == 0 && node.From == null) {
+        if (node.Values.Columns.Count == 0 && node.From == null) {
           AppendTranslated(node, InsertSection.DefaultValues);
         }
         else {
@@ -993,11 +999,18 @@ namespace Xtensive.Sql.Compiler
             }
           else {
             AppendTranslated(node, InsertSection.ValuesEntry);
-            using (context.EnterCollectionScope())
-              foreach (SqlExpression item in node.Values.Values) {
+            var rowCount = node.Values.ValuesByColumn(columns.First()).Count;
+            for (int i = 0; i < rowCount; i++) {
+              if (i > 0) {
+                AppendTranslated(node, InsertSection.NewRow);
+              }
+              using var _ = context.EnterCollectionScope();
+              foreach (var column in columns) {
                 AppendCollectionDelimiterIfNecessary(AppendColumnDelimiter);
+                var item = node.Values.ValuesByColumn(column)[i];
                 item.AcceptVisitor(this);
               }
+            }
             AppendTranslated(node, InsertSection.ValuesExit);
           }
         }
@@ -2122,6 +2135,13 @@ namespace Xtensive.Sql.Compiler
     }
 
     protected void AppendTranslated(SqlDropView node)
+    {
+      AppendSpaceIfNecessary();
+      translator.Translate(context, node);
+      AppendSpaceIfNecessary();
+    }
+
+    protected void AppendTranslated(SqlTruncateTable node)
     {
       AppendSpaceIfNecessary();
       translator.Translate(context, node);

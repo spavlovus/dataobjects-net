@@ -17,44 +17,44 @@ namespace Xtensive.Orm.Configuration
 {
   /// <summary>
   /// The configuration of the <see cref="Domain"/>.
-  /// </summary> 
+  /// </summary>
   [Serializable]
   public class DomainConfiguration : ConfigurationBase
   {
     #region Defaults
 
     /// <summary>
-    /// Default <see cref="DomainConfiguration.KeyCacheSize"/> value: 
+    /// Default <see cref="DomainConfiguration.KeyCacheSize"/> value:
     /// <see langword="16*1024" />.
     /// </summary>
     public const int DefaultKeyCacheSize = 16 * 1024;
 
     /// <summary>
-    /// Default <see cref="DomainConfiguration.KeyGeneratorCacheSize"/> value: 
+    /// Default <see cref="DomainConfiguration.KeyGeneratorCacheSize"/> value:
     /// <see langword="128" />.
     /// </summary>
     public const int DefaultKeyGeneratorCacheSize = 128;
 
     /// <summary>
-    /// Default <see cref="DomainConfiguration.QueryCacheSize"/> value: 
+    /// Default <see cref="DomainConfiguration.QueryCacheSize"/> value:
     /// <see langword="256" />.
     /// </summary>
     public const int DefaultQueryCacheSize = 256;
 
     /// <summary>
-    /// Default <see cref="DomainConfiguration.RecordSetMappingCacheSize"/> value: 
+    /// Default <see cref="DomainConfiguration.RecordSetMappingCacheSize"/> value:
     /// <see langword="1024" />.
     /// </summary>
     public const int DefaultRecordSetMappingCacheSize = 1024;
 
     /// <summary>
-    /// Default <see cref="DomainConfiguration.IncludeSqlInExceptions"/> value: 
+    /// Default <see cref="DomainConfiguration.IncludeSqlInExceptions"/> value:
     /// <see langword="true" />.
     /// </summary>
     public const bool DefaultIncludeSqlInExceptions = true;
 
     /// <summary>
-    /// Default <see cref="DomainConfiguration.BuildInParallel"/> value: 
+    /// Default <see cref="DomainConfiguration.BuildInParallel"/> value:
     /// <see langword="true" />.
     /// </summary>
     public const bool DefaultBuildInParallel = true;
@@ -208,7 +208,7 @@ namespace Xtensive.Orm.Configuration
     }
 
     /// <summary>
-    /// Gets or sets a value indicating domain upgrade behavior. 
+    /// Gets or sets a value indicating domain upgrade behavior.
     /// </summary>
     public DomainUpgradeMode UpgradeMode
     {
@@ -221,7 +221,7 @@ namespace Xtensive.Orm.Configuration
     }
 
     /// <summary>
-    /// Gets the collection of persistent <see cref="Type"/>s that are about to be 
+    /// Gets the collection of persistent <see cref="Type"/>s that are about to be
     /// registered in the <see cref="Domain"/>.
     /// </summary>
     public DomainTypeRegistry Types
@@ -311,7 +311,7 @@ namespace Xtensive.Orm.Configuration
     }
 
     /// <summary>
-    /// Gets or sets a value indicating foreign key mode. 
+    /// Gets or sets a value indicating foreign key mode.
     /// Default value is <see cref="Orm.ForeignKeyMode.Default"/>.
     /// </summary>
     public ForeignKeyMode ForeignKeyMode
@@ -413,7 +413,7 @@ namespace Xtensive.Orm.Configuration
     /// <summary>
     /// Gets or sets the type of the service container.
     /// </summary>
-    public Type ServiceContainerType 
+    public Type ServiceContainerType
     {
       get { return serviceContainerType; }
       set {
@@ -563,7 +563,7 @@ namespace Xtensive.Orm.Configuration
     /// <summary>
     /// Enables sharing of catalog (or catalogs) of default node over additional nodes.
     /// Such sharing leads to overall decrease in nodes memory consumption.
-    /// <para>NOTICE! When this option is set to <see langword="true"/> 
+    /// <para>NOTICE! When this option is set to <see langword="true"/>
     /// real names of catalogs or schemas of certain <see cref="StorageNode"/> will be calculated on query translation
     /// according to <see cref="NodeConfiguration.DatabaseMapping"/> and <see cref="NodeConfiguration.SchemaMapping"/> of the Storage Node.
     /// </para>
@@ -633,6 +633,12 @@ namespace Xtensive.Orm.Configuration
     /// </summary>
     public bool IsMultischema { get { return isMultischema ?? GetIsMultischema(); } }
 
+    /// <summary>
+    /// Maximal number of filtering values in an <see cref="IncludeProvider"/>
+    /// which are to be placed inside a resulted SQL command (as boolean predicate).
+    /// </summary>
+    public int MaxNumberOfConditions { get; set; } = 256;
+
     private bool GetIsMultidatabase()
     {
       return !string.IsNullOrEmpty(DefaultDatabase)
@@ -682,7 +688,7 @@ namespace Xtensive.Orm.Configuration
       if (multischema && string.IsNullOrEmpty(DefaultSchema))
         throw new InvalidOperationException(
           Strings.ExDefaultSchemaShouldBeSpecifiedWhenMultischemaOrMultidatabaseModeIsActive);
-      
+
       if (multidatabase && (string.IsNullOrEmpty(DefaultDatabase) || string.IsNullOrEmpty(DefaultSchema)))
         throw new InvalidOperationException(
           Strings.ExDefaultSchemaAndDefaultDatabaseShouldBeSpecifiedWhenMultidatabaseModeIsActive);
@@ -747,7 +753,7 @@ namespace Xtensive.Orm.Configuration
       shareStorageSchemaOverNodes = configuration.ShareStorageSchemaOverNodes;
       ShareQueryCacheOverNodes = configuration.ShareQueryCacheOverNodes;
       versioningConvention = (VersioningConvention) configuration.VersioningConvention.Clone();
-      
+
     }
 
     /// <summary>
@@ -884,7 +890,7 @@ namespace Xtensive.Orm.Configuration
     }
 
     /// <summary>
-    ///	Initializes a new instance of this class.
+    /// Initializes a new instance of this class.
     /// </summary>
     /// <param name="provider">The provider.</param>
     /// <param name="connectionString">The connection string.</param>
@@ -903,7 +909,7 @@ namespace Xtensive.Orm.Configuration
     {
       this.connectionInfo = connectionInfo;
     }
-    
+
     /// <summary>
     /// Initializes a new instance of this class.
     /// </summary>
