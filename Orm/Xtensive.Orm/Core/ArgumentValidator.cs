@@ -24,6 +24,9 @@ namespace Xtensive.Core
     /// <param name="value">Value to compare with <see langword="null"/>.</param>
     /// <param name="parameterName">Name of the method parameter.</param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
+#if NET6_0_OR_GREATER
+    [Obsolete("Use ArgumentNullException.ThrowIfNull()")]
+#endif
     public static void EnsureArgumentNotNull(object value, [InvokerParameterName] string parameterName)
     {
       if (value==null) {
