@@ -1,13 +1,11 @@
-// Copyright (C) 2009-2022 Xtensive LLC.
+// Copyright (C) 2009-2020 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Alexey Gamzov
 // Created:    2009.10.27
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using NUnit.Framework;
 using Xtensive.Core;
 using Tuple = Xtensive.Tuples.Tuple;
@@ -19,58 +17,22 @@ namespace Xtensive.Orm.Tests.Rse
 {
   [Serializable]
   [TestFixture, Category("Rse")]
-  public class IncludeProviderTest : ChinookDOModelTest
+  public class IncludeProviderTest: ChinookDOModelTest
   {
     [Test]
     public void SimpleTest()
     {
       var tracks = Session.Demand().Query.All<Track>().Take(10).ToList();
-      var ids = tracks.Select(supplier => (Tuple) Tuple.Create(supplier.TrackId));
+      var ids = tracks.Select(supplier => (Tuple)Tuple.Create(supplier.TrackId));
 
-      var trackRs = Domain.Model.Types[typeof(Track)].Indexes.PrimaryIndex.GetQuery();
-      var inRs = trackRs.Include(context => ids, "columnName", new[] { 0 });
-      var inIndex = inRs.Header.Columns.Count - 1;
+      var trackRs = Domain.Model.Types[typeof (Track)].Indexes.PrimaryIndex.GetQuery();
+      var inRs = trackRs.Include(context => ids, "columnName", new[] {0});
+      var inIndex = inRs.Header.Columns.Count-1;
       var whereRs = inRs.Filter(tuple => tuple.GetValueOrDefault<bool>(inIndex));
       var parameterContext = new ParameterContext();
       var result = whereRs.GetRecordSetReader(Session.Current, parameterContext).ToEnumerable().ToList();
       Assert.AreEqual(0, whereRs.GetRecordSetReader(Session.Current, parameterContext).ToEnumerable()
         .Select(t => t.GetValue<int>(0)).Except(tracks.Select(s => s.TrackId)).Count());
-    }
-
-    [Test]
-    public void TempTableMustNotBeCached() =>
-      Assert.AreNotEqual(ExecuteIn(ExecuteCachedIn), ExecuteIn(ExecuteCachedIn));
-
-    [Test]
-    public void TempTableMustNotBeCachedScalar() =>
-      Assert.AreNotEqual(ExecuteIn(ExecuteCachedInScalar), ExecuteIn(ExecuteCachedInScalar));
-
-    // returns temporary table Name
-    private string ExecuteIn(Action<Session> action)
-    {
-      string tempTableName = null;
-      EventHandler<DbCommandEventArgs> sqlPrinter = (o, ea) => {
-        if (Regex.Match(ea.Command.CommandText, @"#([^\]]+)") is var m && m.Success) {
-          tempTableName = m.Groups[1].Value;
-        }
-      };
-      var session = Session.Demand();
-      session.Events.DbCommandExecuted += sqlPrinter;
-      action(session);
-      session.Events.DbCommandExecuted -= sqlPrinter;
-      return tempTableName;
-    }
-
-    private void ExecuteCachedIn(Session session)
-    {
-      var ids = Enumerable.Range(0, 257).ToArray();
-      _ = session.Query.Execute("CachedInclude", q => q.All<Track>().Where(o => o.TrackId.In(ids))).Count();
-    }
-
-    private void ExecuteCachedInScalar(Session session)
-    {
-      var ids = Enumerable.Range(0, 257).ToArray();
-      _ = session.Query.Execute("CachedInclude", q => q.All<Track>().Where(o => o.TrackId.In(ids)).Count());
     }
   }
 }
