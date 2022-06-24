@@ -65,7 +65,7 @@ namespace Xtensive.Orm.Model
     private IDictionary<Pair<FieldInfo>, FieldInfo> structureFieldMapping;
     private List<AssociationInfo>              overridenAssociations;
     private FieldInfo typeIdField;
-    
+
     public TypeInfo Ancestor { get; internal set;}
 
     /// <summary>
@@ -105,7 +105,7 @@ namespace Xtensive.Orm.Model
             set.UnionWith(Descendants.SelectMany(static o => o.RecursiveDescendants));
             recursiveDescendants = set;
           }
-        } 
+        }
         return recursiveDescendants;
       }
     }
@@ -126,7 +126,7 @@ namespace Xtensive.Orm.Model
             set.UnionWith(Ancestors.SelectMany(static o => o.Interfaces));
             recursiveInterfaces = set;
           }
-        } 
+        }
         return recursiveInterfaces;
       }
     }
@@ -246,7 +246,7 @@ namespace Xtensive.Orm.Model
       get { return isOutboundOnly; }
       set
       {
-        this.EnsureNotLocked();
+        EnsureNotLocked();
         isOutboundOnly = value;
       }
     }
@@ -260,7 +260,7 @@ namespace Xtensive.Orm.Model
       get { return isInboundOnly; }
       set
       {
-        this.EnsureNotLocked();
+        EnsureNotLocked();
         isInboundOnly = value;
       }
     }
@@ -273,7 +273,7 @@ namespace Xtensive.Orm.Model
       [DebuggerStepThrough]
       get { return (attributes & TypeAttributes.Auxiliary) == TypeAttributes.Auxiliary; }
       set {
-        this.EnsureNotLocked();
+        EnsureNotLocked();
         attributes = value
           ? attributes | TypeAttributes.Auxiliary
           : attributes & ~TypeAttributes.Auxiliary;
@@ -323,7 +323,7 @@ namespace Xtensive.Orm.Model
       get { return underlyingType; }
       set
       {
-        this.EnsureNotLocked();
+        EnsureNotLocked();
         underlyingType = value;
       }
     }
@@ -410,7 +410,7 @@ namespace Xtensive.Orm.Model
       [DebuggerStepThrough]
       get { return hierarchy; }
       set {
-        this.EnsureNotLocked();
+        EnsureNotLocked();
         hierarchy = value;
       }
     }
@@ -429,7 +429,7 @@ namespace Xtensive.Orm.Model
     public object TypeDiscriminatorValue {
       get { return typeDiscriminatorValue; }
       set {
-        this.EnsureNotLocked();
+        EnsureNotLocked();
         typeDiscriminatorValue = value;
       }
     }
@@ -467,7 +467,7 @@ namespace Xtensive.Orm.Model
       get { return hasVersionRoots; }
       [DebuggerStepThrough]
       set {
-        this.EnsureNotLocked();
+        EnsureNotLocked();
         hasVersionRoots = value;
       }
     }
@@ -818,7 +818,7 @@ namespace Xtensive.Orm.Model
             tuple.SetValue(i, column.DefaultValue);
           }
           catch (Exception e) {
-            OrmLog.Error(e, Strings.LogExErrorSettingDefaultValueXForColumnYInTypeZ,
+            OrmLog.Error(e, nameof(Strings.LogExErrorSettingDefaultValueXForColumnYInTypeZ),
               column.DefaultValue, column.Name, Name);
           }
         }

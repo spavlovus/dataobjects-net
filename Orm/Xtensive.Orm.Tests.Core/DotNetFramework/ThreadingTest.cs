@@ -162,7 +162,7 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
           Thread thread = Thread.CurrentThread;
           using (new Measurement("Execute", log ? MeasurementOptions.Log : 0, passCount))
             for (int j = 0; j < passCount; j++) {
-              
+
               IAsyncResult r = d.BeginInvoke(null, null);
               d.EndInvoke(r);
             }
@@ -220,13 +220,13 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
 
       TestHelper.CollectGarbage();
       if (warmup) {
-          ThreadedTest(target, passCountBase,     target.ExecuteLock);
-          ThreadedTest(target, passCountBase,     target.ExecuteReadLock);
-          ThreadedTest(target, passCountBase,     target.ExecuteWriteLock);
-          if (threadCount>1) {
-            ThreadedTest(target, passCountBase / 200, target.ExecuteWaitLock);
-            ThreadedTest(target, passCountBase / 400, target.ExecuteSleepLock);
-          }
+        ThreadedTest(target, passCountBase,     target.ExecuteLock);
+        ThreadedTest(target, passCountBase,     target.ExecuteReadLock);
+        ThreadedTest(target, passCountBase,     target.ExecuteWriteLock);
+        if (threadCount>1) {
+          ThreadedTest(target, passCountBase / 200, target.ExecuteWaitLock);
+          ThreadedTest(target, passCountBase / 400, target.ExecuteSleepLock);
+        }
       }
       else {
         using (TestLog.InfoRegion(string.Format("{0} threads", threadCount))) {

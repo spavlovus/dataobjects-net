@@ -29,7 +29,7 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
     {
       public abstract object GetValue(int i, out TupleFieldState fieldState);
       public abstract void SetValue(int i, object value);
-      
+
       public virtual Delegate GetValueGetter(int i)
       {
         return null;
@@ -62,13 +62,13 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
     public class BoxingTuple : TestTuple
     {
       protected long[] values = new long[1];
-      
+
       public override object GetValue(int i, out TupleFieldState fieldState)
       {
         fieldState = TupleFieldState.Available;
         return values[i];
       }
-      
+
       public override void SetValue(int i, object value)
       {
         values[i] = (long) value;
@@ -88,7 +88,7 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
         fieldState = TupleFieldState.Available;
         return value1;
       }
-      
+
       public override void SetValue(int i, object value)
       {
         if (i!=0)
@@ -150,7 +150,7 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
         TestTupleAccess(new NonBoxingTuple(), count);
       }
       else {
-        using (TestLog.InfoRegion("With boxing")) {
+        using(TestLog.InfoRegion("With boxing")) {
           TestTupleAccess(new BoxingTuple(), count);
         }
         using (TestLog.InfoRegion("Without boxing")) {
@@ -164,7 +164,7 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
       object[] pressure;
       TestHelper.CollectGarbage();
       pressure = new object[count / MemoryPressureFactor];
-      using (warmup ? (IDisposable)new Disposable(delegate { }) : 
+      using (warmup ? (IDisposable)new Disposable(delegate { }) :
         new Measurement("Setter", count)) {
         for (long i = 0; i < count; i++) {
           tuple.SetValue<long>(0, i);
@@ -176,7 +176,7 @@ namespace Xtensive.Orm.Tests.Core.DotNetFramework
       TestHelper.CollectGarbage();
       pressure = new object[count / MemoryPressureFactor];
       TupleFieldState fieldState;
-      using (warmup ? (IDisposable)new Disposable(delegate { }) : 
+      using (warmup ? (IDisposable)new Disposable(delegate { }) :
         new Measurement("Getter", count)) {
         for (long i = 0; i < count; i++) {
           tuple.GetValue<long>(0, out fieldState);

@@ -1,4 +1,4 @@
-// Copyright (C) 2003-2023 Xtensive LLC.
+// Copyright (C) 2003-2022 Xtensive LLC.
 // This code is distributed under MIT license terms.
 // See the License.txt file in the project root for more information.
 // Created by: Dmitri Maximov
@@ -12,7 +12,7 @@ using Xtensive.Collections;
 
 namespace Xtensive.Orm.Building.Definitions
 {
-  public sealed class HierarchyDefCollectionChangedEventArgs: EventArgs
+  public readonly struct HierarchyDefCollectionChangedEventArgs
   {
     public HierarchyDef Item { get; }
 
@@ -41,7 +41,7 @@ namespace Xtensive.Orm.Building.Definitions
     /// Gets the value associated with the specified key.
     /// </summary>
     /// <param name="key">The key of the value to get.</param>
-    /// <returns>The value associated with the specified <paramref name="key"/> or <see langword="null"/> 
+    /// <returns>The value associated with the specified <paramref name="key"/> or <see langword="null"/>
     /// if item was not found.</returns>
     public HierarchyDef TryGetValue(TypeDef key)
     {
@@ -52,7 +52,7 @@ namespace Xtensive.Orm.Building.Definitions
     /// Gets the value associated with the specified key.
     /// </summary>
     /// <param name="key">The key of the value to get.</param>
-    /// <returns>The value associated with the specified <paramref name="key"/> or <see langword="null"/> 
+    /// <returns>The value associated with the specified <paramref name="key"/> or <see langword="null"/>
     /// if item was not found.</returns>
     public HierarchyDef TryGetValue(Type key)
     {
