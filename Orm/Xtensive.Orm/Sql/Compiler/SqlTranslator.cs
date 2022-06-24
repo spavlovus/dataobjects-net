@@ -1529,9 +1529,6 @@ namespace Xtensive.Sql.Compiler
         case TypeInfo typeInfo:
           output.AppendPlaceholderWithId(typeInfo);
           break;
-        case TypeInfo typeInfo:
-          output.AppendPlaceholderWithId(typeInfo);
-          break;
         case Guid:
         case byte[]:
           throw new NotSupportedException(string.Format(Strings.ExTranslationOfLiteralOfTypeXIsNotSupported, literalType.GetShortName()));

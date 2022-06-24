@@ -29,7 +29,6 @@ namespace Xtensive.Orm.Logging
       {
         this.oldIndent = oldIndent;
         this.endAction = endAction;
-        disposed = false;
       }
     }
 
