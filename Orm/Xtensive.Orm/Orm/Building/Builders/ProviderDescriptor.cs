@@ -78,6 +78,7 @@ namespace Xtensive.Orm.Building.Builders
       var extensionAssembly = Assembly.Load(extensionAssemblyFullName);
       var mainAssemblyVersion = GetInformationalVersion(mainAssembly);
       var extensionAssemblyVersion = GetInformationalVersion(extensionAssembly);
+      /*!!!D
 #if !DEBUG  // Avoid strong version check during debugging
       if (mainAssemblyVersion!=extensionAssemblyVersion)
         throw new InvalidOperationException(string.Format(
@@ -85,6 +86,7 @@ namespace Xtensive.Orm.Building.Builders
           mainAssemblyRef.Name, mainAssemblyVersion,
           extensionAssemblyName, extensionAssemblyVersion));
 #endif
+      */
       return extensionAssembly;
     }
 

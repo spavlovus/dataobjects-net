@@ -32,13 +32,10 @@ namespace Xtensive.Modelling.Actions
     /// <returns><see cref="PathNodeReference"/> to the specified source,
     /// if the source is <see cref="IPathNode"/>;
     /// otherwise, returns <paramref name="source"/>.</returns>
-    public static object Get(object source)
-    {
-      var pathNode = source as IPathNode;
-      if (pathNode==null)
-        return source;
-      return new PathNodeReference(pathNode.Path);
-    }
+    public static object Get(object source) =>
+      source is IPathNode pathNode
+        ? new PathNodeReference(pathNode.Path)
+        : source;
 
     /// <summary>
     /// Resolves the specified object (possibly <see cref="PathNodeReference"/>).

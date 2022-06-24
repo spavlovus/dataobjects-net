@@ -62,7 +62,7 @@ namespace Xtensive.Orm.Model
     private bool                               isInboundOnly;
     private KeyInfo                            key;
     private bool                               hasVersionRoots;
-    private IDictionary<Pair<FieldInfo>, FieldInfo> structureFieldMapping;
+    private IReadOnlyDictionary<Pair<FieldInfo>, FieldInfo> structureFieldMapping;
     private List<AssociationInfo>              overridenAssociations;
     private FieldInfo typeIdField;
 
@@ -476,12 +476,7 @@ namespace Xtensive.Orm.Model
     /// Gets the structure field mapping.
     /// </summary>
     /// <value>The structure field mapping.</value>
-    public IDictionary<Pair<FieldInfo>, FieldInfo> StructureFieldMapping
-    {
-      get {
-        return structureFieldMapping ?? BuildStructureFieldMapping();
-      }
-    }
+    public IReadOnlyDictionary<Pair<FieldInfo>, FieldInfo> StructureFieldMapping => structureFieldMapping ?? BuildStructureFieldMapping();
 
     /// <summary>
     /// Gets <see cref="IObjectValidator"/> instances
@@ -725,17 +720,23 @@ namespace Xtensive.Orm.Model
       //
       var sequence = new List<AssociationInfo>(associations.Count);
       var b = associations.Where(
-        a => (a.OnOwnerRemove==OnRemoveAction.Deny && a.OwnerType.UnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-          (a.OnTargetRemove==OnRemoveAction.Deny && a.TargetType.UnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-          (a.OnOwnerRemove==OnRemoveAction.Clear && a.OwnerType.UnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-          (a.OnTargetRemove==OnRemoveAction.Clear && a.TargetType.UnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-          (a.OnOwnerRemove==OnRemoveAction.Cascade && a.OwnerType.UnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-          (a.OnTargetRemove==OnRemoveAction.Cascade && a.TargetType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
+        a => {
+          var onOwnerRemove = a.OnOwnerRemove;
+          var ownerUnderlyingType = a.OwnerType.UnderlyingType;
+          var targetUnderlyingType = a.TargetType.UnderlyingType;
+
+          return (onOwnerRemove == OnRemoveAction.Deny && ownerUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
+            (a.OnTargetRemove == OnRemoveAction.Deny && targetUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
+            (onOwnerRemove == OnRemoveAction.Clear && ownerUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
+            (a.OnTargetRemove == OnRemoveAction.Clear && targetUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
+            (onOwnerRemove == OnRemoveAction.Cascade && ownerUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
+            (a.OnTargetRemove == OnRemoveAction.Cascade && targetUnderlyingType.IsAssignableFrom(UnderlyingType));
+        });
       sequence.AddRange(b);
 
       var sortedRemovalSequence = sequence.Where(a => a.Ancestors.Count > 0).ToList();
       if (sortedRemovalSequence.Count == 0) {
-        removalSequence = sequence.AsReadOnly();
+        removalSequence = sequence;
       }
       else {
         var sequenceSize = sequence.Count;
@@ -743,7 +744,7 @@ namespace Xtensive.Orm.Model
           sortedRemovalSequence.Capacity = sequenceSize;
         }
         sortedRemovalSequence.AddRange(sequence.Where(a => a.Ancestors.Count == 0));
-        removalSequence = sortedRemovalSequence.AsReadOnly();
+        removalSequence = sortedRemovalSequence;
       }
     }
 
@@ -857,16 +858,17 @@ namespace Xtensive.Orm.Model
       VersionExtractor = new MapTransform(true, versionTupleDescriptor, map);
     }
 
-    private IDictionary<Pair<FieldInfo>, FieldInfo> BuildStructureFieldMapping()
+    private IReadOnlyDictionary<Pair<FieldInfo>, FieldInfo> BuildStructureFieldMapping()
     {
       var result = new Dictionary<Pair<FieldInfo>, FieldInfo>();
-      var structureFields = Fields.Where(f => f.IsStructure && f.Parent == null);
+      var structureFields = Fields.Where(static f => f.IsStructure && f.Parent == null);
+      var modelTypes = Model.Types;
       foreach (var structureField in structureFields) {
-        var structureTypeInfo = Model.Types[structureField.ValueType];
+        var structureTypeInfo = modelTypes[structureField.ValueType];
         foreach (var pair in structureTypeInfo.Fields.Zip(structureField.Fields, (first, second) => (first, second)))
           result.Add(new Pair<FieldInfo>(structureField, pair.first), pair.second);
       }
-      return new ReadOnlyDictionary<Pair<FieldInfo>, FieldInfo>(result);
+      return result;
     }
 
     #endregion

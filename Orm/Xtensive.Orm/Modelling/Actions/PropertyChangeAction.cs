@@ -17,21 +17,17 @@ namespace Xtensive.Modelling.Actions
   [Serializable]
   public class PropertyChangeAction : NodeAction
   {
-    private IDictionary<string, object> properties = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
-
     /// <summary>
     /// Gets or sets the properties.
     /// </summary>
-    public IDictionary<string, object> Properties {
-      get { return properties; }
-    }
+    public IDictionary<string, object> Properties { get; private set; } = new Dictionary<string, object>(1, StringComparer.OrdinalIgnoreCase);
 
     /// <inheritdoc/>
     protected override void PerformExecute(IModel model, IPathNode item)
     {
       ArgumentValidator.EnsureArgumentNotNull(item, "item");
       var node = (Node) item;
-      foreach (var pair in properties)
+      foreach (var pair in Properties)
         node.SetProperty(pair.Key, PathNodeReference.Resolve(model, pair.Value));
     }
 
@@ -39,14 +35,14 @@ namespace Xtensive.Modelling.Actions
     protected override void GetParameters(List<Pair<string>> parameters)
     {
       base.GetParameters(parameters);
-      foreach (var pair in properties)
+      foreach (var pair in Properties)
         parameters.Add(new Pair<string>(pair.Key, pair.Value==null ? null : pair.Value.ToString()));
     }
 
     /// <inheritdoc/>
     public override void Lock(bool recursive)
     {
-      properties = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(properties));
+      Properties = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(properties));
       base.Lock(recursive);
     }
   }
