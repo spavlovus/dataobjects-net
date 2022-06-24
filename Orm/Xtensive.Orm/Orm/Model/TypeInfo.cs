@@ -63,7 +63,7 @@ namespace Xtensive.Orm.Model
     private KeyInfo                            key;
     private bool                               hasVersionRoots;
     private IReadOnlyDictionary<Pair<FieldInfo>, FieldInfo> structureFieldMapping;
-    private List<AssociationInfo>              overridenAssociations;
+    private IReadOnlyList<AssociationInfo>              overridenAssociations;
     private FieldInfo typeIdField;
 
     public TypeInfo Ancestor { get; internal set;}
@@ -674,7 +674,7 @@ namespace Xtensive.Orm.Model
       // Selecting master parts from paired associations & single associations
       var associations = model.Associations.Find(this)
         .Where(a => a.IsMaster)
-        .ToList();
+        .ToHashSet();
 
       typeIdField = Fields.FirstOrDefault(f => f.IsTypeId && f.IsSystem);
 
@@ -686,20 +686,18 @@ namespace Xtensive.Orm.Model
         return;
       }
 
-      overridenAssociations = associations
+      var overridenAssociationsEnumerable = associations
         .Where(a =>
-          (a.Ancestors.Count > 0 && ((a.OwnerType==this && a.Ancestors.All(an => an.OwnerType!=this) || (a.TargetType==this && a.Ancestors.All(an => an.TargetType!=this))))) ||
-          (a.Reversed!=null && (a.Reversed.Ancestors.Count > 0 && ((a.Reversed.OwnerType==this && a.Reversed.Ancestors.All(an => an.OwnerType!=this) || (a.Reversed.TargetType==this && a.Reversed.Ancestors.All(an => an.TargetType!=this)))))))
-        .SelectMany(a => a.Ancestors.Concat(a.Reversed==null ? Enumerable.Empty<AssociationInfo>() : a.Reversed.Ancestors))
-        .ToList();
-      var ancestor = Ancestor;
-      if (ancestor != null && ancestor.overridenAssociations != null) {
-        overridenAssociations.AddRange(ancestor.overridenAssociations);
-      }
+          (a.Ancestors.Count > 0 && ((a.OwnerType == this && a.Ancestors.All(an => an.OwnerType != this) || (a.TargetType == this && a.Ancestors.All(an => an.TargetType != this))))) ||
+          (a.Reversed != null && (a.Reversed.Ancestors.Count > 0 && ((a.Reversed.OwnerType == this && a.Reversed.Ancestors.All(an => an.OwnerType != this) || (a.Reversed.TargetType == this && a.Reversed.Ancestors.All(an => an.TargetType != this)))))))
+        .SelectMany(a => a.Ancestors.Concat(a.Reversed == null ? Enumerable.Empty<AssociationInfo>() : a.Reversed.Ancestors));
 
-      foreach (var ancestorAssociation in overridenAssociations) {
-        associations.Remove(ancestorAssociation);
+      if (Ancestor?.overridenAssociations != null) {
+        overridenAssociationsEnumerable = overridenAssociationsEnumerable.Concat(Ancestor.overridenAssociations);
       }
+      overridenAssociations = overridenAssociationsEnumerable.ToList();
+
+      associations.ExceptWith(overridenAssociations);
 
       //
       //Commented action sequence bellow may add dublicates to "sequence".
@@ -715,7 +713,7 @@ namespace Xtensive.Orm.Model
       //sequence.AddRange(associations.Where(a => a.OnTargetRemove == OnRemoveAction.Cascade && a.TargetType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
 
       //
-      // Code bellow adds the same associations, but without dublicates.
+      // Code bellow adds the same associations, but without duplicates.
       // Also it takes only one enumeration of associations sequence.
       //
       var sequence = new List<AssociationInfo>(associations.Count);
