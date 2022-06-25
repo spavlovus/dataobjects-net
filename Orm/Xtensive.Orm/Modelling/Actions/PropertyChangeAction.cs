@@ -42,7 +42,7 @@ namespace Xtensive.Modelling.Actions
     /// <inheritdoc/>
     public override void Lock(bool recursive)
     {
-      Properties = new ReadOnlyDictionary<string, object>(new Dictionary<string, object>(properties));
+      Properties = new ReadOnlyDictionary<string, object>(Properties);
       base.Lock(recursive);
     }
   }

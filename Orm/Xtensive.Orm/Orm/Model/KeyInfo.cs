@@ -164,8 +164,7 @@ namespace Xtensive.Orm.Model
     public override void UpdateState()
     {
       base.UpdateState();
-      if (Sequence!=null)
-        Sequence.UpdateState();
+      Sequence?.UpdateState();
     }
  
     /// <inheritdoc/>

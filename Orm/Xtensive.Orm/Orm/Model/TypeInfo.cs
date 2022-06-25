@@ -63,7 +63,7 @@ namespace Xtensive.Orm.Model
     private KeyInfo                            key;
     private bool                               hasVersionRoots;
     private IReadOnlyDictionary<Pair<FieldInfo>, FieldInfo> structureFieldMapping;
-    private IReadOnlyList<AssociationInfo>              overridenAssociations;
+    private IReadOnlyList<AssociationInfo>        overridenAssociations;          // used only at Domain-Build time
     private FieldInfo typeIdField;
 
     public TypeInfo Ancestor { get; internal set;}
@@ -686,64 +686,37 @@ namespace Xtensive.Orm.Model
         return;
       }
 
-      var overridenAssociationsEnumerable = associations
-        .Where(a =>
-          (a.Ancestors.Count > 0 && ((a.OwnerType == this && a.Ancestors.All(an => an.OwnerType != this) || (a.TargetType == this && a.Ancestors.All(an => an.TargetType != this))))) ||
-          (a.Reversed != null && (a.Reversed.Ancestors.Count > 0 && ((a.Reversed.OwnerType == this && a.Reversed.Ancestors.All(an => an.OwnerType != this) || (a.Reversed.TargetType == this && a.Reversed.Ancestors.All(an => an.TargetType != this)))))))
-        .SelectMany(a => a.Ancestors.Concat(a.Reversed == null ? Enumerable.Empty<AssociationInfo>() : a.Reversed.Ancestors));
-
-      if (Ancestor?.overridenAssociations != null) {
-        overridenAssociationsEnumerable = overridenAssociationsEnumerable.Concat(Ancestor.overridenAssociations);
-      }
-      overridenAssociations = overridenAssociationsEnumerable.ToList();
+      overridenAssociations = associations.SelectMany(a =>
+        IsOverridenAssociation(a) || IsOverridenAssociation(a.Reversed)
+          ? a.Ancestors.Concat(a.Reversed?.Ancestors ?? Enumerable.Empty<AssociationInfo>())
+          : Array.Empty<AssociationInfo>()
+      ).Concat(Ancestor?.overridenAssociations ?? Array.Empty<AssociationInfo>())
+      .ToList();
 
       associations.ExceptWith(overridenAssociations);
 
-      //
-      //Commented action sequence bellow may add dublicates to "sequence".
-      //Besides, it takes 6 times enumeration of "associations"
-      //
+      var ut = UnderlyingType;      
+      removalSequence = associations.Where(a => {
+        var onOwnerRemove = a.OnOwnerRemove;
+        var onTargetRemove = a.OnTargetRemove;
+        var ownerUnderlyingType = a.OwnerType.UnderlyingType;
+        var targetUnderlyingType = a.TargetType.UnderlyingType;
 
-      //var sequence = new List<AssociationInfo>(associations.Count);
-      //sequence.AddRange(associations.Where(a => a.OnOwnerRemove == OnRemoveAction.Deny && a.OwnerType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
-      //sequence.AddRange(associations.Where(a => a.OnTargetRemove == OnRemoveAction.Deny && a.TargetType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
-      //sequence.AddRange(associations.Where(a => a.OnOwnerRemove == OnRemoveAction.Clear && a.OwnerType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
-      //sequence.AddRange(associations.Where(a => a.OnTargetRemove == OnRemoveAction.Clear && a.TargetType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
-      //sequence.AddRange(associations.Where(a => a.OnOwnerRemove == OnRemoveAction.Cascade && a.OwnerType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
-      //sequence.AddRange(associations.Where(a => a.OnTargetRemove == OnRemoveAction.Cascade && a.TargetType.UnderlyingType.IsAssignableFrom(UnderlyingType)));
+        return (onOwnerRemove == OnRemoveAction.Deny && ownerUnderlyingType.IsAssignableFrom(ut)) ||
+          (onTargetRemove == OnRemoveAction.Deny && targetUnderlyingType.IsAssignableFrom(ut)) ||
+          (onOwnerRemove == OnRemoveAction.Clear && ownerUnderlyingType.IsAssignableFrom(ut)) ||
+          (onTargetRemove == OnRemoveAction.Clear && targetUnderlyingType.IsAssignableFrom(ut)) ||
+          (onOwnerRemove == OnRemoveAction.Cascade && ownerUnderlyingType.IsAssignableFrom(ut)) ||
+          (onTargetRemove == OnRemoveAction.Cascade && targetUnderlyingType.IsAssignableFrom(ut));
+      }).OrderByDescending(o => o.Ancestors.Count > 0).ToList();
+    }
 
-      //
-      // Code bellow adds the same associations, but without duplicates.
-      // Also it takes only one enumeration of associations sequence.
-      //
-      var sequence = new List<AssociationInfo>(associations.Count);
-      var b = associations.Where(
-        a => {
-          var onOwnerRemove = a.OnOwnerRemove;
-          var ownerUnderlyingType = a.OwnerType.UnderlyingType;
-          var targetUnderlyingType = a.TargetType.UnderlyingType;
-
-          return (onOwnerRemove == OnRemoveAction.Deny && ownerUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-            (a.OnTargetRemove == OnRemoveAction.Deny && targetUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-            (onOwnerRemove == OnRemoveAction.Clear && ownerUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-            (a.OnTargetRemove == OnRemoveAction.Clear && targetUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-            (onOwnerRemove == OnRemoveAction.Cascade && ownerUnderlyingType.IsAssignableFrom(UnderlyingType)) ||
-            (a.OnTargetRemove == OnRemoveAction.Cascade && targetUnderlyingType.IsAssignableFrom(UnderlyingType));
-        });
-      sequence.AddRange(b);
-
-      var sortedRemovalSequence = sequence.Where(a => a.Ancestors.Count > 0).ToList();
-      if (sortedRemovalSequence.Count == 0) {
-        removalSequence = sequence;
-      }
-      else {
-        var sequenceSize = sequence.Count;
-        if (sortedRemovalSequence.Capacity < sequenceSize) {
-          sortedRemovalSequence.Capacity = sequenceSize;
-        }
-        sortedRemovalSequence.AddRange(sequence.Where(a => a.Ancestors.Count == 0));
-        removalSequence = sortedRemovalSequence;
-      }
+    private bool IsOverridenAssociation(AssociationInfo a)
+    {
+      var ancestors = a?.Ancestors;
+      return ancestors?.Count > 0 &&
+        (a.OwnerType == this && ancestors.All(an => an.OwnerType != this)
+         || a.TargetType == this && ancestors.All(an => an.TargetType != this));
     }
 
     /// <inheritdoc/>
@@ -760,14 +733,15 @@ namespace Xtensive.Orm.Model
       if (IsEntity || IsStructure)
         Accessors = new FieldAccessorProvider(this);
 
-      if (!recursive)
-        return;
+      overridenAssociations = null;         // to save memory
 
-      affectedIndexes.Lock(true);
-      indexes.Lock(true);
-      columns.Lock(true);
-      fieldMap.Lock(true);
-      fields.Lock(true);
+      if (recursive) {
+        affectedIndexes.Lock(true);
+        indexes.Lock(true);
+        columns.Lock(true);
+        fieldMap.Lock(true);
+        fields.Lock(true);
+      }
     }
 
     #region Private / internal methods
@@ -844,7 +818,10 @@ namespace Xtensive.Orm.Model
     private void BuildVersionExtractor()
     {
       // Building version tuple extractor
-      var versionColumns = GetVersionColumns().ToList();
+      var versionColumns = GetVersionColumns() switch {
+        IReadOnlyList<ColumnInfo> roList => roList,
+        var seq => seq.ToList()
+      };
       var versionColumnsCount = versionColumns.Count;
       if (versionColumnsCount == 0) {
         VersionExtractor = null;
