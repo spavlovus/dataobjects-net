@@ -4,6 +4,7 @@
 // Created by: Denis Krjuchkov
 // Created:    2009.08.24
 
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace Xtensive.Sql.Dml
@@ -23,10 +24,9 @@ namespace Xtensive.Sql.Dml
     /// <returns>
     /// <see langword="true"/> if argument is a null reference; otherwise, <see langword="false"/>.
     /// </returns>
-    public static bool IsNullReference(this SqlExpression expression)
-    {
-      return ReferenceEquals(expression, null);
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static bool IsNullReference(this SqlExpression expression) =>
+      ReferenceEquals(expression, null);
 
     /// <summary>
     /// Checks whether <paramref name="available"/> contains all flags of given <paramref name="required"/>.
