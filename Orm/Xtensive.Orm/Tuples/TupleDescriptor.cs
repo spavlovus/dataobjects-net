@@ -32,7 +32,7 @@ namespace Xtensive.Tuples
 
     [NonSerialized]
     internal readonly PackedFieldDescriptor[] FieldDescriptors;
-    
+
     [field: NonSerialized]
     private Type[] FieldTypes { get; }
 
@@ -221,7 +221,7 @@ namespace Xtensive.Tuples
     /// </summary>
     /// <typeparam name="T">Type of the only tuple field.</typeparam>
     /// <returns>Newly created <see cref="TupleDescriptor"/> object.</returns>
-    public static TupleDescriptor Create<T>() 
+    public static TupleDescriptor Create<T>()
       => Create(typeof(T));
 
     /// <summary>
@@ -230,7 +230,7 @@ namespace Xtensive.Tuples
     /// <typeparam name="T1">Type of the first tuple field.</typeparam>
     /// <typeparam name="T2">Type of the 2nd tuple field.</typeparam>
     /// <returns>Newly created <see cref="TupleDescriptor"/> object</returns>
-    public static TupleDescriptor Create<T1, T2>() 
+    public static TupleDescriptor Create<T1, T2>()
       => Create(typeof(T1), typeof(T2));
 
     /// <summary>
