@@ -64,9 +64,6 @@ namespace Xtensive.Reflection
     private static readonly ConcurrentDictionary<(Type, Type[]), ConstructorInfo> ConstructorInfoByTypes =
       new(new TypesEqualityComparer());
 
-    private static readonly ConcurrentDictionary<Type, Type[]> OrderedInterfaces = new();
-
-    private static readonly ConcurrentDictionary<Type, Type[]> OrderedCompatibles = new();
 
     private static readonly ConcurrentDictionary<Pair<Type, Type>, InterfaceMapping> interfaceMaps = new();
 
