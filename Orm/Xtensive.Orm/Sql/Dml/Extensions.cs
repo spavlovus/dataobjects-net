@@ -14,6 +14,7 @@ namespace Xtensive.Sql.Dml
   /// </summary>
   public static class Extensions
   {
+    /// <summary>
     /// Checks whether <paramref name="available"/> contains all flags of given <paramref name="required"/>.
     /// </summary>
     /// <param name="available">All flags.</param>
