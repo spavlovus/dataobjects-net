@@ -60,7 +60,6 @@ namespace Xtensive.Orm.Model
     private int fieldId;
     private int? cachedHashCode;
 
-    private IList<IPropertyValidator> validators;
     private Segment<int> mappingInfo;
 
     #region IsXxx properties
@@ -582,14 +581,7 @@ namespace Xtensive.Orm.Model
     /// Gets <see cref="IPropertyValidator"/> instances
     /// associated with this field.
     /// </summary>
-    public IList<IPropertyValidator> Validators
-    {
-      get { return validators; }
-      internal set {
-        EnsureNotLocked();
-        validators = value;
-      }
-    }
+    public IReadOnlyList<IPropertyValidator> Validators { get; init; }
 
     /// <summary>
     /// Gets value indicating if this field
@@ -658,7 +650,7 @@ namespace Xtensive.Orm.Model
       columns?.Clear();           // To prevent event handler leak
       columns = null;
 
-      HasImmediateValidators = validators.Count > 0 && validators.Any(v => v.IsImmediate);
+      HasImmediateValidators = Validators.Count > 0 && Validators.Any(v => v.IsImmediate);
 
       CreateMappingInfo();
     }
@@ -669,7 +661,6 @@ namespace Xtensive.Orm.Model
       base.Lock(recursive);
       if (!recursive)
         return;
-      validators = Array.AsReadOnly(validators.ToArray());
       Fields.Lock(true);
       if (column != null)
         column.Lock(true);
@@ -778,7 +769,7 @@ namespace Xtensive.Orm.Model
         defaultValue = defaultValue,
         defaultSqlExpression = defaultSqlExpression,
         DeclaringField = DeclaringField,
-        Validators = Validators.Select(v => v.CreateNew()).ToList(),
+        Validators = Validators.Select(v => v.CreateNew()).ToArray(),
       };
       clone.Associations.AddRange(associations);
       return clone;
