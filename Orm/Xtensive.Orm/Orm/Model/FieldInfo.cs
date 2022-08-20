@@ -544,11 +544,12 @@ namespace Xtensive.Orm.Model
     /// <param name="targetType"></param>
     public AssociationInfo GetAssociation(TypeInfo targetType)
     {
-      if (associations.Count == 0)
-        return null;
-
-      if (associations.Count == 1)
-        return associations[0];
+      switch (Associations.Count) {
+        case 0:
+          return null;
+        case 1:
+          return associations[0];
+      }
 
       var ordered = IsLocked
         ? associations
@@ -558,10 +559,25 @@ namespace Xtensive.Orm.Model
         a => a.TargetType.UnderlyingType.IsAssignableFrom(targetType.UnderlyingType));
     }
 
-    public NodeCollection<AssociationInfo> Associations
+    public IReadOnlyList<AssociationInfo> Associations => (IReadOnlyList<AssociationInfo>)associations ?? Array.Empty<AssociationInfo>();
+
+    public bool ContainsAssociation(string associationName) => associations?.Contains(associationName) == true;
+
+    public void AddAssociation(AssociationInfo association) =>
+      EnsureAssociations().Add(association);
+
+    public void AddAssociations(IReadOnlyList<AssociationInfo> range)
     {
-      get { return associations; }
+      if (range.Count > 0) {
+        EnsureAssociations().AddRange(range);
+      }
     }
+
+    public void RemoveAssociation(AssociationInfo association) =>
+      _ = EnsureAssociations().Remove(association);
+
+    private NodeCollection<AssociationInfo> EnsureAssociations() =>
+      associations ??= new NodeCollection<AssociationInfo>(this, "Associations");
 
     /// <summary>
     /// Gets or sets field's adapter index.
@@ -664,12 +680,12 @@ namespace Xtensive.Orm.Model
       Fields.Lock(true);
       if (column != null)
         column.Lock(true);
-      if (associations.Count > 1) {
+      if (Associations.Count > 1) {
         var sorted = associations.Reorder();
         associations = new NodeCollection<AssociationInfo>(associations.Owner, associations.Name);
         associations.AddRange(sorted);
       }
-      associations.Lock(false);
+      associations?.Lock(false);
     }
 
     private void CreateMappingInfo()
@@ -771,7 +787,7 @@ namespace Xtensive.Orm.Model
         DeclaringField = DeclaringField,
         Validators = Validators.Select(v => v.CreateNew()).ToArray(),
       };
-      clone.Associations.AddRange(associations);
+      clone.AddAssociations(Associations);
       return clone;
     }
 
@@ -799,7 +815,6 @@ namespace Xtensive.Orm.Model
       Fields = IsEntity || IsStructure
         ? new FieldInfoCollection(this, "Fields")
         : FieldInfoCollection.Empty;
-      associations = new NodeCollection<AssociationInfo>(this, "Associations");
     }
   }
 }
