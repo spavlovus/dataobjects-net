@@ -557,7 +557,7 @@ namespace Xtensive.Orm.Model
         if (!IsLocked) {
           return result;
         }
-        targetAssociations = result.ToList().AsReadOnly();
+        targetAssociations = result.ToList().AsSafeWrapper();
       }
       return targetAssociations;
     }
@@ -572,7 +572,7 @@ namespace Xtensive.Orm.Model
         if (!IsLocked) {
           return result;
         }
-        ownerAssociations = result.ToList().AsReadOnly();
+        ownerAssociations = result.ToList().AsSafeWrapper();
       }
       return ownerAssociations;
     }
@@ -745,7 +745,7 @@ namespace Xtensive.Orm.Model
 
       var sortedRemovalSequence = sequence.Where(a => a.Ancestors.Count > 0).ToList();
       if (sortedRemovalSequence.Count == 0) {
-        removalSequence = sequence.AsReadOnly();
+        removalSequence = sequence.AsSafeWrapper();
       }
       else {
         var sequenceSize = sequence.Count;
@@ -753,7 +753,7 @@ namespace Xtensive.Orm.Model
           sortedRemovalSequence.Capacity = sequenceSize;
         }
         sortedRemovalSequence.AddRange(sequence.Where(a => a.Ancestors.Count == 0));
-        removalSequence = sortedRemovalSequence.AsReadOnly();
+        removalSequence = sortedRemovalSequence.AsSafeWrapper();
       }
     }
 
