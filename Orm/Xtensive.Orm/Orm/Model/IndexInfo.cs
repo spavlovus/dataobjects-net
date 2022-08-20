@@ -339,7 +339,7 @@ namespace Xtensive.Orm.Model
       var lazy = new List<int>();
       var regular = new List<int>();
 
-      for (int i = 0; i < columns.Count; i++) {
+      for (int i = 0, count = columns.Count; i < count; i++) {
         var item = columns[i];
         if (item.IsPrimaryKey || item.IsSystem)
           system.Add(i);
