@@ -1,4 +1,4 @@
-//Copyright (C) Microsoft Corporation.  All rights reserved.
+﻿//Copyright (C) Microsoft Corporation.  All rights reserved.
 
 using System.Collections.Generic;
 using System.Globalization;
@@ -7,7 +7,6 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading;
-using Xtensive.Reflection;
 
 namespace System.Linq.Dynamic
 {
@@ -1313,7 +1312,7 @@ namespace System.Linq.Dynamic
         if (type.IsGenericType && type.GetGenericTypeDefinition() == generic) return type;
         if (generic.IsInterface)
         {
-          foreach (Type intfType in type.GetInterfacesOrderByInheritance())
+          foreach (Type intfType in type.GetInterfaces())
           {
             Type found = FindGenericType(generic, intfType);
             if (found != null) return found;
@@ -1579,9 +1578,7 @@ namespace System.Linq.Dynamic
       if (!types.Contains(type))
       {
         types.Add(type);
-        foreach (Type t in type.GetInterfacesOrderByInheritance())  {
-          AddInterface(types, t);
-        }
+        foreach (Type t in type.GetInterfaces()) AddInterface(types, t);
       }
     }
 
