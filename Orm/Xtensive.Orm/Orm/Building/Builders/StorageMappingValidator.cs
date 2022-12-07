@@ -1,4 +1,4 @@
-﻿// Copyright (C) 2012 Xtensive LLC.
+// Copyright (C) 2012 Xtensive LLC.
 // All rights reserved.
 // For conditions of distribution and use, see license.
 // Created by: Denis Krjuchkov
@@ -22,7 +22,7 @@ namespace Xtensive.Orm.Building.Builders
 
     public static void Run(BuildingContext context)
     {
-      using (BuildLog.InfoRegion(Strings.LogValidatingMappingConfiguration)) {
+      using (BuildLog.InfoRegion(nameof(Strings.LogValidatingMappingConfiguration))) {
         new StorageMappingValidator(context).ValidateAll();
       }
     }
@@ -69,12 +69,13 @@ namespace Xtensive.Orm.Building.Builders
     private void EnsureIntefacesAreImplementedWithinSingleDatabase()
     {
       foreach (var @interface in model.Types.Where(t => t.IsInterface)) {
-        var implementors = @interface.GetImplementors(true).ToList();
-        if (implementors.Count==0)
+        var implementors = @interface.AllImplementors;
+        if (implementors.Count == 0) {
           continue; // shouldn't reach here, but it's safer to do check anyway
-        var firstImplementor = implementors[0];
+        }
+        var firstImplementor = implementors.First();
         foreach (var implementor in implementors.Skip(1))
-          if (firstImplementor.MappingDatabase!=implementor.MappingDatabase)
+          if (firstImplementor.MappingDatabase != implementor.MappingDatabase)
             throw new DomainBuilderException(string.Format(
               Strings.ExInterfaceXIsImplementedByTypesMappedToDifferentDatabasesYZ,
               @interface.UnderlyingType.GetShortName(),
@@ -123,7 +124,7 @@ namespace Xtensive.Orm.Building.Builders
 
     private static string GetDatabaseMapping(TypeInfo type)
     {
-      return string.Format("{0} -> {1}", type.UnderlyingType.GetShortName(), type.MappingDatabase);
+      return $"{type.UnderlyingType.GetShortName()} -> {type.MappingDatabase}";
     }
 
     // Constructors

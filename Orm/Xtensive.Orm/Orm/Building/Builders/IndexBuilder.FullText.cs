@@ -44,7 +44,7 @@ namespace Xtensive.Orm.Building.Builders
       var indexesToDefine = hierarchyIndexes.ToList();
       if (indexesToDefine.Any(fti => fti.Type.UnderlyingType != root.UnderlyingType) || indexesToDefine.Count > 1)
         throw new DomainBuilderException(string.Format(Strings.ExUnableToBuildFulltextIndexesForHierarchyWithInheritanceSchemaClassTable, root.Name));
-      var descendants = root.GetDescendants(true).Append(root);
+      var descendants = root.AllDescendants.Append(root);
       var indexDef = indexesToDefine[0];
       var primaryIndex = root.Indexes.Single(i => i.IsPrimary && !i.IsVirtual);
       var name = context.NameBuilder.BuildFullTextIndexName(root);
@@ -68,7 +68,7 @@ namespace Xtensive.Orm.Building.Builders
       foreach (var fullTextIndexDef in hierarchyIndexes) {
         var type = model.Types[fullTextIndexDef.Type.UnderlyingType];
         types.Add(type);
-        foreach (var descendant in type.GetDescendants(true))
+        foreach (var descendant in type.AllDescendants)
           types.Add(descendant);
         foreach (var fullTextFieldDef in fullTextIndexDef.Fields) {
           var fullTextColumn = GetFullTextColumn(type, fullTextFieldDef);
@@ -120,19 +120,18 @@ namespace Xtensive.Orm.Building.Builders
     {
       var model = context.Model;
       var processQueue = new Queue<TypeInfo>();
-      foreach (var type in root.GetDescendants())
+      foreach (var type in root.DirectDescendants)
         processQueue.Enqueue(type);
 
       var indexDefs = hierarchyIndexes.ToDictionary(
         ftid => model.Types[ftid.Type.UnderlyingType],
         ftid => new List<FullTextIndexDef>() {ftid});
 
-      while (processQueue.Count > 0) {
-        var type = processQueue.Dequeue();
+      while (processQueue.TryDequeue(out var type)) {
         List<FullTextIndexDef> indexes;
         List<FullTextIndexDef> parentIndexes;
         var typeHasIndexDef = indexDefs.TryGetValue(type, out indexes);
-        if (indexDefs.TryGetValue(type.GetAncestor(), out parentIndexes)) {
+        if (indexDefs.TryGetValue(type.Ancestor, out parentIndexes)) {
           if (typeHasIndexDef)
             indexes.AddRange(parentIndexes);
           else {
@@ -142,7 +141,7 @@ namespace Xtensive.Orm.Building.Builders
           }
         }
         if (typeHasIndexDef)
-          foreach (var descendant in type.GetDescendants())
+          foreach (var descendant in type.DirectDescendants)
             processQueue.Enqueue(descendant);
       }
       return indexDefs;

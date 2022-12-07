@@ -1,12 +1,13 @@
-// Copyright (C) 2003-2010 Xtensive LLC.
-// All rights reserved.
-// For conditions of distribution and use, see license.
+// Copyright (C) 2009-2022 Xtensive LLC.
+// This code is distributed under MIT license terms.
+// See the License.txt file in the project root for more information.
 // Created by: Denis Krjuchkov
 // Created:    2009.07.15
 
+using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using JetBrains.Annotations;
-using Xtensive.Collections;
 using Xtensive.Core;
 using Xtensive.Sql.Info;
 
@@ -30,14 +31,21 @@ namespace Xtensive.Sql.Compiler
     public bool DatabaseQualifiedObjects { get; set; }
 
     /// <summary>
-    /// Gets database mapping.
+    /// Gets or sets comment location.
     /// </summary>
-    public IDictionary<string, string> SchemaMapping { get; private set; }
+    public SqlCommentLocation CommentLocation { get; set; } = SqlCommentLocation.Nowhere;
 
     /// <summary>
     /// Gets database mapping.
     /// </summary>
-    public IDictionary<string, string> DatabaseMapping { get; private set; }
+    [Obsolete("No longer in use. Moved to SqlPostCompilerConfiguration.")]
+    public IReadOnlyDictionary<string, string> SchemaMapping { get; private set; }
+
+    /// <summary>
+    /// Gets database mapping.
+    /// </summary>
+    [Obsolete("No longer in use. Moved to SqlPostCompilerConfiguration.")]
+    public IReadOnlyDictionary<string, string> DatabaseMapping { get; private set; }
 
     /// <summary>
     /// Clones this instance.
@@ -53,11 +61,14 @@ namespace Xtensive.Sql.Compiler
 
     public SqlCompilerConfiguration()
     {
+#pragma warning disable CS0618 // Type or member is obsolete
       SchemaMapping = null;
       DatabaseMapping = null;
+#pragma warning restore CS0618 // Type or member is obsolete
     }
 
-    public SqlCompilerConfiguration([NotNull]IDictionary<string, string> databaseMapping, [NotNull]IDictionary<string, string> schemaMapping)
+    [Obsolete]
+    public SqlCompilerConfiguration([NotNull] IDictionary<string, string> databaseMapping, [NotNull] IDictionary<string, string> schemaMapping)
     {
       ArgumentValidator.EnsureArgumentNotNull(databaseMapping, "databaseMapping");
       ArgumentValidator.EnsureArgumentNotNull(schemaMapping, "schemaMapping");

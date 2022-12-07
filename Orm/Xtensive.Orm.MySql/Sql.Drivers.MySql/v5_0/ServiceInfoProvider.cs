@@ -14,9 +14,6 @@ namespace Xtensive.Sql.Drivers.MySql.v5_0
     private const int MaxIdentifierLength = 64;
     private const int DoNotKnow = int.MaxValue;
 
-    private readonly string databaseName;
-    private readonly string defaultSchemaName;
-
     /// <inheritdoc/>
     public override EntityInfo GetCollationInfo()
     {
@@ -209,7 +206,8 @@ namespace Xtensive.Sql.Drivers.MySql.v5_0
         QueryFeatures.ScalarSubquery |
         QueryFeatures.SelfReferencingRowRemovalIsError |
         QueryFeatures.StrictJoinSyntax |
-        QueryFeatures.Batches;
+        QueryFeatures.Batches |
+        QueryFeatures.ParameterAsColumn;
       return queryInfo;
     }
 

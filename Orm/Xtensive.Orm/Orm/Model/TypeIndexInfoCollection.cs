@@ -8,7 +8,6 @@ using System;
 using System.Diagnostics;
 using System.Linq;
 using System.Collections.Generic;
-using Xtensive.Collections;
 
 namespace Xtensive.Orm.Model
 {
@@ -19,8 +18,8 @@ namespace Xtensive.Orm.Model
   public sealed class TypeIndexInfoCollection : IndexInfoCollection
   {
     private IndexInfo primaryIndex;
-    private ReadOnlyList<IndexInfo> realPrimaryIndexes;
-    private ReadOnlyList<IndexInfo> indexesContainingAllData;
+    private IReadOnlyList<IndexInfo> realPrimaryIndexes;
+    private IReadOnlyList<IndexInfo> indexesContainingAllData;
 
     /// <summary>
     /// Gets the primary index in this instance.
@@ -34,41 +33,33 @@ namespace Xtensive.Orm.Model
     /// <summary>
     /// Gets the list of real primary index in this instance.
     /// </summary>
-    public ReadOnlyList<IndexInfo> RealPrimaryIndexes
+    public IReadOnlyList<IndexInfo> RealPrimaryIndexes
     {
       [DebuggerStepThrough]
       get {
         return IsLocked 
           ? realPrimaryIndexes
-          : new ReadOnlyList<IndexInfo>(FindRealPrimaryIndexes(PrimaryIndex));
+          : FindRealPrimaryIndexes(PrimaryIndex).AsReadOnly();
       }
     }
 
-    public IndexInfo FindFirst(IndexAttributes indexAttributes)
-    {
-      var result = Find(indexAttributes);
-      if (result.Count!=0) {
-        var enumerator = result.GetEnumerator();
-        enumerator.MoveNext();
-        return enumerator.Current;
-      }
-      return null;
-    }
+    public IndexInfo FindFirst(IndexAttributes indexAttributes) =>
+      Find(indexAttributes).FirstOrDefault();
 
     [DebuggerStepThrough]
     public IndexInfo GetIndex(string fieldName, params string[] fieldNames)
     {
-      var names = new List<string> {fieldName};
-      names.AddRange(fieldNames);
+      var names = (fieldNames ?? Array.Empty<string>()).Prepend(fieldName);
 
       var fields = new List<FieldInfo>();
       foreach (var name in names) {
-        FieldInfo field;
-        if (primaryIndex.ReflectedType.Fields.TryGetValue(name, out field))
+        if (primaryIndex.ReflectedType.Fields.TryGetValue(name, out var field)) {
           fields.Add(field);
+        }
       }
-      if (fields.Count==0)
+      if (fields.Count == 0) {
         return null;
+      }
 
       return GetIndex(fields);
     }
@@ -85,8 +76,8 @@ namespace Xtensive.Orm.Model
     {
       base.UpdateState();
       primaryIndex = FindPrimaryIndex();
-      realPrimaryIndexes = new ReadOnlyList<IndexInfo>(FindRealPrimaryIndexes(primaryIndex));
-      indexesContainingAllData = new ReadOnlyList<IndexInfo>(FindIndexesContainingAllData());
+      realPrimaryIndexes = FindRealPrimaryIndexes(primaryIndex).AsReadOnly();
+      indexesContainingAllData = FindIndexesContainingAllData().AsReadOnly();
     }
 
     private IndexInfo GetIndex(IEnumerable<FieldInfo> fields)
@@ -110,7 +101,7 @@ namespace Xtensive.Orm.Model
       var candidates = this
         .Where(i => i.KeyColumns
           .TakeWhile((_, index) => index < columns.Count)
-          .Select((pair, index) => new {column = pair.Key, columnIndex = index})
+          .Select((pair, index) => (column: pair.Key, columnIndex: index))
           .All(p => p.column==columns[p.columnIndex]))
         .OrderByDescending(i => i.Attributes).ToList();
 
@@ -123,16 +114,16 @@ namespace Xtensive.Orm.Model
     /// Gets the minimal set of indexes containing all data for the type.
     /// </summary>
     /// <returns></returns>
-    public ReadOnlyList<IndexInfo> GetIndexesContainingAllData()
+    public IReadOnlyList<IndexInfo> GetIndexesContainingAllData()
     {
       return IsLocked
         ? indexesContainingAllData
-        : new ReadOnlyList<IndexInfo>(FindIndexesContainingAllData());
+        : FindIndexesContainingAllData().AsReadOnly();
     }
 
     private List<IndexInfo> FindIndexesContainingAllData()
     {
-      var result = new List<IndexInfo>(Items.Count);
+      var result = new List<IndexInfo>(Count);
       var virtualIndexes = this.Where(index => index.IsVirtual);
       result.AddRange(virtualIndexes);
       var realIndexes = from index in this where !index.IsVirtual 

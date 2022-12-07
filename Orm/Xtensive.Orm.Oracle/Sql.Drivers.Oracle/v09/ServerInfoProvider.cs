@@ -15,9 +15,6 @@ namespace Xtensive.Sql.Drivers.Oracle.v09
     private const int MaxIdentifierLength = 30;
     private const int DoNotKnow = int.MaxValue;
     
-    private readonly string databaseName;
-    private readonly string defaultSchemaName;
-
     public override EntityInfo GetCollationInfo()
     {
       return null;
@@ -195,7 +192,8 @@ namespace Xtensive.Sql.Drivers.Oracle.v09
         QueryFeatures.InsertDefaultValues |
         QueryFeatures.UpdateDefaultValues |
         QueryFeatures.MultischemaQueries |
-        QueryFeatures.RowNumber;
+        QueryFeatures.RowNumber |
+        QueryFeatures.ParameterAsColumn;
       return queryInfo;
     }
 

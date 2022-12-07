@@ -25,7 +25,7 @@ namespace Xtensive.Orm.Providers
 
     public TypeInfo Type { get; private set; }
 
-    public ReadOnlyList<IndexInfo> AffectedIndexes { get; private set;}
+    public IReadOnlyList<IndexInfo> AffectedIndexes { get; private set;}
 
     public IndexInfo PrimaryIndex { get; private set; }
 
@@ -44,13 +44,13 @@ namespace Xtensive.Orm.Providers
 
       var affectedIndexes = Type.AffectedIndexes.Where(index => index.IsPrimary).ToList();
       affectedIndexes.Sort((left, right) => {
-        if (left.ReflectedType.GetAncestors().Contains(right.ReflectedType))
+        if (left.ReflectedType.Ancestors.Contains(right.ReflectedType))
           return 1;
-        if (right.ReflectedType.GetAncestors().Contains(left.ReflectedType))
+        if (right.ReflectedType.Ancestors.Contains(left.ReflectedType))
           return -1;
         return 0;
       });
-      AffectedIndexes = new ReadOnlyList<IndexInfo>(affectedIndexes);
+      AffectedIndexes = affectedIndexes.AsReadOnly();
 
       PrimaryIndex = Task.Type.Indexes.PrimaryIndex;
       ParameterBindings = new Dictionary<ColumnInfo, PersistParameterBinding>();

@@ -20,6 +20,17 @@ namespace Xtensive.Orm.Tests.Storage.Prefetch
 {
   public static class PrefetchTestHelper
   {
+    private static int IndexOf(this ColumnInfoCollection columns, ColumnInfo item) {
+      var index = columns.Count - 1;
+      for (; index>=0; index--) {
+        var current = columns[index];
+        if (current==item) {
+          break;
+        }
+      }
+      return index;
+    }
+
     public static void AssertOnlyDefaultColumnsAreLoaded(Key key, TypeInfo type, Session session)
     {
       AssertOnlySpecifiedColumnsAreLoaded(key, type, session, IsFieldToBeLoadedByDefault);
@@ -31,8 +42,8 @@ namespace Xtensive.Orm.Tests.Storage.Prefetch
       var state = session.EntityStateCache[key, true];
       var realType = state.Key.TypeInfo;
       Assert.IsTrue(realType.Equals(type) 
-        || realType.GetAncestors().Contains(type) 
-        || (type.IsInterface && realType.GetInterfaces(true).Contains(type)));
+        || realType.Ancestors.Contains(type) 
+        || (type.IsInterface && realType.AllInterfaces.Contains(type)));
       var tuple = state.Tuple;
       Assert.IsNotNull(tuple);
       foreach (var field in type.Fields) {
