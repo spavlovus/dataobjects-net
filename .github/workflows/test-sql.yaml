@@ -3,7 +3,7 @@ on:
   pull_request:
     branches: [ master-servicetitan ]
 env:
-  DO_STORAGE: "mssql://..."
+  DO_CONFIG_FILE: "/tmp/do-test.cfg"
   DO_TargetFrameworks: net7.0
 jobs:
   test-with-sql:
@@ -18,5 +18,7 @@ jobs:
         uses: potatoqualitee/mssqlsuite@v1.7
         with:
           install: sqlengine, sqlclient, sqlpackage, localdb
+      - name: Create DO Tests Config file
+        run: echo default=sqlserver://sa:sqlpasswd@localhost/DO-Tests?MultipleActiveResultSets=True >$DO_CONFIG_FILE
       - name: Tests
         run: dotnet test -v n Orm/Xtensive.Orm.Tests/Xtensive.Orm.Tests.csproj
