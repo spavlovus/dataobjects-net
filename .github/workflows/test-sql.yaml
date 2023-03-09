@@ -1,0 +1,22 @@
+name: Tests with SQL Server
+on:
+  pull_request:
+    branches: [ master-servicetitan ]
+env:
+  DO_STORAGE: "mssql://..."
+  DO_TargetFrameworks: net7.0
+jobs:
+  test-with-sql:
+    name: SQL tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with: { dotnet-version: 7 }
+      - name: Install a SQL Server suite of tools
+        uses: potatoqualitee/mssqlsuite@v1.7
+        with:
+          install: sqlengine, sqlclient, sqlpackage, localdb
+      - name: Tests
+        run: dotnet test -v n Orm/Xtensive.Orm.Tests/Xtensive.Orm.Tests.csproj
