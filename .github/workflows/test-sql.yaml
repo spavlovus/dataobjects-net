@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Test secret
-        run:  mkdir -p /tmp/sec && touch /tmp/sec/${{ secrets.NUGET_FEED_PASSWORD }}  && ls /tmp/sec && exit 1
+        run:  mkdir -p /tmp/sec && touch /tmp/sec/${{ secrets.NUGET_FEED_PASSWORD }}  && ls /tmp/sec && exit 4
       - name: Setup .NET
         uses: actions/setup-dotnet@v3
         with: { dotnet-version: 7 }
