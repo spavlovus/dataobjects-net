@@ -1,0 +1,28 @@
+name: Tests with SQL Server
+on:
+  pull_request:
+    branches: [ master-servicetitan ]
+env:
+  DO_CONFIG_FILE: "/tmp/do-test.cfg"
+  DO_TargetFrameworks: net7.0
+jobs:
+  test-with-sql:
+    name: SQL tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Test secret
+        run:  mkdir -p /tmp/sec && touch /tmp/sec/${{ secrets.NUGET_FEED_PASSWORD }}  && ls /tmp/sec && exit 4
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v3
+        with: { dotnet-version: 7 }
+      - name: Install a SQL Server suite of tools
+        uses: potatoqualitee/mssqlsuite@v1.7
+        with:
+          install: sqlengine, sqlclient, sqlpackage, localdb
+      - name: Create DO Tests Config file
+        run: echo default=sqlserver://sa:sqlpasswd@localhost/DO-Tests?MultipleActiveResultSets=True >$DO_CONFIG_FILE
+      - name: Tests
+        run: dotnet test -v n Orm/Xtensive.Orm.Tests/Xtensive.Orm.Tests.csproj
+
+
